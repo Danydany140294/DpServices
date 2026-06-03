@@ -1,9 +1,10 @@
-FROM php:8.3-fpm-alpine
+FROM php:8.4-fpm-alpine
 
 RUN apk add --no-cache \
     git curl zip unzip \
     libzip-dev postgresql-dev \
     icu-dev oniguruma-dev \
+    autoconf g++ make \
     nodejs npm
 
 RUN docker-php-ext-install \
