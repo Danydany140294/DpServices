@@ -25,6 +25,9 @@ security:
 
     access_control:
         - { path: ^/login, roles: PUBLIC_ACCESS }
+        - { path: ^/admin, roles: ROLE_ADMIN }
+        - { path: ^/owner, roles: ROLE_OWNER }
+        - { path: ^/cleaner, roles: ROLE_CLEANER }
         - { path: ^/, roles: ROLE_USER }
 
 when@test:

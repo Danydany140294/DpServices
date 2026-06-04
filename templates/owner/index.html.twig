@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Propriétaire — DP Services</title>
+    <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
+</head>
+<body>
+
+    <aside class="sidebar">
+        <h2>DP Services</h2>
+        <a href="{{ path('app_dashboard') }}">🏠 Dashboard</a>
+        <a href="{{ path('app_owner') }}" class="active">👤 Mon espace</a>
+        <a href="#">🏠 Mes logements</a>
+        <a href="#">📋 Mes demandes</a>
+        <a href="#">📅 Calendrier</a>
+    </aside>
+
+    <div class="main">
+        <div class="topbar">
+            <h1>Espace Propriétaire</h1>
+            <div class="user-info">
+                <span>{{ app.user.firstname }} {{ app.user.lastname }}</span>
+                <a href="{{ path('app_logout') }}" class="logout">Déconnexion</a>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="welcome">
+                <h2>Bienvenue dans votre espace 👤</h2>
+                <p>Gérez vos logements et vos demandes de ménage.</p>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
