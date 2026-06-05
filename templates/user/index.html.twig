@@ -1,0 +1,64 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Utilisateurs — DP Services{% endblock %}
+{% block page_title %}Gestion des utilisateurs{% endblock %}
+
+{% block body %}
+
+    <div style="margin-bottom: 2rem;">
+        <h2>Propriétaires ({{ owners|length }})</h2>
+        <table style="width:100%; background:white; border-radius:8px; border-collapse:collapse; margin-top:1rem;">
+            <thead>
+                <tr style="background:#f1f5f9;">
+                    <th style="padding:1rem; text-align:left;">Nom</th>
+                    <th style="padding:1rem; text-align:left;">Email</th>
+                    <th style="padding:1rem; text-align:left;">Téléphone</th>
+                    <th style="padding:1rem; text-align:left;">Créé le</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for owner in owners %}
+                <tr style="border-top:1px solid #e2e8f0;">
+                    <td style="padding:1rem;">{{ owner.firstname }} {{ owner.lastname }}</td>
+                    <td style="padding:1rem;">{{ owner.email }}</td>
+                    <td style="padding:1rem;">{{ owner.phone ?? '-' }}</td>
+                    <td style="padding:1rem;">{{ owner.createdAt|date('d/m/Y') }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" style="padding:1rem; text-align:center; color:#94a3b8;">Aucun propriétaire</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div>
+        <h2>Femmes de ménage ({{ cleaners|length }})</h2>
+        <table style="width:100%; background:white; border-radius:8px; border-collapse:collapse; margin-top:1rem;">
+            <thead>
+                <tr style="background:#f1f5f9;">
+                    <th style="padding:1rem; text-align:left;">Nom</th>
+                    <th style="padding:1rem; text-align:left;">Email</th>
+                    <th style="padding:1rem; text-align:left;">Téléphone</th>
+                    <th style="padding:1rem; text-align:left;">Créé le</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cleaner in cleaners %}
+                <tr style="border-top:1px solid #e2e8f0;">
+                    <td style="padding:1rem;">{{ cleaner.firstname }} {{ cleaner.lastname }}</td>
+                    <td style="padding:1rem;">{{ cleaner.email }}</td>
+                    <td style="padding:1rem;">{{ cleaner.phone ?? '-' }}</td>
+                    <td style="padding:1rem;">{{ cleaner.createdAt|date('d/m/Y') }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" style="padding:1rem; text-align:center; color:#94a3b8;">Aucune femme de ménage</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+{% endblock %}
