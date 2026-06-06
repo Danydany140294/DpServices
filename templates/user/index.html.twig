@@ -5,6 +5,12 @@
 
 {% block body %}
 
+    <div style="margin-bottom:1rem;">
+        <a href="{{ path('app_user_new') }}" style="padding:0.75rem 1.5rem; background:#2563eb; color:white; border-radius:4px; text-decoration:none;">
+            + Nouvel utilisateur
+        </a>
+    </div>
+
     <div style="margin-bottom: 2rem;">
         <h2>Propriétaires ({{ owners|length }})</h2>
         <table style="width:100%; background:white; border-radius:8px; border-collapse:collapse; margin-top:1rem;">
@@ -14,6 +20,7 @@
                     <th style="padding:1rem; text-align:left;">Email</th>
                     <th style="padding:1rem; text-align:left;">Téléphone</th>
                     <th style="padding:1rem; text-align:left;">Créé le</th>
+                    <th style="padding:1rem; text-align:left;">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -23,10 +30,13 @@
                     <td style="padding:1rem;">{{ owner.email }}</td>
                     <td style="padding:1rem;">{{ owner.phone ?? '-' }}</td>
                     <td style="padding:1rem;">{{ owner.createdAt|date('d/m/Y') }}</td>
+                    <td style="padding:1rem;">
+                        <a href="{{ path('app_user_edit', {id: owner.id}) }}" style="color:#2563eb;">Modifier</a>
+                    </td>
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="4" style="padding:1rem; text-align:center; color:#94a3b8;">Aucun propriétaire</td>
+                    <td colspan="5" style="padding:1rem; text-align:center; color:#94a3b8;">Aucun propriétaire</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -42,6 +52,7 @@
                     <th style="padding:1rem; text-align:left;">Email</th>
                     <th style="padding:1rem; text-align:left;">Téléphone</th>
                     <th style="padding:1rem; text-align:left;">Créé le</th>
+                    <th style="padding:1rem; text-align:left;">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -51,10 +62,13 @@
                     <td style="padding:1rem;">{{ cleaner.email }}</td>
                     <td style="padding:1rem;">{{ cleaner.phone ?? '-' }}</td>
                     <td style="padding:1rem;">{{ cleaner.createdAt|date('d/m/Y') }}</td>
+                    <td style="padding:1rem;">
+                        <a href="{{ path('app_user_edit', {id: cleaner.id}) }}" style="color:#2563eb;">Modifier</a>
+                    </td>
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="4" style="padding:1rem; text-align:center; color:#94a3b8;">Aucune femme de ménage</td>
+                    <td colspan="5" style="padding:1rem; text-align:center; color:#94a3b8;">Aucune femme de ménage</td>
                 </tr>
                 {% endfor %}
             </tbody>
