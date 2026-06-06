@@ -18,7 +18,7 @@
             <a href="{{ path('app_users') }}" {% if app.request.get('_route') starts with 'app_user' %}class="active"{% endif %}>👥 Utilisateurs</a>
             <a href="#">🧹 Femmes de ménage</a>
             <a href="{{ path('app_properties') }}" {% if app.request.get('_route') starts with 'app_propert' %}class="active"{% endif %}>🏠 Logements</a>
-            <a href="#">📋 Demandes</a>
+            <a href="{{ path('app_services') }}" {% if app.request.get('_route') starts with 'app_service' %}class="active"{% endif %}>🧹 Prestations</a>
             <a href="#">📅 Calendrier</a>
         {% elseif is_granted('ROLE_OWNER') %}
             <a href="{{ path('app_owner') }}" {% if app.request.get('_route') == 'app_owner' %}class="active"{% endif %}>👤 Mon espace</a>
