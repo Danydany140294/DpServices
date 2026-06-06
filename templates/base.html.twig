@@ -14,21 +14,21 @@
         <h2>DP Services</h2>
 
         {% if is_granted('ROLE_ADMIN') %}
-            <a href="{{ path('app_admin') }}" {% if app.request.get('_route') == 'app_admin' %}class="active"{% endif %}>⚙️ Admin</a>
-            <a href="{{ path('app_users') }}" {% if app.request.get('_route') starts with 'app_user' %}class="active"{% endif %}>👥 Utilisateurs</a>
-            <a href="#">🧹 Femmes de ménage</a>
-            <a href="{{ path('app_properties') }}" {% if app.request.get('_route') starts with 'app_propert' %}class="active"{% endif %}>🏠 Logements</a>
-            <a href="{{ path('app_services') }}" {% if app.request.get('_route') starts with 'app_service' %}class="active"{% endif %}>🧹 Prestations</a>
-            <a href="#">📅 Calendrier</a>
-        {% elseif is_granted('ROLE_OWNER') %}
-            <a href="{{ path('app_owner') }}" {% if app.request.get('_route') == 'app_owner' %}class="active"{% endif %}>👤 Mon espace</a>
-            <a href="#">🏠 Mes logements</a>
-            <a href="{{ path('app_requests') }}" {% if app.request.get('_route') starts with 'app_request' %}class="active"{% endif %}>📋 Demandes</a>
-            <a href="#">📅 Calendrier</a>
-        {% elseif is_granted('ROLE_CLEANER') %}
-            <a href="{{ path('app_cleaner') }}" {% if app.request.get('_route') == 'app_cleaner' %}class="active"{% endif %}>🧹 Mes missions</a>
-            <a href="#">📅 Calendrier</a>
-        {% endif %}
+    <a href="{{ path('app_admin') }}" {% if app.request.get('_route') == 'app_admin' %}class="active"{% endif %}>⚙️ Admin</a>
+    <a href="{{ path('app_users') }}" {% if app.request.get('_route') starts with 'app_user' %}class="active"{% endif %}>👥 Utilisateurs</a>
+    <a href="{{ path('app_properties') }}" {% if app.request.get('_route') starts with 'app_propert' %}class="active"{% endif %}>🏠 Logements</a>
+    <a href="{{ path('app_services') }}" {% if app.request.get('_route') starts with 'app_service' %}class="active"{% endif %}>🧹 Prestations</a>
+    <a href="{{ path('app_requests') }}" {% if app.request.get('_route') starts with 'app_request' %}class="active"{% endif %}>📋 Demandes</a>
+    <a href="#">📅 Calendrier</a>
+{% elseif is_granted('ROLE_OWNER') %}
+    <a href="{{ path('app_owner') }}" {% if app.request.get('_route') == 'app_owner' %}class="active"{% endif %}>👤 Mon espace</a>
+    <a href="#">🏠 Mes logements</a>
+    <a href="#">📋 Mes demandes</a>
+    <a href="#">📅 Calendrier</a>
+{% elseif is_granted('ROLE_CLEANER') %}
+    <a href="{{ path('app_cleaner') }}" {% if app.request.get('_route') == 'app_cleaner' %}class="active"{% endif %}>🧹 Mes missions</a>
+    <a href="#">📅 Calendrier</a>
+{% endif %}
     </aside>
 
     <div class="main">
