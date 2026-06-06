@@ -23,7 +23,7 @@
         {% elseif is_granted('ROLE_OWNER') %}
             <a href="{{ path('app_owner') }}" {% if app.request.get('_route') == 'app_owner' %}class="active"{% endif %}>👤 Mon espace</a>
             <a href="#">🏠 Mes logements</a>
-            <a href="#">📋 Mes demandes</a>
+            <a href="{{ path('app_requests') }}" {% if app.request.get('_route') starts with 'app_request' %}class="active"{% endif %}>📋 Demandes</a>
             <a href="#">📅 Calendrier</a>
         {% elseif is_granted('ROLE_CLEANER') %}
             <a href="{{ path('app_cleaner') }}" {% if app.request.get('_route') == 'app_cleaner' %}class="active"{% endif %}>🧹 Mes missions</a>

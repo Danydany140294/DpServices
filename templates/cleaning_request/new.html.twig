@@ -1,0 +1,21 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouvelle demande — DP Services{% endblock %}
+{% block page_title %}Créer une demande{% endblock %}
+
+{% block body %}
+    <div class="welcome">
+        {{ form_start(form) }}
+            {{ form_row(form.property) }}
+            {{ form_row(form.service) }}
+            {{ form_row(form.scheduledDate) }}
+            {{ form_row(form.scheduledTime) }}
+            {{ form_row(form.comment) }}
+            {{ form_row(form.assignedCleaner) }}
+            <button type="submit" style="margin-top:1rem; padding:0.75rem 2rem; background:#2563eb; color:white; border:none; border-radius:4px; cursor:pointer;">
+                Créer
+            </button>
+            <a href="{{ path('app_requests') }}" style="margin-left:1rem; color:#64748b;">Annuler</a>
+        {{ form_end(form) }}
+    </div>
+{% endblock %}

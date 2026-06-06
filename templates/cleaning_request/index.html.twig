@@ -1,0 +1,66 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Demandes — DP Services{% endblock %}
+{% block page_title %}Gestion des demandes{% endblock %}
+
+{% block body %}
+
+    <div style="margin-bottom:1rem;">
+        <a href="{{ path('app_request_new') }}" style="padding:0.75rem 1.5rem; background:#2563eb; color:white; border-radius:4px; text-decoration:none;">
+            + Nouvelle demande
+        </a>
+    </div>
+
+    <table style="width:100%; background:white; border-radius:8px; border-collapse:collapse;">
+        <thead>
+            <tr style="background:#f1f5f9;">
+                <th style="padding:1rem; text-align:left;">Logement</th>
+                <th style="padding:1rem; text-align:left;">Prestation</th>
+                <th style="padding:1rem; text-align:left;">Date</th>
+                <th style="padding:1rem; text-align:left;">Heure</th>
+                <th style="padding:1rem; text-align:left;">Femme de ménage</th>
+                <th style="padding:1rem; text-align:left;">Statut</th>
+                <th style="padding:1rem; text-align:left;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for req in requests %}
+            <tr style="border-top:1px solid #e2e8f0;">
+                <td style="padding:1rem;">
+                    <span style="display:inline-block; width:12px; height:12px; background:{{ req.property.color }}; border-radius:2px; margin-right:6px;"></span>
+                    {{ req.property.name }}
+                </td>
+                <td style="padding:1rem;">{{ req.service.name }}</td>
+                <td style="padding:1rem;">{{ req.scheduledDate|date('d/m/Y') }}</td>
+                <td style="padding:1rem;">{{ req.scheduledTime|date('H:i') }}</td>
+                <td style="padding:1rem;">{{ req.assignedCleaner ? req.assignedCleaner.firstname ~ ' ' ~ req.assignedCleaner.lastname : '—' }}</td>
+                <td style="padding:1rem;">
+                    {% if req.status == 'PENDING' %}
+                        <span style="background:#fef3c7; color:#d97706; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem;">En attente</span>
+                    {% elseif req.status == 'VALIDATED' %}
+                        <span style="background:#d1fae5; color:#059669; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem;">Validée</span>
+                    {% elseif req.status == 'COMPLETED' %}
+                        <span style="background:#dbeafe; color:#2563eb; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem;">Terminée</span>
+                    {% elseif req.status == 'CANCELLED' %}
+                        <span style="background:#fee2e2; color:#dc2626; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem;">Annulée</span>
+                    {% endif %}
+                </td>
+                <td style="padding:1rem;">
+                    <a href="{{ path('app_request_validate', {id: req.id}) }}" style="color:#2563eb; margin-right:0.5rem;">Valider</a>
+                    <form method="post" action="{{ path('app_request_complete', {id: req.id}) }}" style="display:inline;">
+                        <button type="submit" style="color:#059669; background:none; border:none; cursor:pointer;">Terminer</button>
+                    </form>
+                    <form method="post" action="{{ path('app_request_cancel', {id: req.id}) }}" style="display:inline;" onsubmit="return confirm('Annuler ?')">
+                        <button type="submit" style="color:#dc2626; background:none; border:none; cursor:pointer; margin-left:0.5rem;">Annuler</button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="7" style="padding:1rem; text-align:center; color:#94a3b8;">Aucune demande</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}
