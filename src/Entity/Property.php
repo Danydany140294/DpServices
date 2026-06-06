@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\PropertyRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: PropertyRepository::class)]
@@ -29,9 +31,16 @@ class Property
     #[ORM\JoinColumn(nullable: false)]
     private ?User $owner = null;
 
+    /**
+     * @var Collection<int, CleaningRequest>
+     */
+    #[ORM\OneToMany(targetEntity: CleaningRequest::class, mappedBy: 'property')]
+    private Collection $cleaningRequests;
+
     public function __construct()
 {
     $this->createdAt = new \DateTimeImmutable();
+    $this->cleaningRequests = new ArrayCollection();
 }
 
     public function getId(): ?int
@@ -95,6 +104,36 @@ class Property
     public function setOwner(?User $owner): static
     {
         $this->owner = $owner;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, CleaningRequest>
+     */
+    public function getCleaningRequests(): Collection
+    {
+        return $this->cleaningRequests;
+    }
+
+    public function addCleaningRequest(CleaningRequest $cleaningRequest): static
+    {
+        if (!$this->cleaningRequests->contains($cleaningRequest)) {
+            $this->cleaningRequests->add($cleaningRequest);
+            $cleaningRequest->setProperty($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCleaningRequest(CleaningRequest $cleaningRequest): static
+    {
+        if ($this->cleaningRequests->removeElement($cleaningRequest)) {
+            // set the owning side to null (unless already changed)
+            if ($cleaningRequest->getProperty() === $this) {
+                $cleaningRequest->setProperty(null);
+            }
+        }
 
         return $this;
     }

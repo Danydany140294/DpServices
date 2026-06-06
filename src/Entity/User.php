@@ -52,11 +52,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Property::class, mappedBy: 'owner')]
     private Collection $properties;
 
+    /**
+     * @var Collection<int, CleaningRequest>
+     */
+    #[ORM\OneToMany(targetEntity: CleaningRequest::class, mappedBy: 'assignedCleaner')]
+    private Collection $cleaningRequests;
+
     public function __construct()
 {
     $this->createdAt = new \DateTimeImmutable();
     $this->roles = [];
     $this->properties = new ArrayCollection();
+    $this->cleaningRequests = new ArrayCollection();
 }
 
     public function getId(): ?int
@@ -212,6 +219,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             // set the owning side to null (unless already changed)
             if ($property->getOwner() === $this) {
                 $property->setOwner(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, CleaningRequest>
+     */
+    public function getCleaningRequests(): Collection
+    {
+        return $this->cleaningRequests;
+    }
+
+    public function addCleaningRequest(CleaningRequest $cleaningRequest): static
+    {
+        if (!$this->cleaningRequests->contains($cleaningRequest)) {
+            $this->cleaningRequests->add($cleaningRequest);
+            $cleaningRequest->setAssignedCleaner($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCleaningRequest(CleaningRequest $cleaningRequest): static
+    {
+        if ($this->cleaningRequests->removeElement($cleaningRequest)) {
+            // set the owning side to null (unless already changed)
+            if ($cleaningRequest->getAssignedCleaner() === $this) {
+                $cleaningRequest->setAssignedCleaner(null);
             }
         }
 
