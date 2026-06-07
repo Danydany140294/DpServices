@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendrier — DP Services</title>
+    <link rel="stylesheet" href="{{ asset('css/cleaner.css') }}">
+    {{ encore_entry_link_tags('calendar') }}
+    <style>
+        #calendar {
+            background: white;
+            padding: 0.75rem;
+            border-radius: 8px;
+        }
+        .fc .fc-toolbar-title {
+            font-size: 1rem;
+        }
+        .fc .fc-button {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="mobile-header">
+        <h1>📅 Calendrier</h1>
+        <span class="user-name">{{ app.user.firstname }}</span>
+    </header>
+
+    <div class="mobile-content">
+        <div id="calendar"></div>
+    </div>
+
+    <nav class="bottom-nav">
+        <a href="{{ path('app_cleaner') }}">
+            <span class="icon">🧹</span>
+            Missions
+        </a>
+        <a href="{{ path('app_calendar') }}" class="active">
+            <span class="icon">📅</span>
+            Calendrier
+        </a>
+        <a href="{{ path('app_cleaner_history') }}">
+            <span class="icon">✅</span>
+            Historique
+        </a>
+    </nav>
+
+    {{ encore_entry_script_tags('calendar') }}
+
+</body>
+</html>

@@ -14,17 +14,22 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class CalendarController extends AbstractController
 {
     #[Route('/calendar', name: 'app_calendar')]
-    #[IsGranted('ROLE_USER')]
-    public function index(UserRepository $userRepository): Response
-    {
-        $cleaners = $userRepository->findByRole('ROLE_CLEANER');
-        $owners = $userRepository->findByRole('ROLE_OWNER');
+#[IsGranted('ROLE_USER')]
+public function index(UserRepository $userRepository): Response
+{
+    $cleaners = $userRepository->findByRole('ROLE_CLEANER');
+    $owners = $userRepository->findByRole('ROLE_OWNER');
 
-        return $this->render('calendar/index.html.twig', [
-            'cleaners' => $cleaners,
-            'owners' => $owners,
-        ]);
+    // Template différent pour la FdM
+    if ($this->isGranted('ROLE_CLEANER') && !$this->isGranted('ROLE_ADMIN')) {
+        return $this->render('calendar/cleaner.html.twig');
     }
+
+    return $this->render('calendar/index.html.twig', [
+        'cleaners' => $cleaners,
+        'owners' => $owners,
+    ]);
+}
 
     #[Route('/api/calendar/events', name: 'app_calendar_events')]
 #[IsGranted('ROLE_USER')]
