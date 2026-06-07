@@ -12,13 +12,61 @@
             border-radius: 8px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
+        .filters {
+            background: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 1rem;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        .filters select {
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .filters button {
+            padding: 0.5rem 1rem;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
     </style>
 {% endblock %}
 
 {% block javascripts %}
     {{ encore_entry_script_tags('calendar') }}
+    <script>
+        window.calendarFilters = {
+            cleaners: {{ cleaners|map(c => {id: c.id, name: c.firstname ~ ' ' ~ c.lastname})|json_encode|raw }},
+            owners: {{ owners|map(o => {id: o.id, name: o.firstname ~ ' ' ~ o.lastname})|json_encode|raw }}
+        };
+    </script>
 {% endblock %}
 
 {% block body %}
+
+    {% if is_granted('ROLE_ADMIN') %}
+    <div class="filters">
+        <label>Filtrer par FdM :
+            <select id="filter-cleaner">
+                <option value="">Toutes</option>
+            </select>
+        </label>
+        <label>Filtrer par propriétaire :
+            <select id="filter-owner">
+                <option value="">Tous</option>
+            </select>
+        </label>
+        <button onclick="applyFilters()">Filtrer</button>
+        <button onclick="resetFilters()" style="background:#64748b;">Réinitialiser</button>
+    </div>
+    {% endif %}
+
     <div id="calendar"></div>
+
 {% endblock %}
