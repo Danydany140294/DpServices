@@ -27,37 +27,52 @@ class CalendarController extends AbstractController
     }
 
     #[Route('/api/calendar/events', name: 'app_calendar_events')]
-    #[IsGranted('ROLE_USER')]
-    public function events(CleaningRequestRepository $repo, Request $request): JsonResponse
-    {
-        $cleanerId = $request->query->get('cleaner');
-        $ownerId = $request->query->get('owner');
+#[IsGranted('ROLE_USER')]
+public function events(CleaningRequestRepository $repo, Request $request): JsonResponse
+{
+    $cleanerId = $request->query->get('cleaner');
+    $ownerId = $request->query->get('owner');
 
-        $requests = $repo->findAll();
-        $events = [];
+    $requests = $repo->findAll();
+    $events = [];
 
-        foreach ($requests as $req) {
-            if ($cleanerId && (!$req->getAssignedCleaner() || $req->getAssignedCleaner()->getId() != $cleanerId)) {
+    foreach ($requests as $req) {
+        // Vue propriétaire : uniquement ses logements
+        if ($this->isGranted('ROLE_OWNER') && !$this->isGranted('ROLE_ADMIN')) {
+            if ($req->getProperty()->getOwner()->getId() !== $this->getUser()->getId()) {
                 continue;
             }
-            if ($ownerId && $req->getProperty()->getOwner()->getId() != $ownerId) {
-                continue;
-            }
-
-            $events[] = [
-                'id' => $req->getId(),
-                'title' => $req->getProperty()->getName(),
-                'start' => $req->getScheduledDate()->format('Y-m-d') . 'T' . $req->getScheduledTime()->format('H:i:s'),
-                'backgroundColor' => $req->getProperty()->getColor(),
-                'borderColor' => $req->getProperty()->getColor(),
-                'extendedProps' => [
-                    'status' => $req->getStatus(),
-                    'service' => $req->getService()->getName(),
-                    'cleaner' => $req->getAssignedCleaner() ? $req->getAssignedCleaner()->getFirstname() . ' ' . $req->getAssignedCleaner()->getLastname() : 'Non assigné',
-                ],
-            ];
         }
 
-        return $this->json($events);
+        // Vue cleaner : uniquement ses missions
+        if ($this->isGranted('ROLE_CLEANER') && !$this->isGranted('ROLE_ADMIN')) {
+            if (!$req->getAssignedCleaner() || $req->getAssignedCleaner()->getId() !== $this->getUser()->getId()) {
+                continue;
+            }
+        }
+
+        // Filtres admin
+        if ($cleanerId && (!$req->getAssignedCleaner() || $req->getAssignedCleaner()->getId() != $cleanerId)) {
+            continue;
+        }
+        if ($ownerId && $req->getProperty()->getOwner()->getId() != $ownerId) {
+            continue;
+        }
+
+        $events[] = [
+            'id' => $req->getId(),
+            'title' => $req->getProperty()->getName(),
+            'start' => $req->getScheduledDate()->format('Y-m-d') . 'T' . $req->getScheduledTime()->format('H:i:s'),
+            'backgroundColor' => $req->getProperty()->getColor(),
+            'borderColor' => $req->getProperty()->getColor(),
+            'extendedProps' => [
+                'status' => $req->getStatus(),
+                'service' => $req->getService()->getName(),
+                'cleaner' => $req->getAssignedCleaner() ? $req->getAssignedCleaner()->getFirstname() . ' ' . $req->getAssignedCleaner()->getLastname() : 'Non assigné',
+            ],
+        ];
     }
+
+    return $this->json($events);
+}
 }
