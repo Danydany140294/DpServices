@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mes missions — DP Services</title>
+    <title>Historique — DP Services</title>
     <link rel="stylesheet" href="{{ asset('css/cleaner.css') }}">
 </head>
 <body>
 
     <header class="mobile-header">
-        <h1>🧹 Mes missions</h1>
+        <h1>✅ Historique</h1>
         <span class="user-name">{{ app.user.firstname }}</span>
     </header>
 
@@ -17,38 +17,20 @@
 
         {% if missions is empty %}
             <div class="empty-state">
-                <div class="emoji">✅</div>
-                <p>Aucune mission à venir</p>
+                <div class="emoji">📋</div>
+                <p>Aucune mission terminée</p>
             </div>
         {% else %}
             {% for mission in missions %}
-                {% set isToday = mission.scheduledDate|date('Y-m-d') == today|date('Y-m-d') %}
-                <div class="mission-card {{ isToday ? 'today' : '' }}">
-                    <div class="mission-date">
-                        {{ isToday ? '📅 Aujourd\'hui' : mission.scheduledDate|date('d/m/Y') }}
-                    </div>
+                <div class="mission-card" style="border-left-color: #059669; opacity: 0.8;">
+                    <div class="mission-date">{{ mission.scheduledDate|date('d/m/Y') }}</div>
                     <div class="mission-property">
                         <span style="display:inline-block; width:10px; height:10px; background:{{ mission.property.color }}; border-radius:50%; margin-right:6px;"></span>
                         {{ mission.property.name }}
                     </div>
                     <div class="mission-service">{{ mission.service.name }} — {{ mission.service.duration }} min</div>
                     <div class="mission-time">🕐 {{ mission.scheduledTime|date('H:i') }}</div>
-
-                    {% if mission.comment %}
-                        <div style="font-size:0.875rem; color:#64748b; margin-bottom:0.75rem; font-style:italic;">
-                            💬 {{ mission.comment }}
-                        </div>
-                    {% endif %}
-
-                    {% if mission.status == 'VALIDATED' %}
-                        <form method="post" action="{{ path('app_cleaner_complete', {id: mission.id}) }}">
-                            <button type="submit" class="btn-complete">✅ Marquer comme terminée</button>
-                        </form>
-                    {% elseif mission.status == 'COMPLETED' %}
-                        <div style="text-align:center; color:#059669; font-weight:bold;">✅ Terminée</div>
-                    {% else %}
-                        <div style="text-align:center; color:#d97706; font-size:0.875rem;">⏳ En attente de validation</div>
-                    {% endif %}
+                    <div style="text-align:center; color:#059669; font-weight:bold; margin-top:0.5rem;">✅ Terminée</div>
                 </div>
             {% endfor %}
         {% endif %}

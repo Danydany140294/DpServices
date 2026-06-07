@@ -40,4 +40,31 @@ class CleaningRequestRepository extends ServiceEntityRepository
     //            ->getOneOrNullResult()
     //        ;
     //    }
+
+    public function findUpcomingForCleaner(mixed $user, \DateTime $from): array
+{
+    return $this->createQueryBuilder('r')
+        ->where('r.assignedCleaner = :user')
+        ->andWhere('r.scheduledDate >= :from')
+        ->andWhere('r.status != :cancelled')
+        ->setParameter('user', $user)
+        ->setParameter('from', $from)
+        ->setParameter('cancelled', 'CANCELLED')
+        ->orderBy('r.scheduledDate', 'ASC')
+        ->addOrderBy('r.scheduledTime', 'ASC')
+        ->getQuery()
+        ->getResult();
+}
+
+public function findCompletedForCleaner(mixed $user): array
+{
+    return $this->createQueryBuilder('r')
+        ->where('r.assignedCleaner = :user')
+        ->andWhere('r.status = :completed')
+        ->setParameter('user', $user)
+        ->setParameter('completed', 'COMPLETED')
+        ->orderBy('r.scheduledDate', 'DESC')
+        ->getQuery()
+        ->getResult();
+}
 }
