@@ -39,6 +39,7 @@ class UserFixtures extends Fixture
         $cleaner->setFirstname('Marie');
         $cleaner->setLastname('Ménage');
         $cleaner->setRoles(['ROLE_CLEANER']);
+        $cleaner->setSector('nimes');
         $cleaner->setPassword($this->hasher->hashPassword($cleaner, 'cleaner1234'));
         $manager->persist($cleaner);
 

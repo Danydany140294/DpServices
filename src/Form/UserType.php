@@ -36,6 +36,15 @@ class UserType extends AbstractType
                 'label' => 'Téléphone',
                 'required' => false,
             ])
+            ->add('sector', ChoiceType::class, [
+    'label' => 'Secteur',
+    'required' => false,
+    'placeholder' => 'Choisir un secteur',
+    'choices' => [
+        'Montpellier' => 'montpellier',
+        'Nîmes' => 'nimes',
+    ],
+])
             ->add('plainPassword', PasswordType::class, [
                 'label' => 'Mot de passe',
                 'mapped' => false,
