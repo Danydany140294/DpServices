@@ -88,4 +88,16 @@ class UserController extends AbstractController
         $this->addFlash('success', 'Statut modifié.');
         return $this->redirectToRoute('app_users');
     }
+
+    #[Route('/{id}/delete', name: 'app_user_delete', methods: ['POST'])]
+public function delete(User $user, Request $request, EntityManagerInterface $em): Response
+{
+    if ($this->isCsrfTokenValid('delete' . $user->getId(), $request->request->get('_token'))) {
+        $em->remove($user);
+        $em->flush();
+        $this->addFlash('success', 'Utilisateur supprimé.');
+    }
+
+    return $this->redirectToRoute('app_users');
+}
 }
