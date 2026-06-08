@@ -18,6 +18,12 @@ class OwnerController extends AbstractController
     {
         $user = $this->getUser();
         $properties = $propertyRepo->findBy(['owner' => $user]);
+
+        // Vérifier l'accès à chaque logement via le Voter
+        foreach ($properties as $property) {
+            $this->denyAccessUnlessGranted('view', $property);
+        }
+
         $requests = $requestRepo->findBy(['property' => $properties], ['scheduledDate' => 'ASC']);
 
         return $this->render('owner/index.html.twig', [
