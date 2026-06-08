@@ -1,0 +1,13 @@
+{% block form_row %}
+    <div style="margin-bottom:1rem;">
+        {{ form_label(form) }}
+        {{ form_widget(form) }}
+        {% if errors|length %}
+            {% for error in errors %}
+                <div style="color:#dc2626; font-size:0.85rem; margin-top:0.25rem;">
+                    ⚠️ {{ error.message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+{% endblock %}

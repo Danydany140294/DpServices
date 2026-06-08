@@ -47,24 +47,24 @@ class CleaningRequest
         return $this->scheduledDate;
     }
 
-    public function setScheduledDate(\DateTime $scheduledDate): static
-    {
-        $this->scheduledDate = $scheduledDate;
+    public function setScheduledDate(?\DateTime $scheduledDate): static
+{
+    $this->scheduledDate = $scheduledDate;
 
-        return $this;
-    }
+    return $this;
+}
 
     public function getScheduledTime(): ?\DateTime
     {
         return $this->scheduledTime;
     }
 
-    public function setScheduledTime(\DateTime $scheduledTime): static
-    {
-        $this->scheduledTime = $scheduledTime;
+    public function setScheduledTime(?\DateTime $scheduledTime): static
+{
+    $this->scheduledTime = $scheduledTime;
 
-        return $this;
-    }
+    return $this;
+}
 
     public function getComment(): ?string
     {
