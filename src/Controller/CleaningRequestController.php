@@ -18,12 +18,24 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class CleaningRequestController extends AbstractController
 {
     #[Route('', name: 'app_requests')]
-    public function index(CleaningRequestRepository $repo): Response
-    {
-        return $this->render('cleaning_request/index.html.twig', [
-            'requests' => $repo->findBy([], ['scheduledDate' => 'ASC']),
-        ]);
+public function index(CleaningRequestRepository $repo, Request $request): Response
+{
+    $status = $request->query->get('status');
+    $date = $request->query->get('date');
+
+    $criteria = [];
+    if ($status) {
+        $criteria['status'] = $status;
     }
+
+    $requests = $repo->findWithFilters($status, $date);
+
+    return $this->render('cleaning_request/index.html.twig', [
+        'requests' => $requests,
+        'currentStatus' => $status,
+        'currentDate' => $date,
+    ]);
+}
 
     #[Route('/new', name: 'app_request_new')]
     public function new(Request $request, EntityManagerInterface $em, UserRepository $userRepository): Response

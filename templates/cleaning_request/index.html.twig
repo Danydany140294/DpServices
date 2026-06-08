@@ -5,6 +5,22 @@
 
 {% block body %}
 
+    {# ── Filtres ── #}
+    <div style="background:white; padding:1rem 1.5rem; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.1); margin-bottom:1rem; display:flex; gap:1rem; align-items:center; flex-wrap:wrap;">
+        <form method="get" style="display:flex; gap:1rem; align-items:center; flex-wrap:wrap;">
+            <select name="status" style="padding:0.5rem; border:1px solid #ddd; border-radius:4px;">
+                <option value="">Tous les statuts</option>
+                <option value="PENDING" {{ currentStatus == 'PENDING' ? 'selected' : '' }}>⏳ En attente</option>
+                <option value="VALIDATED" {{ currentStatus == 'VALIDATED' ? 'selected' : '' }}>✅ Validée</option>
+                <option value="COMPLETED" {{ currentStatus == 'COMPLETED' ? 'selected' : '' }}>🏁 Terminée</option>
+                <option value="CANCELLED" {{ currentStatus == 'CANCELLED' ? 'selected' : '' }}>❌ Annulée</option>
+            </select>
+            <input type="date" name="date" value="{{ currentDate }}" style="padding:0.5rem; border:1px solid #ddd; border-radius:4px;">
+            <button type="submit" style="padding:0.5rem 1rem; background:#2563eb; color:white; border:none; border-radius:4px; cursor:pointer;">Filtrer</button>
+            <a href="{{ path('app_requests') }}" style="padding:0.5rem 1rem; background:#64748b; color:white; border-radius:4px; text-decoration:none;">Réinitialiser</a>
+        </form>
+    </div>
+
     <div style="margin-bottom:1rem;">
         <a href="{{ path('app_request_new') }}" style="padding:0.75rem 1.5rem; background:#2563eb; color:white; border-radius:4px; text-decoration:none;">
             + Nouvelle demande
