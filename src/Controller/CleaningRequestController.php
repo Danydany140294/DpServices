@@ -18,17 +18,18 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class CleaningRequestController extends AbstractController
 {
     #[Route('', name: 'app_requests')]
-public function index(CleaningRequestRepository $repo, Request $request): Response
+public function index(CleaningRequestRepository $repo, Request $request, \Knp\Component\Pager\PaginatorInterface $paginator): Response
 {
     $status = $request->query->get('status');
     $date = $request->query->get('date');
 
-    $criteria = [];
-    if ($status) {
-        $criteria['status'] = $status;
-    }
+    $query = $repo->findWithFiltersQuery($status, $date);
 
-    $requests = $repo->findWithFilters($status, $date);
+    $requests = $paginator->paginate(
+        $query,
+        $request->query->getInt('page', 1),
+        10 // 10 demandes par page
+    );
 
     return $this->render('cleaning_request/index.html.twig', [
         'requests' => $requests,

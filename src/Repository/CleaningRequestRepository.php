@@ -66,4 +66,22 @@ class CleaningRequestRepository extends ServiceEntityRepository
 
     return $qb->getQuery()->getResult();
 }
+
+public function findWithFiltersQuery(?string $status, ?string $date): \Doctrine\ORM\Query
+{
+    $qb = $this->createQueryBuilder('r')
+        ->orderBy('r.scheduledDate', 'ASC');
+
+    if ($status) {
+        $qb->andWhere('r.status = :status')
+           ->setParameter('status', $status);
+    }
+
+    if ($date) {
+        $qb->andWhere('r.scheduledDate = :date')
+           ->setParameter('date', new \DateTime($date));
+    }
+
+    return $qb->getQuery();
+}
 }
