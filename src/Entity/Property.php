@@ -37,6 +37,9 @@ class Property
     #[ORM\OneToMany(targetEntity: CleaningRequest::class, mappedBy: 'property')]
     private Collection $cleaningRequests;
 
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $sector = null;
+
     public function __construct()
 {
     $this->createdAt = new \DateTimeImmutable();
@@ -134,6 +137,18 @@ class Property
                 $cleaningRequest->setProperty(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getSector(): ?string
+    {
+        return $this->sector;
+    }
+
+    public function setSector(?string $sector): static
+    {
+        $this->sector = $sector;
 
         return $this;
     }

@@ -6,6 +6,7 @@ use App\Entity\Property;
 use App\Entity\User;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\ColorType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -28,6 +29,15 @@ class PropertyType extends AbstractType
             ->add('color', ColorType::class, [
                 'label' => 'Couleur',
             ])
+            ->add('sector', ChoiceType::class, [
+    'label' => 'Secteur',
+    'required' => false,
+    'placeholder' => 'Choisir un secteur',
+    'choices' => [
+        'Montpellier' => 'montpellier',
+        'Nîmes' => 'nimes',
+    ],
+])
             ->add('owner', EntityType::class, [
                 'class' => User::class,
                 'label' => 'Propriétaire',
