@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use App\Repository\CleaningRequestRepository;
+use App\Repository\PropertyRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -12,8 +14,15 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class OwnerController extends AbstractController
 {
     #[Route('', name: 'app_owner')]
-    public function index(): Response
+    public function index(PropertyRepository $propertyRepo, CleaningRequestRepository $requestRepo): Response
     {
-        return $this->render('owner/index.html.twig');
+        $user = $this->getUser();
+        $properties = $propertyRepo->findBy(['owner' => $user]);
+        $requests = $requestRepo->findBy(['property' => $properties], ['scheduledDate' => 'ASC']);
+
+        return $this->render('owner/index.html.twig', [
+            'properties' => $properties,
+            'requests' => $requests,
+        ]);
     }
 }

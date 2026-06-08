@@ -1,11 +1,77 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Propriétaire — DP Services{% endblock %}
-{% block page_title %}Espace Propriétaire{% endblock %}
+{% block title %}Mon espace — DP Services{% endblock %}
+{% block page_title %}Mon espace propriétaire{% endblock %}
 
 {% block body %}
-    <div class="welcome">
-        <h2>Bienvenue, {{ app.user.firstname }} ! 👤</h2>
-        <p>Gérez vos logements et vos demandes de ménage.</p>
+
+    {# ── Mes logements ── #}
+    <div style="margin-bottom:2rem;">
+        <h2 style="margin-bottom:1rem;">🏠 Mes logements ({{ properties|length }})</h2>
+
+        {% if properties is empty %}
+            <div style="background:white; padding:2rem; border-radius:8px; text-align:center; color:#94a3b8;">
+                Aucun logement associé à votre compte.
+            </div>
+        {% else %}
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap:1rem;">
+                {% for property in properties %}
+                    <div style="background:white; border-radius:8px; padding:1.5rem; box-shadow:0 1px 3px rgba(0,0,0,0.1); border-left:5px solid {{ property.color }};">
+                        <h3 style="color:#1e293b; margin-bottom:0.5rem;">{{ property.name }}</h3>
+                        <p style="color:#64748b; font-size:0.875rem;">📍 {{ property.city }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
     </div>
+
+    {# ── Mes demandes ── #}
+    <div>
+        <h2 style="margin-bottom:1rem;">📋 Mes demandes ({{ requests|length }})</h2>
+
+        {% if requests is empty %}
+            <div style="background:white; padding:2rem; border-radius:8px; text-align:center; color:#94a3b8;">
+                Aucune demande en cours.
+            </div>
+        {% else %}
+            <table style="width:100%; background:white; border-radius:8px; border-collapse:collapse;">
+                <thead>
+                    <tr style="background:#f1f5f9;">
+                        <th style="padding:1rem; text-align:left;">Logement</th>
+                        <th style="padding:1rem; text-align:left;">Prestation</th>
+                        <th style="padding:1rem; text-align:left;">Date</th>
+                        <th style="padding:1rem; text-align:left;">Heure</th>
+                        <th style="padding:1rem; text-align:left;">Femme de ménage</th>
+                        <th style="padding:1rem; text-align:left;">Statut</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req in requests %}
+                    <tr style="border-top:1px solid #e2e8f0;">
+                        <td style="padding:1rem;">
+                            <span style="display:inline-block; width:10px; height:10px; background:{{ req.property.color }}; border-radius:50%; margin-right:6px;"></span>
+                            {{ req.property.name }}
+                        </td>
+                        <td style="padding:1rem;">{{ req.service.name }}</td>
+                        <td style="padding:1rem;">{{ req.scheduledDate|date('d/m/Y') }}</td>
+                        <td style="padding:1rem;">{{ req.scheduledTime|date('H:i') }}</td>
+                        <td style="padding:1rem;">{{ req.assignedCleaner ? req.assignedCleaner.firstname ~ ' ' ~ req.assignedCleaner.lastname : '—' }}</td>
+                        <td style="padding:1rem;">
+                            {% if req.status == 'PENDING' %}
+                                <span style="background:#fef3c7; color:#d97706; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem;">En attente</span>
+                            {% elseif req.status == 'VALIDATED' %}
+                                <span style="background:#d1fae5; color:#059669; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem;">Validée</span>
+                            {% elseif req.status == 'COMPLETED' %}
+                                <span style="background:#dbeafe; color:#2563eb; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem;">Terminée</span>
+                            {% elseif req.status == 'CANCELLED' %}
+                                <span style="background:#fee2e2; color:#dc2626; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem;">Annulée</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+
 {% endblock %}
