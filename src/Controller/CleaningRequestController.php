@@ -7,6 +7,7 @@ use App\Form\CleaningRequestType;
 use App\Repository\CleaningRequestRepository;
 use App\Repository\UserRepository;
 use App\Service\ActivityLogService;
+use App\Service\EmailService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,7 +19,10 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_ADMIN')]
 class CleaningRequestController extends AbstractController
 {
-    public function __construct(private ActivityLogService $logger) {}
+    public function __construct(
+        private ActivityLogService $logger,
+        private EmailService $emailService
+    ) {}
 
     #[Route('', name: 'app_requests')]
     public function index(CleaningRequestRepository $repo, Request $request, \Knp\Component\Pager\PaginatorInterface $paginator): Response
@@ -65,6 +69,21 @@ class CleaningRequestController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $cleaningRequest->setStatus('VALIDATED');
             $em->flush();
+
+            if ($cleaningRequest->getAssignedCleaner()) {
+                try {
+                    $this->emailService->sendMissionAssigned(
+                        $cleaningRequest->getAssignedCleaner()->getEmail(),
+                        $cleaningRequest->getAssignedCleaner()->getFirstname(),
+                        $cleaningRequest->getProperty()->getName(),
+                        $cleaningRequest->getScheduledDate()->format('d/m/Y'),
+                        $cleaningRequest->getScheduledTime()->format('H:i')
+                    );
+                } catch (\Exception $e) {
+                    // Email non bloquant
+                }
+            }
+
             $this->logger->log('Demande validée', $cleaningRequest->getProperty()->getName() . ' — ' . $cleaningRequest->getScheduledDate()->format('d/m/Y'));
             $this->addFlash('success', 'Demande validée.');
             return $this->redirectToRoute('app_requests');

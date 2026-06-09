@@ -6,6 +6,7 @@ use App\Entity\User;
 use App\Form\UserType;
 use App\Repository\UserRepository;
 use App\Service\ActivityLogService;
+use App\Service\EmailService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,8 +19,6 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_ADMIN')]
 class UserController extends AbstractController
 {
-    public function __construct(private ActivityLogService $logger) {}
-
     #[Route('', name: 'app_users')]
     public function index(UserRepository $userRepository): Response
     {
@@ -30,18 +29,26 @@ class UserController extends AbstractController
     }
 
     #[Route('/new', name: 'app_user_new')]
-    public function new(Request $request, EntityManagerInterface $em, UserPasswordHasherInterface $hasher): Response
+    public function new(Request $request, EntityManagerInterface $em, UserPasswordHasherInterface $hasher, ActivityLogService $activityLogger, EmailService $emailSvc): Response
     {
         $user = new User();
         $form = $this->createForm(UserType::class, $user, ['is_new' => true]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $user->setPassword($hasher->hashPassword($user, $form->get('plainPassword')->getData()));
+            $plainPassword = $form->get('plainPassword')->getData();
+            $user->setPassword($hasher->hashPassword($user, $plainPassword));
             $em->persist($user);
             $em->flush();
-            $this->logger->log('Utilisateur créé', $user->getFirstname() . ' ' . $user->getLastname() . ' (' . $user->getEmail() . ')');
-            $this->addFlash('success', 'Utilisateur créé avec succès.');
+            $activityLogger->log('Utilisateur créé', $user->getFirstname() . ' ' . $user->getLastname() . ' (' . $user->getEmail() . ')');
+
+            try {
+                $emailSvc->sendWelcome($user->getEmail(), $user->getFirstname(), $plainPassword);
+                $this->addFlash('success', 'Utilisateur créé avec succès. Un email de bienvenue a été envoyé.');
+            } catch (\Throwable $e) {
+                $this->addFlash('success', 'Utilisateur créé avec succès.');
+            }
+
             return $this->redirectToRoute('app_users');
         }
 
@@ -49,7 +56,7 @@ class UserController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'app_user_edit')]
-    public function edit(User $user, Request $request, EntityManagerInterface $em, UserPasswordHasherInterface $hasher): Response
+    public function edit(User $user, Request $request, EntityManagerInterface $em, UserPasswordHasherInterface $hasher, ActivityLogService $activityLogger): Response
     {
         $form = $this->createForm(UserType::class, $user, ['is_new' => false]);
         $form->handleRequest($request);
@@ -59,7 +66,7 @@ class UserController extends AbstractController
                 $user->setPassword($hasher->hashPassword($user, $form->get('plainPassword')->getData()));
             }
             $em->flush();
-            $this->logger->log('Utilisateur modifié', $user->getFirstname() . ' ' . $user->getLastname());
+            $activityLogger->log('Utilisateur modifié', $user->getFirstname() . ' ' . $user->getLastname());
             $this->addFlash('success', 'Utilisateur modifié avec succès.');
             return $this->redirectToRoute('app_users');
         }
@@ -68,15 +75,15 @@ class UserController extends AbstractController
     }
 
     #[Route('/{id}/toggle', name: 'app_user_toggle')]
-    public function toggle(User $user, EntityManagerInterface $em): Response
+    public function toggle(User $user, EntityManagerInterface $em, ActivityLogService $activityLogger): Response
     {
         $roles = $user->getRoles();
         if (in_array('ROLE_DISABLED', $roles)) {
             $user->setRoles(array_values(array_filter($roles, fn($r) => $r !== 'ROLE_DISABLED' && $r !== 'ROLE_USER')));
-            $this->logger->log('Utilisateur activé', $user->getFirstname() . ' ' . $user->getLastname());
+            $activityLogger->log('Utilisateur activé', $user->getFirstname() . ' ' . $user->getLastname());
         } else {
             $user->setRoles([...$user->getRoles(), 'ROLE_DISABLED']);
-            $this->logger->log('Utilisateur désactivé', $user->getFirstname() . ' ' . $user->getLastname());
+            $activityLogger->log('Utilisateur désactivé', $user->getFirstname() . ' ' . $user->getLastname());
         }
         $em->flush();
         $this->addFlash('success', 'Statut modifié.');
@@ -84,13 +91,13 @@ class UserController extends AbstractController
     }
 
     #[Route('/{id}/delete', name: 'app_user_delete', methods: ['POST'])]
-    public function delete(User $user, Request $request, EntityManagerInterface $em): Response
+    public function delete(User $user, Request $request, EntityManagerInterface $em, ActivityLogService $activityLogger): Response
     {
         if ($this->isCsrfTokenValid('delete' . $user->getId(), $request->request->get('_token'))) {
             $name = $user->getFirstname() . ' ' . $user->getLastname();
             $em->remove($user);
             $em->flush();
-            $this->logger->log('Utilisateur supprimé', $name);
+            $activityLogger->log('Utilisateur supprimé', $name);
             $this->addFlash('success', 'Utilisateur supprimé.');
         }
         return $this->redirectToRoute('app_users');
