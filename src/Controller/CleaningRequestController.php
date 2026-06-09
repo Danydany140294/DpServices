@@ -80,20 +80,24 @@ public function index(CleaningRequestRepository $repo, Request $request, \Knp\Co
     }
 
     #[Route('/{id}/complete', name: 'app_request_complete', methods: ['POST'])]
-    public function complete(CleaningRequest $cleaningRequest, EntityManagerInterface $em): Response
-    {
+public function complete(CleaningRequest $cleaningRequest, EntityManagerInterface $em, Request $request): Response
+{
+    if ($this->isCsrfTokenValid('complete' . $cleaningRequest->getId(), $request->request->get('_token'))) {
         $cleaningRequest->setStatus('COMPLETED');
         $em->flush();
         $this->addFlash('success', 'Demande marquée comme terminée.');
-        return $this->redirectToRoute('app_requests');
     }
+    return $this->redirectToRoute('app_requests');
+}
 
     #[Route('/{id}/cancel', name: 'app_request_cancel', methods: ['POST'])]
-    public function cancel(CleaningRequest $cleaningRequest, EntityManagerInterface $em): Response
-    {
+public function cancel(CleaningRequest $cleaningRequest, EntityManagerInterface $em, Request $request): Response
+{
+    if ($this->isCsrfTokenValid('cancel' . $cleaningRequest->getId(), $request->request->get('_token'))) {
         $cleaningRequest->setStatus('CANCELLED');
         $em->flush();
         $this->addFlash('success', 'Demande annulée.');
-        return $this->redirectToRoute('app_requests');
     }
+    return $this->redirectToRoute('app_requests');
+}
 }

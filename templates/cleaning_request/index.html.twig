@@ -64,9 +64,11 @@
                 <td style="padding:1rem;">
                     <a href="{{ path('app_request_validate', {id: req.id}) }}" style="color:#2563eb; margin-right:0.5rem;">Valider</a>
                     <form method="post" action="{{ path('app_request_complete', {id: req.id}) }}" style="display:inline;">
+                        <input type="hidden" name="_token" value="{{ csrf_token('complete' ~ req.id) }}">
                         <button type="submit" style="color:#059669; background:none; border:none; cursor:pointer;">Terminer</button>
                     </form>
                     <form method="post" action="{{ path('app_request_cancel', {id: req.id}) }}" style="display:inline;" onsubmit="return confirm('Annuler ?')">
+                        <input type="hidden" name="_token" value="{{ csrf_token('cancel' ~ req.id) }}">
                         <button type="submit" style="color:#dc2626; background:none; border:none; cursor:pointer; margin-left:0.5rem;">Annuler</button>
                     </form>
                 </td>
@@ -80,7 +82,7 @@
     </table>
 
     <div style="margin-top:1rem;">
-    {{ knp_pagination_render(requests) }}
-</div>
+        {{ knp_pagination_render(requests) }}
+    </div>
 
 {% endblock %}
