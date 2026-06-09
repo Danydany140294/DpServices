@@ -134,3 +134,76 @@ body {
 .welcome p {
     color: #64748b;
 }
+
+/* ── Formulaires ── */
+.form-group {
+    margin-bottom: 1rem;
+}
+
+/* Labels */
+form label {
+    display: block;
+    margin-bottom: 0.4rem;
+    color: #374151;
+    font-weight: 500;
+    font-size: 0.875rem;
+}
+
+/* Inputs */
+form input[type="text"],
+form input[type="email"],
+form input[type="password"],
+form input[type="tel"],
+form input[type="number"],
+form input[type="date"],
+form input[type="time"],
+form input[type="color"],
+form select,
+form textarea {
+    width: 100%;
+    padding: 0.625rem 0.875rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    color: #1e293b;
+    background: white;
+    transition: border-color 0.2s;
+}
+
+form input:focus,
+form select:focus,
+form textarea:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* Erreurs */
+form .form-error,
+form ul.form-error {
+    color: #dc2626;
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+    list-style: none;
+    padding: 0;
+}
+
+form .is-invalid,
+form input.is-invalid,
+form select.is-invalid {
+    border-color: #dc2626;
+    background: #fff5f5;
+}
+
+/* Champ en erreur Symfony */
+form .has-error input,
+form .has-error select,
+form .has-error textarea {
+    border-color: #dc2626;
+}
+
+form .invalid-feedback {
+    color: #dc2626;
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+}

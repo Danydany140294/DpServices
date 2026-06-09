@@ -5,7 +5,7 @@
 
 {% block body %}
     <div class="welcome">
-        {{ form_start(form) }}
+        {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
             {{ form_row(form.firstname) }}
             {{ form_row(form.lastname) }}
             {{ form_row(form.email) }}
