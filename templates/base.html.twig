@@ -20,6 +20,7 @@
             <a href="{{ path('app_services') }}" {% if app.request.get('_route') starts with 'app_service' %}class="active"{% endif %}>🧹 Prestations</a>
             <a href="{{ path('app_requests') }}" {% if app.request.get('_route') starts with 'app_request' %}class="active"{% endif %}>📋 Demandes</a>
             <a href="{{ path('app_calendar') }}" {% if app.request.get('_route') == 'app_calendar' %}class="active"{% endif %}>📅 Calendrier</a>
+            <a href="{{ path('app_logs') }}" {% if app.request.get('_route') == 'app_logs' %}class="active"{% endif %}>📜 Historique</a>
         {% elseif is_granted('ROLE_OWNER') %}
             <a href="{{ path('app_owner') }}" {% if app.request.get('_route') == 'app_owner' %}class="active"{% endif %}>👤 Mon espace</a>
             <a href="#">🏠 Mes logements</a>

@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Form\UserType;
 use App\Repository\UserRepository;
+use App\Service\ActivityLogService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -17,15 +18,14 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_ADMIN')]
 class UserController extends AbstractController
 {
+    public function __construct(private ActivityLogService $logger) {}
+
     #[Route('', name: 'app_users')]
     public function index(UserRepository $userRepository): Response
     {
-        $owners = $userRepository->findByRole('ROLE_OWNER');
-        $cleaners = $userRepository->findByRole('ROLE_CLEANER');
-
         return $this->render('user/index.html.twig', [
-            'owners' => $owners,
-            'cleaners' => $cleaners,
+            'owners' => $userRepository->findByRole('ROLE_OWNER'),
+            'cleaners' => $userRepository->findByRole('ROLE_CLEANER'),
         ]);
     }
 
@@ -37,18 +37,15 @@ class UserController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $plainPassword = $form->get('plainPassword')->getData();
-            $user->setPassword($hasher->hashPassword($user, $plainPassword));
+            $user->setPassword($hasher->hashPassword($user, $form->get('plainPassword')->getData()));
             $em->persist($user);
             $em->flush();
-
+            $this->logger->log('Utilisateur créé', $user->getFirstname() . ' ' . $user->getLastname() . ' (' . $user->getEmail() . ')');
             $this->addFlash('success', 'Utilisateur créé avec succès.');
             return $this->redirectToRoute('app_users');
         }
 
-        return $this->render('user/new.html.twig', [
-            'form' => $form->createView(),
-        ]);
+        return $this->render('user/new.html.twig', ['form' => $form->createView()]);
     }
 
     #[Route('/{id}/edit', name: 'app_user_edit')]
@@ -58,20 +55,16 @@ class UserController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $plainPassword = $form->get('plainPassword')->getData();
-            if ($plainPassword) {
-                $user->setPassword($hasher->hashPassword($user, $plainPassword));
+            if ($form->get('plainPassword')->getData()) {
+                $user->setPassword($hasher->hashPassword($user, $form->get('plainPassword')->getData()));
             }
             $em->flush();
-
+            $this->logger->log('Utilisateur modifié', $user->getFirstname() . ' ' . $user->getLastname());
             $this->addFlash('success', 'Utilisateur modifié avec succès.');
             return $this->redirectToRoute('app_users');
         }
 
-        return $this->render('user/edit.html.twig', [
-            'form' => $form->createView(),
-            'user' => $user,
-        ]);
+        return $this->render('user/edit.html.twig', ['form' => $form->createView(), 'user' => $user]);
     }
 
     #[Route('/{id}/toggle', name: 'app_user_toggle')]
@@ -79,25 +72,27 @@ class UserController extends AbstractController
     {
         $roles = $user->getRoles();
         if (in_array('ROLE_DISABLED', $roles)) {
-            $user->setRoles(array_filter($roles, fn($r) => $r !== 'ROLE_DISABLED' && $r !== 'ROLE_USER'));
+            $user->setRoles(array_values(array_filter($roles, fn($r) => $r !== 'ROLE_DISABLED' && $r !== 'ROLE_USER')));
+            $this->logger->log('Utilisateur activé', $user->getFirstname() . ' ' . $user->getLastname());
         } else {
             $user->setRoles([...$user->getRoles(), 'ROLE_DISABLED']);
+            $this->logger->log('Utilisateur désactivé', $user->getFirstname() . ' ' . $user->getLastname());
         }
         $em->flush();
-
         $this->addFlash('success', 'Statut modifié.');
         return $this->redirectToRoute('app_users');
     }
 
     #[Route('/{id}/delete', name: 'app_user_delete', methods: ['POST'])]
-public function delete(User $user, Request $request, EntityManagerInterface $em): Response
-{
-    if ($this->isCsrfTokenValid('delete' . $user->getId(), $request->request->get('_token'))) {
-        $em->remove($user);
-        $em->flush();
-        $this->addFlash('success', 'Utilisateur supprimé.');
+    public function delete(User $user, Request $request, EntityManagerInterface $em): Response
+    {
+        if ($this->isCsrfTokenValid('delete' . $user->getId(), $request->request->get('_token'))) {
+            $name = $user->getFirstname() . ' ' . $user->getLastname();
+            $em->remove($user);
+            $em->flush();
+            $this->logger->log('Utilisateur supprimé', $name);
+            $this->addFlash('success', 'Utilisateur supprimé.');
+        }
+        return $this->redirectToRoute('app_users');
     }
-
-    return $this->redirectToRoute('app_users');
-}
 }

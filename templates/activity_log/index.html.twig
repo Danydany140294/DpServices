@@ -1,0 +1,47 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Historique — DP Services{% endblock %}
+{% block page_title %}Historique des actions{% endblock %}
+
+{% block body %}
+
+    <div style="background:white; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+        {% if logs is empty %}
+            <div style="padding:2rem; text-align:center; color:#94a3b8;">
+                Aucune action enregistrée.
+            </div>
+        {% else %}
+            <table style="width:100%; border-collapse:collapse;">
+                <thead>
+                    <tr style="background:#f1f5f9;">
+                        <th style="padding:1rem; text-align:left;">Date</th>
+                        <th style="padding:1rem; text-align:left;">Action</th>
+                        <th style="padding:1rem; text-align:left;">Détail</th>
+                        <th style="padding:1rem; text-align:left;">Par</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                    <tr style="border-top:1px solid #e2e8f0;">
+                        <td style="padding:1rem; color:#64748b; font-size:0.875rem; white-space:nowrap;">
+                            {{ log.createdAt|date('d/m/Y H:i') }}
+                        </td>
+                        <td style="padding:1rem;">
+                            <span style="background:#dbeafe; color:#2563eb; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem; font-weight:500;">
+                                {{ log.action }}
+                            </span>
+                        </td>
+                        <td style="padding:1rem; color:#475569; font-size:0.875rem;">
+                            {{ log.description ?? '—' }}
+                        </td>
+                        <td style="padding:1rem; color:#475569; font-size:0.875rem;">
+                            {{ log.author ? log.author.firstname ~ ' ' ~ log.author.lastname : 'Système' }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+
+{% endblock %}

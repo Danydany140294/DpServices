@@ -6,6 +6,7 @@ use App\Entity\CleaningRequest;
 use App\Form\CleaningRequestType;
 use App\Repository\CleaningRequestRepository;
 use App\Repository\UserRepository;
+use App\Service\ActivityLogService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -17,26 +18,22 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_ADMIN')]
 class CleaningRequestController extends AbstractController
 {
+    public function __construct(private ActivityLogService $logger) {}
+
     #[Route('', name: 'app_requests')]
-public function index(CleaningRequestRepository $repo, Request $request, \Knp\Component\Pager\PaginatorInterface $paginator): Response
-{
-    $status = $request->query->get('status');
-    $date = $request->query->get('date');
+    public function index(CleaningRequestRepository $repo, Request $request, \Knp\Component\Pager\PaginatorInterface $paginator): Response
+    {
+        $status = $request->query->get('status');
+        $date = $request->query->get('date');
+        $query = $repo->findWithFiltersQuery($status, $date);
+        $requests = $paginator->paginate($query, $request->query->getInt('page', 1), 10);
 
-    $query = $repo->findWithFiltersQuery($status, $date);
-
-    $requests = $paginator->paginate(
-        $query,
-        $request->query->getInt('page', 1),
-        10 // 10 demandes par page
-    );
-
-    return $this->render('cleaning_request/index.html.twig', [
-        'requests' => $requests,
-        'currentStatus' => $status,
-        'currentDate' => $date,
-    ]);
-}
+        return $this->render('cleaning_request/index.html.twig', [
+            'requests' => $requests,
+            'currentStatus' => $status,
+            'currentDate' => $date,
+        ]);
+    }
 
     #[Route('/new', name: 'app_request_new')]
     public function new(Request $request, EntityManagerInterface $em, UserRepository $userRepository): Response
@@ -50,13 +47,12 @@ public function index(CleaningRequestRepository $repo, Request $request, \Knp\Co
         if ($form->isSubmitted() && $form->isValid()) {
             $em->persist($cleaningRequest);
             $em->flush();
+            $this->logger->log('Demande créée', $cleaningRequest->getProperty()->getName() . ' — ' . $cleaningRequest->getScheduledDate()->format('d/m/Y'));
             $this->addFlash('success', 'Demande créée.');
             return $this->redirectToRoute('app_requests');
         }
 
-        return $this->render('cleaning_request/new.html.twig', [
-            'form' => $form->createView(),
-        ]);
+        return $this->render('cleaning_request/new.html.twig', ['form' => $form->createView()]);
     }
 
     #[Route('/{id}/validate', name: 'app_request_validate')]
@@ -69,6 +65,7 @@ public function index(CleaningRequestRepository $repo, Request $request, \Knp\Co
         if ($form->isSubmitted() && $form->isValid()) {
             $cleaningRequest->setStatus('VALIDATED');
             $em->flush();
+            $this->logger->log('Demande validée', $cleaningRequest->getProperty()->getName() . ' — ' . $cleaningRequest->getScheduledDate()->format('d/m/Y'));
             $this->addFlash('success', 'Demande validée.');
             return $this->redirectToRoute('app_requests');
         }
@@ -80,24 +77,26 @@ public function index(CleaningRequestRepository $repo, Request $request, \Knp\Co
     }
 
     #[Route('/{id}/complete', name: 'app_request_complete', methods: ['POST'])]
-public function complete(CleaningRequest $cleaningRequest, EntityManagerInterface $em, Request $request): Response
-{
-    if ($this->isCsrfTokenValid('complete' . $cleaningRequest->getId(), $request->request->get('_token'))) {
-        $cleaningRequest->setStatus('COMPLETED');
-        $em->flush();
-        $this->addFlash('success', 'Demande marquée comme terminée.');
+    public function complete(CleaningRequest $cleaningRequest, EntityManagerInterface $em, Request $request): Response
+    {
+        if ($this->isCsrfTokenValid('complete' . $cleaningRequest->getId(), $request->request->get('_token'))) {
+            $cleaningRequest->setStatus('COMPLETED');
+            $em->flush();
+            $this->logger->log('Demande terminée', $cleaningRequest->getProperty()->getName() . ' — ' . $cleaningRequest->getScheduledDate()->format('d/m/Y'));
+            $this->addFlash('success', 'Demande marquée comme terminée.');
+        }
+        return $this->redirectToRoute('app_requests');
     }
-    return $this->redirectToRoute('app_requests');
-}
 
     #[Route('/{id}/cancel', name: 'app_request_cancel', methods: ['POST'])]
-public function cancel(CleaningRequest $cleaningRequest, EntityManagerInterface $em, Request $request): Response
-{
-    if ($this->isCsrfTokenValid('cancel' . $cleaningRequest->getId(), $request->request->get('_token'))) {
-        $cleaningRequest->setStatus('CANCELLED');
-        $em->flush();
-        $this->addFlash('success', 'Demande annulée.');
+    public function cancel(CleaningRequest $cleaningRequest, EntityManagerInterface $em, Request $request): Response
+    {
+        if ($this->isCsrfTokenValid('cancel' . $cleaningRequest->getId(), $request->request->get('_token'))) {
+            $cleaningRequest->setStatus('CANCELLED');
+            $em->flush();
+            $this->logger->log('Demande annulée', $cleaningRequest->getProperty()->getName() . ' — ' . $cleaningRequest->getScheduledDate()->format('d/m/Y'));
+            $this->addFlash('success', 'Demande annulée.');
+        }
+        return $this->redirectToRoute('app_requests');
     }
-    return $this->redirectToRoute('app_requests');
-}
 }
