@@ -1,11 +1,72 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}Admin — DP Services{% endblock %}
-{% block page_title %}Panneau d'administration{% endblock %}
+{% block page_title %}Tableau de bord{% endblock %}
 
 {% block body %}
-    <div class="welcome">
-        <h2>Bienvenue, {{ app.user.firstname }} ! ⚙️</h2>
-        <p>Gérez les utilisateurs, logements et demandes de ménage.</p>
+
+    {# ── KPIs principaux ── #}
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:1rem; margin-bottom:2rem;">
+
+        <div style="background:white; padding:1.5rem; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.1); border-top:4px solid #2563eb;">
+            <div style="font-size:0.75rem; color:#64748b; text-transform:uppercase; letter-spacing:1px;">Propriétaires</div>
+            <div style="font-size:2.5rem; font-weight:bold; color:#1e293b;">{{ totalOwners }}</div>
+        </div>
+
+        <div style="background:white; padding:1.5rem; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.1); border-top:4px solid #059669;">
+            <div style="font-size:0.75rem; color:#64748b; text-transform:uppercase; letter-spacing:1px;">Femmes de ménage</div>
+            <div style="font-size:2.5rem; font-weight:bold; color:#1e293b;">{{ totalCleaners }}</div>
+        </div>
+
+        <div style="background:white; padding:1.5rem; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.1); border-top:4px solid #d97706;">
+            <div style="font-size:0.75rem; color:#64748b; text-transform:uppercase; letter-spacing:1px;">Logements</div>
+            <div style="font-size:2.5rem; font-weight:bold; color:#1e293b;">{{ totalProperties }}</div>
+        </div>
+
+        <div style="background:white; padding:1.5rem; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.1); border-top:4px solid #7c3aed;">
+            <div style="font-size:0.75rem; color:#64748b; text-transform:uppercase; letter-spacing:1px;">Total demandes</div>
+            <div style="font-size:2.5rem; font-weight:bold; color:#1e293b;">{{ totalRequests }}</div>
+        </div>
+
     </div>
+
+    {# ── Statuts des demandes ── #}
+    <div style="background:white; padding:1.5rem; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.1); margin-bottom:2rem;">
+        <h2 style="margin-bottom:1.5rem; color:#1e293b; font-size:1rem; text-transform:uppercase; letter-spacing:1px;">Statuts des demandes</h2>
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:1rem;">
+
+            <div style="text-align:center; padding:1rem; background:#fef3c7; border-radius:8px;">
+                <div style="font-size:1.75rem; font-weight:bold; color:#d97706;">{{ pendingRequests }}</div>
+                <div style="font-size:0.875rem; color:#92400e; margin-top:0.25rem;">⏳ En attente</div>
+            </div>
+
+            <div style="text-align:center; padding:1rem; background:#d1fae5; border-radius:8px;">
+                <div style="font-size:1.75rem; font-weight:bold; color:#059669;">{{ validatedRequests }}</div>
+                <div style="font-size:0.875rem; color:#065f46; margin-top:0.25rem;">✅ Validées</div>
+            </div>
+
+            <div style="text-align:center; padding:1rem; background:#dbeafe; border-radius:8px;">
+                <div style="font-size:1.75rem; font-weight:bold; color:#2563eb;">{{ completedRequests }}</div>
+                <div style="font-size:0.875rem; color:#1e40af; margin-top:0.25rem;">🏁 Terminées</div>
+            </div>
+
+            <div style="text-align:center; padding:1rem; background:#fee2e2; border-radius:8px;">
+                <div style="font-size:1.75rem; font-weight:bold; color:#dc2626;">{{ cancelledRequests }}</div>
+                <div style="font-size:0.875rem; color:#991b1b; margin-top:0.25rem;">❌ Annulées</div>
+            </div>
+
+        </div>
+    </div>
+
+    {# ── Accès rapides ── #}
+    <div style="background:white; padding:1.5rem; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+        <h2 style="margin-bottom:1rem; color:#1e293b; font-size:1rem; text-transform:uppercase; letter-spacing:1px;">Accès rapides</h2>
+        <div style="display:flex; gap:1rem; flex-wrap:wrap;">
+            <a href="{{ path('app_user_new') }}" style="padding:0.75rem 1.5rem; background:#2563eb; color:white; border-radius:6px; text-decoration:none;">+ Utilisateur</a>
+            <a href="{{ path('app_property_new') }}" style="padding:0.75rem 1.5rem; background:#059669; color:white; border-radius:6px; text-decoration:none;">+ Logement</a>
+            <a href="{{ path('app_service_new') }}" style="padding:0.75rem 1.5rem; background:#d97706; color:white; border-radius:6px; text-decoration:none;">+ Prestation</a>
+            <a href="{{ path('app_request_new') }}" style="padding:0.75rem 1.5rem; background:#7c3aed; color:white; border-radius:6px; text-decoration:none;">+ Demande</a>
+        </div>
+    </div>
+
 {% endblock %}
