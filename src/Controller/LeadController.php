@@ -14,6 +14,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Knp\Component\Pager\PaginatorInterface;
+use App\Service\GooglePlacesService;
 
 #[Route('/acquisition/leads')]
 #[IsGranted('ROLE_ADMIN')]
@@ -71,10 +72,70 @@ public function index(LeadRepository $repo, LeadCategoryRepository $categoryRepo
     }
 
     #[Route('/search', name: 'app_lead_search')]
-    public function search(): Response
+    public function search(Request $request, GooglePlacesService $places): Response
     {
-        return $this->render('lead/search.html.twig');
+    $query = $request->query->get('query', '');
+    $city = $request->query->get('city', '');
+    $results = null;
+
+    if ($query && $city) {
+        $results = $places->searchPlaces($query, $city);
     }
+
+    return $this->render('lead/search.html.twig', [
+        'results' => $results,
+        'query' => $query,
+        'city' => $city,
+    ]);
+    }
+
+    #[Route('/import', name: 'app_lead_import', methods: ['POST'])]
+public function import(Request $request, EntityManagerInterface $em, LeadCategoryRepository $categoryRepo, ActivityLogService $logger): Response
+{
+    $name = $request->request->get('name');
+    $address = $request->request->get('address');
+    $rating = $request->request->get('rating');
+    $reviews = $request->request->get('reviews');
+    $city = $request->request->get('city');
+    $query = $request->request->get('query');
+
+    // Cherche la catégorie correspondante
+    $categoryName = match(true) {
+        str_contains($query, 'airbnb') => 'Conciergerie Airbnb',
+        str_contains($query, 'locative') => 'Gestion locative',
+        str_contains($query, 'immobilière') => 'Agence immobilière',
+        default => 'Location saisonnière',
+    };
+
+    $category = $categoryRepo->findOneBy(['name' => $categoryName]);
+
+    $lead = new Lead();
+    $lead->setCompanyName($name);
+    $lead->setCity($city);
+    $lead->setSource('Google Places');
+    $lead->setGoogleRating($rating ? (float) $rating : null);
+    $lead->setGoogleReviews($reviews ? (int) $reviews : null);
+    $lead->setCategory($category);
+
+    // Calcul score automatique
+    $score = 0;
+    if ($category) $score += $category->getScoreBonus();
+    if ($rating >= 4.5) $score += 10;
+    if ($reviews >= 100) $score += 20;
+    elseif ($reviews >= 50) $score += 10;
+    $lead->setScore($score);
+
+    $em->persist($lead);
+    $em->flush();
+
+    $logger->log('Lead importé', $name . ' — ' . $city);
+    $this->addFlash('success', $name . ' importé avec succès. Score : ' . $score);
+
+    return $this->redirectToRoute('app_lead_search', [
+        'query' => $query,
+        'city' => $city,
+    ]);
+}
 
     #[Route('/{id}', name: 'app_lead_show')]
     public function show(Lead $lead): Response
