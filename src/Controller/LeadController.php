@@ -159,4 +159,14 @@ public function deleteActivity(Lead $lead, int $activityId, EntityManagerInterfa
     }
     return $this->redirectToRoute('app_lead_show', ['id' => $lead->getId()]);
 }
+
+#[Route('/{id}/notes', name: 'app_lead_notes', methods: ['POST'])]
+public function updateNotes(Lead $lead, Request $request, EntityManagerInterface $em): Response
+{
+    $notes = $request->request->get('notes');
+    $lead->setNotes($notes);
+    $em->flush();
+    $this->addFlash('success', 'Notes mises à jour.');
+    return $this->redirectToRoute('app_lead_show', ['id' => $lead->getId()]);
+}
 }

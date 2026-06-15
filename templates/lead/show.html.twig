@@ -72,12 +72,15 @@
                     </div>
                 </div>
 
-                {% if lead.notes %}
                 <div style="margin-top:1rem; padding-top:1rem; border-top:1px solid #e2e8f0;">
-                    <p style="font-size:0.8rem; color:#94a3b8; text-transform:uppercase; margin-bottom:0.5rem;">Notes</p>
-                    <p style="color:#475569; font-style:italic;">{{ lead.notes }}</p>
-                </div>
-                {% endif %}
+    <p style="font-size:0.8rem; color:#94a3b8; text-transform:uppercase; margin-bottom:0.5rem;">Notes</p>
+    <form method="post" action="{{ path('app_lead_notes', {id: lead.id}) }}">
+        <textarea name="notes" rows="4" style="width:100%; padding:0.75rem; border:1px solid #e2e8f0; border-radius:6px; font-size:0.875rem; color:#475569; resize:vertical;">{{ lead.notes }}</textarea>
+        <button type="submit" style="margin-top:0.5rem; padding:0.5rem 1rem; background:#2563eb; color:white; border:none; border-radius:4px; cursor:pointer; font-size:0.875rem;">
+            💾 Sauvegarder les notes
+        </button>
+    </form>
+</div>
             </div>
         </div>
 
