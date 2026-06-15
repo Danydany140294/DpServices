@@ -1,0 +1,28 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier prospect — DP Services{% endblock %}
+{% block page_title %}Modifier {{ lead.companyName }}{% endblock %}
+
+{% block body %}
+    <div class="welcome">
+        {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+            {{ form_row(form.companyName) }}
+            {{ form_row(form.contactName) }}
+            {{ form_row(form.phone) }}
+            {{ form_row(form.email) }}
+            {{ form_row(form.city) }}
+            {{ form_row(form.website) }}
+            {{ form_row(form.googleRating) }}
+            {{ form_row(form.googleReviews) }}
+            {{ form_row(form.hasAirbnb) }}
+            {{ form_row(form.category) }}
+            {{ form_row(form.status) }}
+            {{ form_row(form.notes) }}
+            {{ form_row(form.nextFollowUp) }}
+            <button type="submit" style="margin-top:1rem; padding:0.75rem 2rem; background:#2563eb; color:white; border:none; border-radius:4px; cursor:pointer;">
+                Sauvegarder
+            </button>
+            <a href="{{ path('app_lead_show', {id: lead.id}) }}" style="margin-left:1rem; color:#64748b;">Annuler</a>
+        {{ form_end(form) }}
+    </div>
+{% endblock %}

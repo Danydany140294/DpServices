@@ -1,0 +1,154 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Prospects — DP Services{% endblock %}
+{% block page_title %}Prospects{% endblock %}
+
+{% block body %}
+
+    {# ── Alertes ── #}
+    {% set toFollowUp = leads|filter(l => l.nextFollowUp is not null and l.nextFollowUp <= date()) %}
+    {% if toFollowUp|length > 0 %}
+        <div style="background:#fef3c7; border:1px solid #fcd34d; padding:0.75rem 1.5rem; border-radius:6px; margin-bottom:1rem;">
+            🔔 <strong>{{ toFollowUp|length }} prospect(s) à relancer aujourd'hui</strong>
+        </div>
+    {% endif %}
+
+    {# ── Filtres ── #}
+    <div style="background:white; padding:1rem 1.5rem; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.1); margin-bottom:1rem;">
+        <form method="get" style="display:flex; gap:1rem; align-items:center; flex-wrap:wrap;">
+            <select name="status" style="padding:0.5rem; border:1px solid #ddd; border-radius:4px;">
+                <option value="">Tous les statuts</option>
+                <option value="NEW" {{ currentStatus == 'NEW' ? 'selected' : '' }}>🔵 Nouveau</option>
+                <option value="CONTACTED" {{ currentStatus == 'CONTACTED' ? 'selected' : '' }}>🟡 Contacté</option>
+                <option value="DISCUSSION" {{ currentStatus == 'DISCUSSION' ? 'selected' : '' }}>🟠 En discussion</option>
+                <option value="QUOTE_SENT" {{ currentStatus == 'QUOTE_SENT' ? 'selected' : '' }}>🟣 Devis envoyé</option>
+                <option value="CLIENT" {{ currentStatus == 'CLIENT' ? 'selected' : '' }}>🟢 Client</option>
+                <option value="LOST" {{ currentStatus == 'LOST' ? 'selected' : '' }}>🔴 Perdu</option>
+                <option value="TO_FOLLOW_UP" {{ currentStatus == 'TO_FOLLOW_UP' ? 'selected' : '' }}>⚪ À relancer</option>
+            </select>
+
+            <select name="category" style="padding:0.5rem; border:1px solid #ddd; border-radius:4px;">
+                <option value="">Toutes les catégories</option>
+                {% for cat in categories %}
+                    <option value="{{ cat.id }}" {{ currentCategory == cat.id|string ? 'selected' : '' }}>{{ cat.name }}</option>
+                {% endfor %}
+            </select>
+
+            <input type="text" name="city" value="{{ currentCity }}" placeholder="Ville..." style="padding:0.5rem; border:1px solid #ddd; border-radius:4px;">
+
+            <button type="submit" style="padding:0.5rem 1rem; background:#2563eb; color:white; border:none; border-radius:4px; cursor:pointer;">Filtrer</button>
+            <a href="{{ path('app_leads') }}" style="padding:0.5rem 1rem; background:#64748b; color:white; border-radius:4px; text-decoration:none;">Réinitialiser</a>
+
+            {# ── Légende ── #}
+            <div style="position:relative; margin-left:auto;">
+                <button type="button" onclick="document.getElementById('legend').classList.toggle('hidden')" 
+                    style="padding:0.5rem 1rem; background:#f1f5f9; border:1px solid #ddd; border-radius:4px; cursor:pointer;">
+                    ? Aide
+                </button>
+                <div id="legend" class="hidden" style="position:absolute; right:0; top:2.5rem; background:white; border:1px solid #ddd; border-radius:8px; padding:1.5rem; width:320px; z-index:100; box-shadow:0 4px 12px rgba(0,0,0,0.15);">
+                    <h3 style="margin-bottom:1rem; color:#1e293b;">📊 Comprendre le score</h3>
+                    <p style="font-size:0.8rem; color:#64748b; margin-bottom:1rem;">Plus le score est élevé, plus ce prospect a de chances de devenir client.</p>
+                    <div style="margin-bottom:0.5rem; font-size:0.8rem;">🔴 <strong>80-100</strong> — Priorité absolue → Appeler aujourd'hui</div>
+                    <div style="margin-bottom:0.5rem; font-size:0.8rem;">🟠 <strong>50-79</strong> — Important → Appeler cette semaine</div>
+                    <div style="margin-bottom:0.5rem; font-size:0.8rem;">🟡 <strong>20-49</strong> — Secondaire → Email suffira</div>
+                    <div style="margin-bottom:1rem; font-size:0.8rem;">⚪ <strong>0-19</strong> — Faible potentiel</div>
+                    <h3 style="margin-bottom:0.5rem; color:#1e293b;">📋 Statuts</h3>
+                    <div style="font-size:0.8rem; line-height:1.8;">
+                        🔵 Nouveau · 🟡 Contacté · 🟠 En discussion<br>
+                        🟣 Devis envoyé · 🟢 Client · 🔴 Perdu · ⚪ À relancer
+                    </div>
+                    <h3 style="margin-top:1rem; margin-bottom:0.5rem; color:#1e293b;">🎯 Barème score</h3>
+                    <div style="font-size:0.8rem; line-height:1.8;">
+                        Conciergerie Airbnb +50 · Gestion locative +30<br>
+                        Agence immo +20 · >100 avis +20 · Site web +10<br>
+                        Note >4.5 +10 · 50-100 avis +10 · Ville prioritaire +10
+                    </div>
+                    <button type="button" onclick="document.getElementById('legend').classList.toggle('hidden')"
+                        style="margin-top:1rem; padding:0.25rem 1rem; background:#f1f5f9; border:1px solid #ddd; border-radius:4px; cursor:pointer; width:100%;">
+                        ✖ Fermer
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    {# ── Boutons actions ── #}
+    <div style="margin-bottom:1rem; display:flex; gap:0.5rem;">
+        <a href="{{ path('app_lead_new') }}" style="padding:0.75rem 1.5rem; background:#2563eb; color:white; border-radius:4px; text-decoration:none;">+ Nouveau prospect</a>
+        <a href="{{ path('app_lead_search') }}" style="padding:0.75rem 1.5rem; background:#059669; color:white; border-radius:4px; text-decoration:none;">🔍 Rechercher</a>
+    </div>
+
+    {# ── Tableau ── #}
+    <table style="width:100%; background:white; border-radius:8px; border-collapse:collapse; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+        <thead>
+            <tr style="background:#f1f5f9;">
+                <th style="padding:1rem; text-align:left;">Entreprise</th>
+                <th style="padding:1rem; text-align:left;">Ville</th>
+                <th style="padding:1rem; text-align:left;">Catégorie</th>
+                <th style="padding:1rem; text-align:left;">Score</th>
+                <th style="padding:1rem; text-align:left;">Statut</th>
+                <th style="padding:1rem; text-align:left;">Relance</th>
+                <th style="padding:1rem; text-align:left;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for lead in leads %}
+            <tr style="border-top:1px solid #e2e8f0;">
+                <td style="padding:1rem;">
+                    <div style="font-weight:500;">{{ lead.companyName }}</div>
+                    {% if lead.contactName %}<div style="font-size:0.8rem; color:#64748b;">{{ lead.contactName }}</div>{% endif %}
+                </td>
+                <td style="padding:1rem; color:#475569;">{{ lead.city }}</td>
+                <td style="padding:1rem; color:#475569;">{{ lead.category ? lead.category.name : '—' }}</td>
+                <td style="padding:1rem;">
+                    {% set score = lead.score %}
+                    {% if score >= 80 %}
+                        <span style="background:#fee2e2; color:#dc2626; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem; font-weight:bold;">🔴 {{ score }}</span>
+                    {% elseif score >= 50 %}
+                        <span style="background:#ffedd5; color:#ea580c; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem; font-weight:bold;">🟠 {{ score }}</span>
+                    {% elseif score >= 20 %}
+                        <span style="background:#fef3c7; color:#d97706; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem; font-weight:bold;">🟡 {{ score }}</span>
+                    {% else %}
+                        <span style="background:#f1f5f9; color:#64748b; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem; font-weight:bold;">⚪ {{ score }}</span>
+                    {% endif %}
+                </td>
+                <td style="padding:1rem;">
+                    {% if lead.status == 'NEW' %}
+                        <span style="background:#dbeafe; color:#2563eb; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem;">🔵 Nouveau</span>
+                    {% elseif lead.status == 'CONTACTED' %}
+                        <span style="background:#fef3c7; color:#d97706; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem;">🟡 Contacté</span>
+                    {% elseif lead.status == 'DISCUSSION' %}
+                        <span style="background:#ffedd5; color:#ea580c; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem;">🟠 En discussion</span>
+                    {% elseif lead.status == 'QUOTE_SENT' %}
+                        <span style="background:#f3e8ff; color:#7c3aed; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem;">🟣 Devis envoyé</span>
+                    {% elseif lead.status == 'CLIENT' %}
+                        <span style="background:#d1fae5; color:#059669; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem;">🟢 Client</span>
+                    {% elseif lead.status == 'LOST' %}
+                        <span style="background:#fee2e2; color:#dc2626; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem;">🔴 Perdu</span>
+                    {% elseif lead.status == 'TO_FOLLOW_UP' %}
+                        <span style="background:#f1f5f9; color:#64748b; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem;">⚪ À relancer</span>
+                    {% endif %}
+                </td>
+                <td style="padding:1rem; font-size:0.875rem; color:{{ lead.nextFollowUp is not null and lead.nextFollowUp <= date() ? '#dc2626' : '#475569' }};">
+                    {{ lead.nextFollowUp ? lead.nextFollowUp|date('d/m/Y') : '—' }}
+                </td>
+                <td style="padding:1rem;">
+                    <a href="{{ path('app_lead_show', {id: lead.id}) }}" style="color:#2563eb; margin-right:0.5rem;">Voir</a>
+                    <a href="{{ path('app_lead_edit', {id: lead.id}) }}" style="color:#d97706;">Modifier</a>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="7" style="padding:2rem; text-align:center; color:#94a3b8;">
+                    Aucun prospect. <a href="{{ path('app_lead_search') }}" style="color:#2563eb;">Lancer une recherche</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <style>
+        .hidden { display: none; }
+    </style>
+
+{% endblock %}

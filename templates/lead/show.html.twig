@@ -1,0 +1,117 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ lead.companyName }} — DP Services{% endblock %}
+{% block page_title %}{{ lead.companyName }}{% endblock %}
+
+{% block body %}
+
+    <div style="display:grid; grid-template-columns: 2fr 1fr; gap:1.5rem;">
+
+        {# ── Fiche principale ── #}
+        <div>
+            <div style="background:white; border-radius:8px; padding:1.5rem; box-shadow:0 1px 3px rgba(0,0,0,0.1); margin-bottom:1.5rem;">
+                <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:1rem;">
+                    <div>
+                        <h2 style="color:#1e293b;">{{ lead.companyName }}</h2>
+                        {% if lead.contactName %}<p style="color:#64748b;">👤 {{ lead.contactName }}</p>{% endif %}
+                    </div>
+                    <div style="text-align:right;">
+                        {% set score = lead.score %}
+                        {% if score >= 80 %}
+                            <span style="background:#fee2e2; color:#dc2626; padding:0.5rem 1rem; border-radius:6px; font-size:1.1rem; font-weight:bold;">🔴 {{ score }}/100</span>
+                        {% elseif score >= 50 %}
+                            <span style="background:#ffedd5; color:#ea580c; padding:0.5rem 1rem; border-radius:6px; font-size:1.1rem; font-weight:bold;">🟠 {{ score }}/100</span>
+                        {% elseif score >= 20 %}
+                            <span style="background:#fef3c7; color:#d97706; padding:0.5rem 1rem; border-radius:6px; font-size:1.1rem; font-weight:bold;">🟡 {{ score }}/100</span>
+                        {% else %}
+                            <span style="background:#f1f5f9; color:#64748b; padding:0.5rem 1rem; border-radius:6px; font-size:1.1rem; font-weight:bold;">⚪ {{ score }}/100</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
+                    <div>
+                        <p style="font-size:0.8rem; color:#94a3b8; text-transform:uppercase;">Ville</p>
+                        <p>📍 {{ lead.city }}</p>
+                    </div>
+                    <div>
+                        <p style="font-size:0.8rem; color:#94a3b8; text-transform:uppercase;">Catégorie</p>
+                        <p>{{ lead.category ? lead.category.name : '—' }}</p>
+                    </div>
+                    {% if lead.phone %}
+                    <div>
+                        <p style="font-size:0.8rem; color:#94a3b8; text-transform:uppercase;">Téléphone</p>
+                        <p>📞 {{ lead.phone }}</p>
+                    </div>
+                    {% endif %}
+                    {% if lead.email %}
+                    <div>
+                        <p style="font-size:0.8rem; color:#94a3b8; text-transform:uppercase;">Email</p>
+                        <p>✉️ {{ lead.email }}</p>
+                    </div>
+                    {% endif %}
+                    {% if lead.website %}
+                    <div>
+                        <p style="font-size:0.8rem; color:#94a3b8; text-transform:uppercase;">Site web</p>
+                        <p>🌐 <a href="{{ lead.website }}" target="_blank" style="color:#2563eb;">{{ lead.website }}</a></p>
+                    </div>
+                    {% endif %}
+                    {% if lead.googleRating %}
+                    <div>
+                        <p style="font-size:0.8rem; color:#94a3b8; text-transform:uppercase;">Google</p>
+                        <p>⭐ {{ lead.googleRating }}/5 ({{ lead.googleReviews }} avis)</p>
+                    </div>
+                    {% endif %}
+                    <div>
+                        <p style="font-size:0.8rem; color:#94a3b8; text-transform:uppercase;">Airbnb</p>
+                        <p>{{ lead.hasAirbnb ? '✅ Présent sur Airbnb' : '❌ Pas sur Airbnb' }}</p>
+                    </div>
+                    <div>
+                        <p style="font-size:0.8rem; color:#94a3b8; text-transform:uppercase;">Créé le</p>
+                        <p>{{ lead.createdAt|date('d/m/Y') }}</p>
+                    </div>
+                </div>
+
+                {% if lead.notes %}
+                <div style="margin-top:1rem; padding-top:1rem; border-top:1px solid #e2e8f0;">
+                    <p style="font-size:0.8rem; color:#94a3b8; text-transform:uppercase; margin-bottom:0.5rem;">Notes</p>
+                    <p style="color:#475569; font-style:italic;">{{ lead.notes }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {# ── Panneau latéral ── #}
+        <div>
+            {# Statut #}
+            <div style="background:white; border-radius:8px; padding:1.5rem; box-shadow:0 1px 3px rgba(0,0,0,0.1); margin-bottom:1rem;">
+                <h3 style="margin-bottom:1rem; color:#1e293b;">Statut actuel</h3>
+                {% if lead.status == 'NEW' %}<span style="background:#dbeafe; color:#2563eb; padding:0.5rem 1rem; border-radius:6px;">🔵 Nouveau</span>
+                {% elseif lead.status == 'CONTACTED' %}<span style="background:#fef3c7; color:#d97706; padding:0.5rem 1rem; border-radius:6px;">🟡 Contacté</span>
+                {% elseif lead.status == 'DISCUSSION' %}<span style="background:#ffedd5; color:#ea580c; padding:0.5rem 1rem; border-radius:6px;">🟠 En discussion</span>
+                {% elseif lead.status == 'QUOTE_SENT' %}<span style="background:#f3e8ff; color:#7c3aed; padding:0.5rem 1rem; border-radius:6px;">🟣 Devis envoyé</span>
+                {% elseif lead.status == 'CLIENT' %}<span style="background:#d1fae5; color:#059669; padding:0.5rem 1rem; border-radius:6px;">🟢 Client</span>
+                {% elseif lead.status == 'LOST' %}<span style="background:#fee2e2; color:#dc2626; padding:0.5rem 1rem; border-radius:6px;">🔴 Perdu</span>
+                {% elseif lead.status == 'TO_FOLLOW_UP' %}<span style="background:#f1f5f9; color:#64748b; padding:0.5rem 1rem; border-radius:6px;">⚪ À relancer</span>
+                {% endif %}
+
+                {% if lead.nextFollowUp %}
+                <p style="margin-top:1rem; font-size:0.875rem; color:{{ lead.nextFollowUp <= date() ? '#dc2626' : '#64748b' }};">
+                    🔔 Relance : {{ lead.nextFollowUp|date('d/m/Y') }}
+                </p>
+                {% endif %}
+            </div>
+
+            {# Actions #}
+            <div style="background:white; border-radius:8px; padding:1.5rem; box-shadow:0 1px 3px rgba(0,0,0,0.1); margin-bottom:1rem;">
+                <h3 style="margin-bottom:1rem; color:#1e293b;">Actions</h3>
+                <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                    <a href="{{ path('app_lead_edit', {id: lead.id}) }}" style="padding:0.75rem; background:#2563eb; color:white; border-radius:6px; text-decoration:none; text-align:center;">✏️ Modifier</a>
+                    <a href="{{ path('app_leads') }}" style="padding:0.75rem; background:#f1f5f9; color:#475569; border-radius:6px; text-decoration:none; text-align:center;">← Retour liste</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+{% endblock %}
