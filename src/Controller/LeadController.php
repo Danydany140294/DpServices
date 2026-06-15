@@ -15,6 +15,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Knp\Component\Pager\PaginatorInterface;
 use App\Service\GooglePlacesService;
+use App\Service\ScoringService;
 
 
 #[Route('/acquisition/leads')]
@@ -145,7 +146,7 @@ private function findLeadByName(array $leads, string $normalized): ?Lead
 }
 
     #[Route('/import', name: 'app_lead_import', methods: ['POST'])]
-public function import(Request $request, EntityManagerInterface $em, LeadCategoryRepository $categoryRepo, ActivityLogService $logger): Response
+public function import(Request $request, EntityManagerInterface $em, LeadCategoryRepository $categoryRepo, ActivityLogService $logger,ScoringService $scoring): Response
 {
     $name = $request->request->get('name');
     $address = $request->request->get('address');
@@ -177,19 +178,13 @@ public function import(Request $request, EntityManagerInterface $em, LeadCategor
     $lead->setCategory($category);
 
     // Calcul score automatique
-    $score = 0;
-    if ($category) $score += $category->getScoreBonus();
-    if ($rating >= 4.5) $score += 10;
-    if ($reviews >= 100) $score += 20;
-    elseif ($reviews >= 50) $score += 10;
-    $lead->setScore($score);
+    $lead->setScore($scoring->calculate($lead));
 
     $em->persist($lead);
     $em->flush();
 
     $logger->log('Lead importé', $name . ' — ' . $city);
-    $this->addFlash('success', $name . ' importé avec succès. Score : ' . $score);
-
+    $this->addFlash('success', $name . ' importé avec succès. Score : ' . $lead->getScore());
     return $this->redirectToRoute('app_lead_search', [
         'query' => $query,
         'city' => $city,

@@ -26,6 +26,11 @@
                         {% else %}
                             <span style="background:#f1f5f9; color:#64748b; padding:0.5rem 1rem; border-radius:6px; font-size:1.1rem; font-weight:bold;">⚪ {{ score }}/100</span>
                         {% endif %}
+                        {# Barre de progression #}
+{% set barColor = score >= 80 ? '#dc2626' : (score >= 50 ? '#ea580c' : (score >= 20 ? '#d97706' : '#94a3b8')) %}
+<div style="margin-top:0.5rem; background:#e2e8f0; border-radius:4px; height:6px; width:120px; margin-left:auto;">
+    <div style="width:{{ score }}%; background:{{ barColor }}; height:6px; border-radius:4px;"></div>
+</div>
                     </div>
                 </div>
 
