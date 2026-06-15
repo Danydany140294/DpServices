@@ -30,7 +30,7 @@
             <select name="category" style="padding:0.5rem; border:1px solid #ddd; border-radius:4px;">
                 <option value="">Toutes les catégories</option>
                 {% for cat in categories %}
-                    <option value="{{ cat.id }}" {{ currentCategory == cat.id|string ? 'selected' : '' }}>{{ cat.name }}</option>
+                    <option value="{{ cat.id }}" {{ currentCategory == cat.id ~ '' ? 'selected' : '' }}>{{ cat.name }}</option>
                 {% endfor %}
             </select>
 
