@@ -6,35 +6,68 @@
 {% block body %}
 
     <div style="background:white; border-radius:8px; padding:1.5rem; box-shadow:0 1px 3px rgba(0,0,0,0.1); margin-bottom:1.5rem;">
-        <form method="get" style="display:flex; gap:1rem; align-items:flex-end; flex-wrap:wrap;">
+        <form method="get" id="search-form" style="display:flex; gap:1rem; align-items:flex-end; flex-wrap:wrap;">
+
             <div>
                 <label style="display:block; font-size:0.875rem; color:#64748b; margin-bottom:0.25rem;">Type de recherche</label>
                 <select name="query" style="padding:0.5rem; border:1px solid #ddd; border-radius:4px; min-width:220px;">
-    <optgroup label="🏠 Immobilier">
-        <option value="conciergerie airbnb" {{ query == 'conciergerie airbnb' ? 'selected' : '' }}>🏠 Conciergerie Airbnb</option>
-        <option value="gestion locative" {{ query == 'gestion locative' ? 'selected' : '' }}>🏢 Gestion locative</option>
-        <option value="agence immobilière" {{ query == 'agence immobilière' ? 'selected' : '' }}>🏛️ Agence immobilière</option>
-        <option value="location saisonnière" {{ query == 'location saisonnière' ? 'selected' : '' }}>🌴 Location saisonnière</option>
-        <option value="hôtellerie" {{ query == 'hôtellerie' ? 'selected' : '' }}>🏨 Hôtellerie</option>
-        <option value="services immobiliers" {{ query == 'services immobiliers' ? 'selected' : '' }}>🔑 Services immobiliers</option>
-    </optgroup>
-    <optgroup label="🧹 Ménage">
-        <option value="ménage professionnel" {{ query == 'ménage professionnel' ? 'selected' : '' }}>🏢 Ménage professionnel</option>
-        <option value="ménage particulier" {{ query == 'ménage particulier' ? 'selected' : '' }}>🏠 Ménage particulier</option>
-    </optgroup>
-</select>
+                    <optgroup label="🏠 Immobilier">
+                        <option value="conciergerie airbnb" {{ query == 'conciergerie airbnb' ? 'selected' : '' }}>🏠 Conciergerie Airbnb</option>
+                        <option value="gestion locative" {{ query == 'gestion locative' ? 'selected' : '' }}>🏢 Gestion locative</option>
+                        <option value="agence immobilière" {{ query == 'agence immobilière' ? 'selected' : '' }}>🏛️ Agence immobilière</option>
+                        <option value="location saisonnière" {{ query == 'location saisonnière' ? 'selected' : '' }}>🌴 Location saisonnière</option>
+                        <option value="hôtellerie" {{ query == 'hôtellerie' ? 'selected' : '' }}>🏨 Hôtellerie</option>
+                        <option value="services immobiliers" {{ query == 'services immobiliers' ? 'selected' : '' }}>🔑 Services immobiliers</option>
+                    </optgroup>
+                    <optgroup label="🧹 Ménage">
+                        <option value="ménage professionnel" {{ query == 'ménage professionnel' ? 'selected' : '' }}>🏢 Ménage professionnel</option>
+                        <option value="ménage particulier" {{ query == 'ménage particulier' ? 'selected' : '' }}>🏠 Ménage particulier</option>
+                    </optgroup>
+                </select>
             </div>
+
             <div>
                 <label style="display:block; font-size:0.875rem; color:#64748b; margin-bottom:0.25rem;">Ville</label>
                 <input type="text" name="city" value="{{ city }}" placeholder="Ex: Montpellier"
                     style="padding:0.5rem; border:1px solid #ddd; border-radius:4px; min-width:180px;">
             </div>
+
+            {# <div>
+                <label style="display:block; font-size:0.875rem; color:#64748b; margin-bottom:0.25rem;">Rayon</label>
+                <select name="radius" style="padding:0.5rem; border:1px solid #ddd; border-radius:4px;">
+                    <option value="5" {{ radius == '5' ? 'selected' : '' }}>5 km</option>
+                    <option value="10" {{ radius == '10' ? 'selected' : '' }}>10 km</option>
+                    <option value="20" {{ radius == '20' ? 'selected' : '' }}>20 km</option>
+                    <option value="50" {{ radius == '50' ? 'selected' : '' }}>50 km</option>
+                </select>
+            </div> #}
+
             <button type="submit" style="padding:0.5rem 1.5rem; background:#2563eb; color:white; border:none; border-radius:4px; cursor:pointer;">
                 🔍 Rechercher
             </button>
+            <a href="{{ path('app_lead_search') }}" style="padding:0.5rem 1rem; background:#f1f5f9; color:#475569; border-radius:4px; text-decoration:none;">
+                Réinitialiser
+            </a>
             <a href="{{ path('app_leads') }}" style="padding:0.5rem 1rem; background:#f1f5f9; color:#475569; border-radius:4px; text-decoration:none;">
                 ← Retour liste
             </a>
+
+            {# ── Filtres J25 — dans le même form ── #}
+            <div style="width:100%; margin-top:1rem; padding-top:1rem; border-top:1px solid #e2e8f0; display:flex; gap:1.5rem; flex-wrap:wrap;">
+                <label style="display:flex; align-items:center; gap:0.5rem; font-size:0.875rem; cursor:pointer;">
+                    <input type="checkbox" name="ignore_known" value="1" {{ ignoreKnown ? 'checked' : '' }} style="width:1rem; height:1rem;">
+                    Ignorer les prospects déjà connus
+                </label>
+                <label style="display:flex; align-items:center; gap:0.5rem; font-size:0.875rem; cursor:pointer;">
+                    <input type="checkbox" name="ignore_clients" value="1" {{ ignoreClients ? 'checked' : '' }} style="width:1rem; height:1rem;">
+                    Ignorer les clients existants
+                </label>
+                <label style="display:flex; align-items:center; gap:0.5rem; font-size:0.875rem; cursor:pointer;">
+                    <input type="checkbox" name="ignore_lost" value="1" {{ ignoreLost ? 'checked' : '' }} style="width:1rem; height:1rem;">
+                    Ignorer les prospects perdus
+                </label>
+            </div>
+
         </form>
     </div>
 
@@ -44,8 +77,13 @@
                 Aucun résultat pour "{{ query }}" à {{ city }}.
             </div>
         {% else %}
-            <div style="margin-bottom:1rem; color:#64748b;">
-                {{ results|length }} résultat(s) trouvé(s) pour "{{ query }}" à {{ city }}
+            <div style="margin-bottom:1rem; display:flex; justify-content:space-between; align-items:center;">
+                <span style="color:#64748b;">{{ results|length }} résultat(s) trouvé(s) pour "{{ query }}" à {{ city }}</span>
+                {% if skipped > 0 %}
+                    <span style="background:#fef3c7; color:#d97706; padding:0.25rem 0.75rem; border-radius:4px; font-size:0.875rem;">
+                        ⚠️ {{ skipped }} déjà connu(s) ignoré(s)
+                    </span>
+                {% endif %}
             </div>
 
             <div style="display:grid; gap:1rem;">
@@ -61,7 +99,13 @@
                                 {% if place.reviews %}({{ place.reviews }} avis){% endif %}
                             </p>
                         {% endif %}
+                        {% if place.duplicate %}
+                            <span style="background:#fef3c7; color:#d97706; padding:0.2rem 0.5rem; border-radius:4px; font-size:0.75rem;">
+                                ⚠️ Déjà dans la base
+                            </span>
+                        {% endif %}
                     </div>
+                    {% if not place.duplicate %}
                     <form method="post" action="{{ path('app_lead_import') }}">
                         <input type="hidden" name="name" value="{{ place.name }}">
                         <input type="hidden" name="address" value="{{ place.address }}">
@@ -74,6 +118,11 @@
                             + Importer
                         </button>
                     </form>
+                    {% else %}
+                    <span style="padding:0.5rem 1rem; background:#f1f5f9; color:#94a3b8; border-radius:4px; font-size:0.875rem;">
+                        Déjà importé
+                    </span>
+                    {% endif %}
                 </div>
                 {% endfor %}
             </div>

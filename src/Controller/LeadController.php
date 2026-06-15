@@ -16,6 +16,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Knp\Component\Pager\PaginatorInterface;
 use App\Service\GooglePlacesService;
 
+
 #[Route('/acquisition/leads')]
 #[IsGranted('ROLE_ADMIN')]
 class LeadController extends AbstractController
@@ -72,22 +73,76 @@ public function index(LeadRepository $repo, LeadCategoryRepository $categoryRepo
     }
 
     #[Route('/search', name: 'app_lead_search')]
-    public function search(Request $request, GooglePlacesService $places): Response
-    {
-    $query = $request->query->get('query', '');
-    $city = $request->query->get('city', '');
-    $results = null;
+public function search(Request $request, GooglePlacesService $places, LeadRepository $repo): Response
+{
+    $query       = $request->query->get('query', '');
+    $city        = $request->query->get('city', '');
+    $ignoreKnown    = $request->query->getBoolean('ignore_known');
+    $ignoreClients  = $request->query->getBoolean('ignore_clients');
+    $ignoreLost     = $request->query->getBoolean('ignore_lost');
+    $results     = null;
+    $skipped     = 0;
 
     if ($query && $city) {
-        $results = $places->searchPlaces($query, $city);
+        $raw = $places->searchPlaces($query, $city);
+
+        // J27 — Récupère tous les noms existants en base (normalisés)
+        $existingLeads = $repo->findAll();
+        $existingNames = array_map(
+            fn(Lead $l) => $this->normalizeName($l->getCompanyName()),
+            $existingLeads
+        );
+
+        $results = [];
+        foreach ($raw as $place) {
+            $normalized = $this->normalizeName($place['name']);
+            $isDuplicate = in_array($normalized, $existingNames);
+
+            // J27 — Marque le doublon
+            $place['duplicate'] = $isDuplicate;
+
+            // J25 — Filtres
+            if ($isDuplicate) {
+                $lead = $this->findLeadByName($existingLeads, $normalized);
+                $status = $lead?->getStatus();
+
+                $skip = false;
+                if ($ignoreKnown)   $skip = true;
+                if ($ignoreClients  && $status === 'CLIENT')   $skip = true;
+                if ($ignoreLost     && $status === 'LOST')     $skip = true;
+
+                if ($skip) { $skipped++; continue; }
+            }
+
+            $results[] = $place;
+        }
     }
 
     return $this->render('lead/search.html.twig', [
-        'results' => $results,
-        'query' => $query,
-        'city' => $city,
+        'results'        => $results,
+        'query'          => $query,
+        'city'           => $city,
+        'skipped'        => $skipped,
+        'ignoreKnown'    => $ignoreKnown,
+        'ignoreClients'  => $ignoreClients,
+        'ignoreLost'     => $ignoreLost,
     ]);
+}
+
+private function normalizeName(string $name): string
+{
+    return strtolower(trim(preg_replace('/\s+/', ' ', $name)));
+}
+
+private function findLeadByName(array $leads, string $normalized): ?Lead
+{
+    foreach ($leads as $lead) {
+        if ($this->normalizeName($lead->getCompanyName()) === $normalized) {
+            return $lead;
+        }
     }
+    return null;
+}
 
     #[Route('/import', name: 'app_lead_import', methods: ['POST'])]
 public function import(Request $request, EntityManagerInterface $em, LeadCategoryRepository $categoryRepo, ActivityLogService $logger): Response
