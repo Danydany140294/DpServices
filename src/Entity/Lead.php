@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\LeadRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -62,12 +64,19 @@ class Lead
     #[ORM\ManyToOne(inversedBy: 'leads')]
     private ?LeadCategory $category = null;
 
+    /**
+     * @var Collection<int, LeadActivity>
+     */
+    #[ORM\OneToMany(targetEntity: LeadActivity::class, mappedBy: 'lead', orphanRemoval: true)]
+    private Collection $leadActivities;
+
     public function __construct()
 {
     $this->createdAt = new \DateTimeImmutable();
     $this->score = 0;
     $this->status = 'NEW';
     $this->hasAirbnb = false;
+    $this->leadActivities = new ArrayCollection();
 }
 
     public function getId(): ?int
@@ -263,6 +272,36 @@ class Lead
     public function setCategory(?LeadCategory $category): static
     {
         $this->category = $category;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, LeadActivity>
+     */
+    public function getLeadActivities(): Collection
+    {
+        return $this->leadActivities;
+    }
+
+    public function addLeadActivity(LeadActivity $leadActivity): static
+    {
+        if (!$this->leadActivities->contains($leadActivity)) {
+            $this->leadActivities->add($leadActivity);
+            $leadActivity->setLead($this);
+        }
+
+        return $this;
+    }
+
+    public function removeLeadActivity(LeadActivity $leadActivity): static
+    {
+        if ($this->leadActivities->removeElement($leadActivity)) {
+            // set the owning side to null (unless already changed)
+            if ($leadActivity->getLead() === $this) {
+                $leadActivity->setLead(null);
+            }
+        }
 
         return $this;
     }
