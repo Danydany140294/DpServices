@@ -65,7 +65,7 @@ class LeadRepository extends ServiceEntityRepository
     return $qb->getQuery()->getResult();
 }
 
-public function findWithFiltersQuery(?string $status, ?string $city, ?string $categoryId): \Doctrine\ORM\Query
+public function findWithFiltersQuery(?string $status, ?string $city, ?string $categoryId, ?string $scoreMin = null, ?string $followUp = null): \Doctrine\ORM\Query
 {
     $qb = $this->createQueryBuilder('l')
         ->leftJoin('l.category', 'c')
@@ -75,15 +75,21 @@ public function findWithFiltersQuery(?string $status, ?string $city, ?string $ca
         $qb->andWhere('l.status = :status')
            ->setParameter('status', $status);
     }
-
     if ($city) {
         $qb->andWhere('l.city LIKE :city')
            ->setParameter('city', '%' . $city . '%');
     }
-
     if ($categoryId) {
         $qb->andWhere('c.id = :category')
            ->setParameter('category', $categoryId);
+    }
+    if ($scoreMin) {
+        $qb->andWhere('l.score >= :scoreMin')
+           ->setParameter('scoreMin', (int) $scoreMin);
+    }
+    if ($followUp) {
+        $qb->andWhere('l.nextFollowUp = :followUp')
+           ->setParameter('followUp', new \DateTime($followUp));
     }
 
     return $qb->getQuery();

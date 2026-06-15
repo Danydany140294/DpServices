@@ -19,14 +19,17 @@ use Knp\Component\Pager\PaginatorInterface;
 #[IsGranted('ROLE_ADMIN')]
 class LeadController extends AbstractController
 {
-    #[Route('', name: 'app_leads')]
+#[Route('', name: 'app_leads')]
 public function index(LeadRepository $repo, LeadCategoryRepository $categoryRepo, Request $request, PaginatorInterface $paginator): Response
 {
     $status = $request->query->get('status');
     $city = $request->query->get('city');
     $categoryId = $request->query->get('category');
+    $scoreMin = $request->query->get('score_min');
+    $scoreMin = is_numeric($scoreMin) ? $scoreMin : null;
+    $followUp = $request->query->get('follow_up');
 
-    $query = $repo->findWithFiltersQuery($status, $city, $categoryId);
+    $query = $repo->findWithFiltersQuery($status, $city, $categoryId, $scoreMin, $followUp);
 
     $leads = $paginator->paginate(
         $query,
@@ -42,6 +45,8 @@ public function index(LeadRepository $repo, LeadCategoryRepository $categoryRepo
         'currentStatus' => $status,
         'currentCity' => $city,
         'currentCategory' => $categoryId,
+        'currentScoreMin' => $scoreMin,
+        'currentFollowUp' => $followUp,
     ]);
 }
 
@@ -63,6 +68,12 @@ public function index(LeadRepository $repo, LeadCategoryRepository $categoryRepo
         }
 
         return $this->render('lead/new.html.twig', ['form' => $form->createView()]);
+    }
+
+    #[Route('/search', name: 'app_lead_search')]
+    public function search(): Response
+    {
+        return $this->render('lead/search.html.twig');
     }
 
     #[Route('/{id}', name: 'app_lead_show')]
@@ -99,11 +110,7 @@ public function index(LeadRepository $repo, LeadCategoryRepository $categoryRepo
         return $this->redirectToRoute('app_lead_show', ['id' => $lead->getId()]);
     }
 
-    #[Route('/search', name: 'app_lead_search')]
-    public function search(): Response
-    {
-        return $this->render('lead/search.html.twig');
-    }
+    
 
     #[Route('/{id}/activity/new', name: 'app_lead_activity_new', methods: ['GET', 'POST'])]
 public function newActivity(Lead $lead, Request $request, EntityManagerInterface $em, ActivityLogService $logger): Response

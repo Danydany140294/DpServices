@@ -34,14 +34,21 @@
                 {% endfor %}
             </select>
 
-            <input type="text" name="city" value="{{ currentCity }}" placeholder="Ville..." style="padding:0.5rem; border:1px solid #ddd; border-radius:4px;">
+            <input type="text" name="city" value="{{ currentCity }}" placeholder="Ville..."
+                style="padding:0.5rem; border:1px solid #ddd; border-radius:4px;">
+
+            <input type="number" name="score_min" value="{{ currentScoreMin }}" placeholder="Score min..."
+                style="padding:0.5rem; border:1px solid #ddd; border-radius:4px; width:100px;">
+
+            <input type="date" name="follow_up" value="{{ currentFollowUp }}"
+                style="padding:0.5rem; border:1px solid #ddd; border-radius:4px;">
 
             <button type="submit" style="padding:0.5rem 1rem; background:#2563eb; color:white; border:none; border-radius:4px; cursor:pointer;">Filtrer</button>
             <a href="{{ path('app_leads') }}" style="padding:0.5rem 1rem; background:#64748b; color:white; border-radius:4px; text-decoration:none;">Réinitialiser</a>
 
             {# ── Légende ── #}
             <div style="position:relative; margin-left:auto;">
-                <button type="button" onclick="document.getElementById('legend').classList.toggle('hidden')" 
+                <button type="button" onclick="document.getElementById('legend').classList.toggle('hidden')"
                     style="padding:0.5rem 1rem; background:#f1f5f9; border:1px solid #ddd; border-radius:4px; cursor:pointer;">
                     ? Aide
                 </button>
@@ -78,19 +85,25 @@
         <a href="{{ path('app_lead_search') }}" style="padding:0.75rem 1.5rem; background:#059669; color:white; border-radius:4px; text-decoration:none;">🔍 Rechercher</a>
     </div>
 
+    {# ── Recherche rapide ── #}
+    <div style="margin-bottom:1rem;">
+        <input type="text" id="searchInput" placeholder="🔍 Rechercher par nom ou ville..."
+            style="width:100%; padding:0.75rem 1rem; border:1px solid #ddd; border-radius:8px; font-size:0.95rem; box-sizing:border-box;">
+    </div>
+
     {# ── Tableau ── #}
     <table style="width:100%; background:white; border-radius:8px; border-collapse:collapse; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
         <thead>
-            <tr style="background:#f1f5f9;">
-                <th style="padding:1rem; text-align:left;">Entreprise</th>
-                <th style="padding:1rem; text-align:left;">Ville</th>
-                <th style="padding:1rem; text-align:left;">Catégorie</th>
-                <th style="padding:1rem; text-align:left;">Score</th>
-                <th style="padding:1rem; text-align:left;">Statut</th>
-                <th style="padding:1rem; text-align:left;">Relance</th>
-                <th style="padding:1rem; text-align:left;">Actions</th>
-            </tr>
-        </thead>
+    <tr style="background:#f1f5f9;">
+        <th style="padding:1rem; text-align:left; cursor:pointer;" onclick="sortTable(0)">Entreprise ↕</th>
+        <th style="padding:1rem; text-align:left; cursor:pointer;" onclick="sortTable(1)">Ville ↕</th>
+        <th style="padding:1rem; text-align:left; cursor:pointer;" onclick="sortTable(2)">Catégorie ↕</th>
+        <th style="padding:1rem; text-align:left; cursor:pointer;" onclick="sortTable(3)">Score ↕</th>
+        <th style="padding:1rem; text-align:left; cursor:pointer;" onclick="sortTable(4)">Statut ↕</th>
+        <th style="padding:1rem; text-align:left; cursor:pointer;" onclick="sortTable(5)">Relance ↕</th>
+        <th style="padding:1rem; text-align:left;">Actions</th>
+    </tr>
+</thead>
         <tbody>
             {% for lead in leads %}
             <tr style="border-top:1px solid #e2e8f0;">
@@ -148,34 +161,65 @@
     </table>
 
     {# ── Pagination ── #}
-{% if leads.pageCount > 1 %}
-<div style="margin-top:1rem; display:flex; gap:0.5rem; align-items:center; justify-content:center;">
-    {% if leads.hasPreviousPage %}
-        <a href="{{ path('app_leads', {'page': leads.previousPage, 'status': currentStatus, 'city': currentCity, 'category': currentCategory}) }}"
-           style="padding:0.5rem 1rem; background:#f1f5f9; border-radius:4px; text-decoration:none; color:#475569;">← Précédent</a>
+    {% if leads.pageCount > 1 %}
+    <div style="margin-top:1rem; display:flex; gap:0.5rem; align-items:center; justify-content:center;">
+        {% if leads.hasPreviousPage %}
+            <a href="{{ path('app_leads', {'page': leads.previousPage, 'status': currentStatus, 'city': currentCity, 'category': currentCategory}) }}"
+               style="padding:0.5rem 1rem; background:#f1f5f9; border-radius:4px; text-decoration:none; color:#475569;">← Précédent</a>
+        {% endif %}
+
+        {% for i in leads.paginationData.pagesInRange %}
+            <a href="{{ path('app_leads', {'page': i, 'status': currentStatus, 'city': currentCity, 'category': currentCategory}) }}"
+               style="padding:0.5rem 0.75rem; border-radius:4px; text-decoration:none;
+                      {{ i == leads.currentPageNumber ? 'background:#2563eb; color:white;' : 'background:#f1f5f9; color:#475569;' }}">
+                {{ i }}
+            </a>
+        {% endfor %}
+
+        {% if leads.hasNextPage %}
+            <a href="{{ path('app_leads', {'page': leads.nextPage, 'status': currentStatus, 'city': currentCity, 'category': currentCategory}) }}"
+               style="padding:0.5rem 1rem; background:#f1f5f9; border-radius:4px; text-decoration:none; color:#475569;">Suivant →</a>
+        {% endif %}
+
+        <span style="color:#94a3b8; font-size:0.875rem;">
+            {{ leads.totalItemCount }} prospect(s) au total
+        </span>
+    </div>
     {% endif %}
-
-    {% for i in leads.paginationData.pagesInRange %}
-        <a href="{{ path('app_leads', {'page': i, 'status': currentStatus, 'city': currentCity, 'category': currentCategory}) }}"
-           style="padding:0.5rem 0.75rem; border-radius:4px; text-decoration:none;
-                  {{ i == leads.currentPageNumber ? 'background:#2563eb; color:white;' : 'background:#f1f5f9; color:#475569;' }}">
-            {{ i }}
-        </a>
-    {% endfor %}
-
-    {% if leads.hasNextPage %}
-        <a href="{{ path('app_leads', {'page': leads.nextPage, 'status': currentStatus, 'city': currentCity, 'category': currentCategory}) }}"
-           style="padding:0.5rem 1rem; background:#f1f5f9; border-radius:4px; text-decoration:none; color:#475569;">Suivant →</a>
-    {% endif %}
-
-    <span style="color:#94a3b8; font-size:0.875rem;">
-        {{ leads.totalItemCount }} prospect(s) au total
-    </span>
-</div>
-{% endif %}
 
     <style>
         .hidden { display: none; }
     </style>
+
+    <script>
+        document.getElementById('searchInput').addEventListener('input', function() {
+            const search = this.value.toLowerCase();
+            const rows = document.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(search) ? '' : 'none';
+            });
+        });
+    </script>
+
+    <script>
+    let sortDir = {};
+    function sortTable(col) {
+        const table = document.querySelector('tbody');
+        const rows = Array.from(table.querySelectorAll('tr'));
+        sortDir[col] = !sortDir[col];
+        rows.sort((a, b) => {
+            const aText = a.cells[col]?.textContent.trim().toLowerCase() || '';
+            const bText = b.cells[col]?.textContent.trim().toLowerCase() || '';
+            const aNum = parseFloat(aText);
+            const bNum = parseFloat(bText);
+            if (!isNaN(aNum) && !isNaN(bNum)) {
+                return sortDir[col] ? aNum - bNum : bNum - aNum;
+            }
+            return sortDir[col] ? aText.localeCompare(bText) : bText.localeCompare(aText);
+        });
+        rows.forEach(row => table.appendChild(row));
+    }
+</script>
 
 {% endblock %}
