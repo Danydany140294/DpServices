@@ -80,9 +80,14 @@
     </div>
 
     {# ── Boutons actions ── #}
-    <div style="margin-bottom:1rem; display:flex; gap:0.5rem;">
+    <div style="margin-bottom:1rem; display:flex; gap:0.5rem; align-items:center;">
         <a href="{{ path('app_lead_new') }}" style="padding:0.75rem 1.5rem; background:#2563eb; color:white; border-radius:4px; text-decoration:none;">+ Nouveau prospect</a>
         <a href="{{ path('app_lead_search') }}" style="padding:0.75rem 1.5rem; background:#059669; color:white; border-radius:4px; text-decoration:none;">🔍 Rechercher</a>
+        <form method="post" action="{{ path('app_leads_rescore_all') }}">
+            <button type="submit" style="padding:0.75rem 1.5rem; background:#f59e0b; color:white; border:none; border-radius:4px; cursor:pointer;">
+                🔄 Recalculer tous les scores
+            </button>
+        </form>
     </div>
 
     {# ── Recherche rapide ── #}
@@ -94,16 +99,16 @@
     {# ── Tableau ── #}
     <table style="width:100%; background:white; border-radius:8px; border-collapse:collapse; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
         <thead>
-    <tr style="background:#f1f5f9;">
-        <th style="padding:1rem; text-align:left; cursor:pointer;" onclick="sortTable(0)">Entreprise ↕</th>
-        <th style="padding:1rem; text-align:left; cursor:pointer;" onclick="sortTable(1)">Ville ↕</th>
-        <th style="padding:1rem; text-align:left; cursor:pointer;" onclick="sortTable(2)">Catégorie ↕</th>
-        <th style="padding:1rem; text-align:left; cursor:pointer;" onclick="sortTable(3)">Score ↕</th>
-        <th style="padding:1rem; text-align:left; cursor:pointer;" onclick="sortTable(4)">Statut ↕</th>
-        <th style="padding:1rem; text-align:left; cursor:pointer;" onclick="sortTable(5)">Relance ↕</th>
-        <th style="padding:1rem; text-align:left;">Actions</th>
-    </tr>
-</thead>
+            <tr style="background:#f1f5f9;">
+                <th style="padding:1rem; text-align:left; cursor:pointer;" onclick="sortTable(0)">Entreprise ↕</th>
+                <th style="padding:1rem; text-align:left; cursor:pointer;" onclick="sortTable(1)">Ville ↕</th>
+                <th style="padding:1rem; text-align:left; cursor:pointer;" onclick="sortTable(2)">Catégorie ↕</th>
+                <th style="padding:1rem; text-align:left; cursor:pointer;" onclick="sortTable(3)">Score ↕</th>
+                <th style="padding:1rem; text-align:left; cursor:pointer;" onclick="sortTable(4)">Statut ↕</th>
+                <th style="padding:1rem; text-align:left; cursor:pointer;" onclick="sortTable(5)">Relance ↕</th>
+                <th style="padding:1rem; text-align:left;">Actions</th>
+            </tr>
+        </thead>
         <tbody>
             {% for lead in leads %}
             <tr style="border-top:1px solid #e2e8f0;">
@@ -113,42 +118,44 @@
                 </td>
                 <td style="padding:1rem; color:#475569;">{{ lead.city }}</td>
                 <td style="padding:1rem; color:#475569;">{{ lead.category ? lead.category.name : '—' }}</td>
-               {# Colonne Score — avec barre #}
-<td style="padding:1rem;">
-    {% set score = lead.score %}
-    {% set barColor = score >= 80 ? '#dc2626' : (score >= 50 ? '#ea580c' : (score >= 20 ? '#d97706' : '#94a3b8')) %}
-    {% if score >= 80 %}
-        <span style="background:#fee2e2; color:#dc2626; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem; font-weight:bold;">🔴 {{ score }}</span>
-    {% elseif score >= 50 %}
-        <span style="background:#ffedd5; color:#ea580c; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem; font-weight:bold;">🟠 {{ score }}</span>
-    {% elseif score >= 20 %}
-        <span style="background:#fef3c7; color:#d97706; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem; font-weight:bold;">🟡 {{ score }}</span>
-    {% else %}
-        <span style="background:#f1f5f9; color:#64748b; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem; font-weight:bold;">⚪ {{ score }}</span>
-    {% endif %}
-    <div style="margin-top:0.25rem; background:#e2e8f0; border-radius:4px; height:4px; width:80px;">
-        <div style="width:{{ score }}%; background:{{ barColor }}; height:4px; border-radius:4px;"></div>
-    </div>
-</td>
 
-{# Colonne Statut #}
-<td style="padding:1rem;">
-    {% if lead.status == 'NEW' %}
-        <span style="background:#dbeafe; color:#2563eb; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem;">🔵 Nouveau</span>
-    {% elseif lead.status == 'CONTACTED' %}
-        <span style="background:#fef3c7; color:#d97706; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem;">🟡 Contacté</span>
-    {% elseif lead.status == 'DISCUSSION' %}
-        <span style="background:#ffedd5; color:#ea580c; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem;">🟠 En discussion</span>
-    {% elseif lead.status == 'QUOTE_SENT' %}
-        <span style="background:#f3e8ff; color:#7c3aed; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem;">🟣 Devis envoyé</span>
-    {% elseif lead.status == 'CLIENT' %}
-        <span style="background:#d1fae5; color:#059669; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem;">🟢 Client</span>
-    {% elseif lead.status == 'LOST' %}
-        <span style="background:#fee2e2; color:#dc2626; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem;">🔴 Perdu</span>
-    {% elseif lead.status == 'TO_FOLLOW_UP' %}
-        <span style="background:#f1f5f9; color:#64748b; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem;">⚪ À relancer</span>
-    {% endif %}
-</td>
+                {# Colonne Score — avec barre #}
+                <td style="padding:1rem;">
+                    {% set score = lead.score %}
+                    {% set barColor = score >= 80 ? '#dc2626' : (score >= 50 ? '#ea580c' : (score >= 20 ? '#d97706' : '#94a3b8')) %}
+                    {% if score >= 80 %}
+                        <span style="background:#fee2e2; color:#dc2626; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem; font-weight:bold;">🔴 {{ score }}</span>
+                    {% elseif score >= 50 %}
+                        <span style="background:#ffedd5; color:#ea580c; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem; font-weight:bold;">🟠 {{ score }}</span>
+                    {% elseif score >= 20 %}
+                        <span style="background:#fef3c7; color:#d97706; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem; font-weight:bold;">🟡 {{ score }}</span>
+                    {% else %}
+                        <span style="background:#f1f5f9; color:#64748b; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem; font-weight:bold;">⚪ {{ score }}</span>
+                    {% endif %}
+                    <div style="margin-top:0.25rem; background:#e2e8f0; border-radius:4px; height:4px; width:80px;">
+                        <div style="width:{{ score }}%; background:{{ barColor }}; height:4px; border-radius:4px;"></div>
+                    </div>
+                </td>
+
+                {# Colonne Statut #}
+                <td style="padding:1rem;">
+                    {% if lead.status == 'NEW' %}
+                        <span style="background:#dbeafe; color:#2563eb; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem;">🔵 Nouveau</span>
+                    {% elseif lead.status == 'CONTACTED' %}
+                        <span style="background:#fef3c7; color:#d97706; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem;">🟡 Contacté</span>
+                    {% elseif lead.status == 'DISCUSSION' %}
+                        <span style="background:#ffedd5; color:#ea580c; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem;">🟠 En discussion</span>
+                    {% elseif lead.status == 'QUOTE_SENT' %}
+                        <span style="background:#f3e8ff; color:#7c3aed; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem;">🟣 Devis envoyé</span>
+                    {% elseif lead.status == 'CLIENT' %}
+                        <span style="background:#d1fae5; color:#059669; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem;">🟢 Client</span>
+                    {% elseif lead.status == 'LOST' %}
+                        <span style="background:#fee2e2; color:#dc2626; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem;">🔴 Perdu</span>
+                    {% elseif lead.status == 'TO_FOLLOW_UP' %}
+                        <span style="background:#f1f5f9; color:#64748b; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem;">⚪ À relancer</span>
+                    {% endif %}
+                </td>
+
                 <td style="padding:1rem; font-size:0.875rem; color:{{ lead.nextFollowUp is not null and lead.nextFollowUp <= date() ? '#dc2626' : '#475569' }};">
                     {{ lead.nextFollowUp ? lead.nextFollowUp|date('d/m/Y') : '—' }}
                 </td>
@@ -227,6 +234,6 @@
         });
         rows.forEach(row => table.appendChild(row));
     }
-</script>
+    </script>
 
 {% endblock %}

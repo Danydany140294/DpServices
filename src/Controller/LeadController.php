@@ -145,6 +145,8 @@ private function findLeadByName(array $leads, string $normalized): ?Lead
     return null;
 }
 
+
+
     #[Route('/import', name: 'app_lead_import', methods: ['POST'])]
 public function import(Request $request, EntityManagerInterface $em, LeadCategoryRepository $categoryRepo, ActivityLogService $logger,ScoringService $scoring): Response
 {
@@ -189,6 +191,20 @@ public function import(Request $request, EntityManagerInterface $em, LeadCategor
         'query' => $query,
         'city' => $city,
     ]);
+}
+#[Route('/rescore-all', name: 'app_leads_rescore_all', methods: ['POST'])]
+public function rescoreAll(LeadRepository $repo, EntityManagerInterface $em, ScoringService $scoring, ActivityLogService $logger): Response
+{
+    $leads = $repo->findAll();
+    $count = 0;
+    foreach ($leads as $lead) {
+        $lead->setScore($scoring->calculate($lead));
+        $count++;
+    }
+    $em->flush();
+    $logger->log('Recalcul global scores', $count . ' prospects mis à jour');
+    $this->addFlash('success', $count . ' scores recalculés.');
+    return $this->redirectToRoute('app_leads');
 }
 
     #[Route('/{id}', name: 'app_lead_show')]
@@ -291,4 +307,6 @@ public function updateNotes(Lead $lead, Request $request, EntityManagerInterface
     $this->addFlash('success', 'Notes mises à jour.');
     return $this->redirectToRoute('app_lead_show', ['id' => $lead->getId()]);
 }
+
+
 }
