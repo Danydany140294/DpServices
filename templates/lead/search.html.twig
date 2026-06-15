@@ -10,11 +10,19 @@
             <div>
                 <label style="display:block; font-size:0.875rem; color:#64748b; margin-bottom:0.25rem;">Type de recherche</label>
                 <select name="query" style="padding:0.5rem; border:1px solid #ddd; border-radius:4px; min-width:220px;">
-                    <option value="conciergerie airbnb" {{ query == 'conciergerie airbnb' ? 'selected' : '' }}>🏠 Conciergerie Airbnb</option>
-                    <option value="gestion locative" {{ query == 'gestion locative' ? 'selected' : '' }}>🏢 Gestion locative</option>
-                    <option value="agence immobilière" {{ query == 'agence immobilière' ? 'selected' : '' }}>🏛️ Agence immobilière</option>
-                    <option value="location saisonnière" {{ query == 'location saisonnière' ? 'selected' : '' }}>🌴 Location saisonnière</option>
-                </select>
+    <optgroup label="🏠 Immobilier">
+        <option value="conciergerie airbnb" {{ query == 'conciergerie airbnb' ? 'selected' : '' }}>🏠 Conciergerie Airbnb</option>
+        <option value="gestion locative" {{ query == 'gestion locative' ? 'selected' : '' }}>🏢 Gestion locative</option>
+        <option value="agence immobilière" {{ query == 'agence immobilière' ? 'selected' : '' }}>🏛️ Agence immobilière</option>
+        <option value="location saisonnière" {{ query == 'location saisonnière' ? 'selected' : '' }}>🌴 Location saisonnière</option>
+        <option value="hôtellerie" {{ query == 'hôtellerie' ? 'selected' : '' }}>🏨 Hôtellerie</option>
+        <option value="services immobiliers" {{ query == 'services immobiliers' ? 'selected' : '' }}>🔑 Services immobiliers</option>
+    </optgroup>
+    <optgroup label="🧹 Ménage">
+        <option value="ménage professionnel" {{ query == 'ménage professionnel' ? 'selected' : '' }}>🏢 Ménage professionnel</option>
+        <option value="ménage particulier" {{ query == 'ménage particulier' ? 'selected' : '' }}>🏠 Ménage particulier</option>
+    </optgroup>
+</select>
             </div>
             <div>
                 <label style="display:block; font-size:0.875rem; color:#64748b; margin-bottom:0.25rem;">Ville</label>

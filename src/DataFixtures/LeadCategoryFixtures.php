@@ -21,6 +21,10 @@ class LeadCategoryFixtures extends Fixture implements FixtureGroupInterface
             ['name' => 'Gestion locative', 'scoreBonus' => 30],
             ['name' => 'Agence immobilière', 'scoreBonus' => 20],
             ['name' => 'Location saisonnière', 'scoreBonus' => 25],
+            ['name' => 'Hôtellerie', 'scoreBonus' => 35],
+            ['name' => 'Services immobiliers', 'scoreBonus' => 15],
+            ['name' => 'Ménage professionnel', 'scoreBonus' => 40],
+            ['name' => 'Ménage particulier', 'scoreBonus' => 20],
         ];
 
         foreach ($categories as $cat) {

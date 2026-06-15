@@ -101,11 +101,15 @@ public function import(Request $request, EntityManagerInterface $em, LeadCategor
 
     // Cherche la catégorie correspondante
     $categoryName = match(true) {
-        str_contains($query, 'airbnb') => 'Conciergerie Airbnb',
-        str_contains($query, 'locative') => 'Gestion locative',
-        str_contains($query, 'immobilière') => 'Agence immobilière',
-        default => 'Location saisonnière',
-    };
+    str_contains($query, 'airbnb') => 'Conciergerie Airbnb',
+    str_contains($query, 'locative') => 'Gestion locative',
+    str_contains($query, 'immobilière') => 'Agence immobilière',
+    str_contains($query, 'hôtellerie') => 'Hôtellerie',
+    str_contains($query, 'immobiliers') => 'Services immobiliers',
+    str_contains($query, 'professionnel') => 'Ménage professionnel',
+    str_contains($query, 'particulier') => 'Ménage particulier',
+    default => 'Location saisonnière',
+};
 
     $category = $categoryRepo->findOneBy(['name' => $categoryName]);
 

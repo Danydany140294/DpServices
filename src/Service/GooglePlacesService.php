@@ -6,50 +6,146 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class GooglePlacesService
 {
+    private const KEYWORDS = [
+        'conciergerie airbnb' => [
+            'conciergerie',
+            'conciergerie airbnb',
+            'gestion airbnb',
+            'conciergerie location courte durée',
+            'conciergerie appartement',
+            'gestion locatif courte durée',
+            'welcome management',
+            'conciergerie touristique',
+            'gestion clés',
+            'remise clés',
+        ],
+        'gestion locative' => [
+            'gestion locative',
+            'administrateur de biens',
+            'gestionnaire locatif',
+            'syndic copropriété',
+            'gérance immobilière',
+            'gestion patrimoine immobilier',
+            'gestion appartement',
+            'mandataire immobilier',
+        ],
+        'agence immobilière' => [
+            'agence immobilière',
+            'agence immo',
+            'promoteur immobilier',
+            'transaction immobilière',
+            'réseau immobilier',
+            'chasseur immobilier',
+            'estimation immobilière',
+        ],
+        'location saisonnière' => [
+            'location saisonnière',
+            'location vacances',
+            'gîte',
+            'chambre hôtes',
+            'villa vacances',
+            'maison vacances',
+            'appartement vacances',
+            'meublé tourisme',
+            'résidence tourisme',
+            'hébergement touristique',
+        ],
+        'hôtellerie' => [
+            'hôtel',
+            'boutique hôtel',
+            'apart-hôtel',
+            'résidence hôtelière',
+            'camping',
+            'auberge',
+            'pension',
+        ],
+        'ménage professionnel' => [
+            'entreprise nettoyage',
+            'société nettoyage',
+            'nettoyage professionnel',
+            'nettoyage bureaux',
+            'nettoyage locaux',
+            'nettoyage industriel',
+            'nettoyage copropriété',
+            'nettoyage chantier',
+            'propreté entreprise',
+            'facility management',
+            'nettoyage vitres',
+            'nettoyage après sinistre',
+        ],
+        'ménage particulier' => [
+            'aide ménagère',
+            'femme ménage',
+            'homme ménage',
+            'ménage domicile',
+            'nettoyage maison',
+            'nettoyage appartement',
+            'repassage domicile',
+            'services à domicile',
+            'aide domicile',
+            'employé maison',
+            'majordome',
+            'ménage particulier',
+        ],
+        'services immobiliers' => [
+            'diagnostiqueur immobilier',
+            'état des lieux',
+            'photographe immobilier',
+            'home staging',
+            'décorateur intérieur',
+            'architecte intérieur',
+            'rénovation appartement',
+            'travaux appartement',
+        ],
+    ];
+
     public function __construct(
         private HttpClientInterface $client,
     ) {}
 
     public function searchPlaces(string $query, string $city): array
-{
-    // Simplifier la query pour Nominatim
-    $searchTerm = match(true) {
-        str_contains($query, 'airbnb') => 'conciergerie',
-        str_contains($query, 'locative') => 'gestion locative',
-        str_contains($query, 'immobilière') => 'agence immobilière',
-        default => 'location vacances',
-    };
+    {
+        $keywords = self::KEYWORDS[$query] ?? [$query];
+        $results = [];
+        $seenIds = [];
 
-    $response = $this->client->request('GET', 'https://nominatim.openstreetmap.org/search', [
-        'headers' => [
-            'User-Agent' => 'DPServices/1.0 contact@dpservices.fr',
-        ],
-        'query' => [
-            'q' => $searchTerm . ' ' . $city . ' France',
-            'format' => 'json',
-            'limit' => 20,
-            'addressdetails' => 1,
-        ]
-    ]);
+        foreach ($keywords as $keyword) {
+            $response = $this->client->request('GET', 'https://nominatim.openstreetmap.org/search', [
+                'headers' => [
+                    'User-Agent' => 'DPServices/1.0 contact@dpservices.fr',
+                ],
+                'query' => [
+                    'q' => $keyword . ' ' . $city . ' France',
+                    'format' => 'json',
+                    'limit' => 10,
+                    'addressdetails' => 1,
+                ]
+            ]);
 
-    $data = $response->toArray();
+            $data = $response->toArray();
 
-    if (empty($data)) {
-        return [];
+            foreach ($data as $place) {
+                $name = $place['name'] ?? '';
+                $placeId = $place['place_id'] ?? '';
+
+                if (empty($name) || in_array($placeId, $seenIds)) continue;
+
+                $seenIds[] = $placeId;
+                $results[] = [
+                    'name' => $name,
+                    'address' => $place['display_name'] ?? '',
+                    'rating' => null,
+                    'reviews' => null,
+                    'place_id' => $placeId,
+                    'types' => [$place['type'] ?? ''],
+                    'keyword' => $keyword,
+                ];
+            }
+
+            // Pause pour respecter les limites Nominatim (1 req/sec)
+            usleep(1100000);
+        }
+
+        return $results;
     }
-
-    return array_values(array_filter(array_map(function ($place) {
-        $name = $place['name'] ?? '';
-        if (empty($name)) return null;
-
-        return [
-            'name' => $name,
-            'address' => $place['display_name'] ?? '',
-            'rating' => null,
-            'reviews' => null,
-            'place_id' => $place['place_id'] ?? '',
-            'types' => [$place['type'] ?? ''],
-        ];
-    }, $data)));
-}
 }
