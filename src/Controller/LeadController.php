@@ -104,4 +104,59 @@ public function index(LeadRepository $repo, LeadCategoryRepository $categoryRepo
     {
         return $this->render('lead/search.html.twig');
     }
+
+    #[Route('/{id}/activity/new', name: 'app_lead_activity_new', methods: ['GET', 'POST'])]
+public function newActivity(Lead $lead, Request $request, EntityManagerInterface $em, ActivityLogService $logger): Response
+{
+    $activity = new \App\Entity\LeadActivity();
+    $activity->setLead($lead);
+
+    $form = $this->createForm(\App\Form\LeadActivityType::class, $activity);
+    $form->handleRequest($request);
+
+    if ($form->isSubmitted() && $form->isValid()) {
+        // Changement de statut automatique (J12)
+        $result = $activity->getResult();
+        if ($activity->getType() === 'QUOTE') {
+            $lead->setStatus('QUOTE_SENT');
+        } elseif ($result === 'POSITIVE' && $lead->getStatus() === 'CONTACTED') {
+            $lead->setStatus('DISCUSSION');
+        } elseif ($result === 'NEGATIVE') {
+            $lead->setStatus('LOST');
+        } elseif ($result === 'CALLBACK') {
+            $lead->setStatus('TO_FOLLOW_UP');
+        } elseif ($lead->getStatus() === 'NEW') {
+            $lead->setStatus('CONTACTED');
+        }
+
+        // Mise à jour de la date de relance
+        if ($activity->getFollowUpDate()) {
+            $lead->setNextFollowUp($activity->getFollowUpDate());
+        }
+
+        $em->persist($activity);
+        $em->flush();
+
+        $logger->log('Action lead', $lead->getCompanyName() . ' — ' . $activity->getType());
+        $this->addFlash('success', 'Action enregistrée.');
+        return $this->redirectToRoute('app_lead_show', ['id' => $lead->getId()]);
+    }
+
+    return $this->render('lead/activity_new.html.twig', [
+        'lead' => $lead,
+        'form' => $form->createView(),
+    ]);
+}
+
+#[Route('/{id}/activity/{activityId}/delete', name: 'app_lead_activity_delete', methods: ['POST'])]
+public function deleteActivity(Lead $lead, int $activityId, EntityManagerInterface $em): Response
+{
+    $activity = $em->getRepository(\App\Entity\LeadActivity::class)->find($activityId);
+    if ($activity && $activity->getLead() === $lead) {
+        $em->remove($activity);
+        $em->flush();
+        $this->addFlash('success', 'Action supprimée.');
+    }
+    return $this->redirectToRoute('app_lead_show', ['id' => $lead->getId()]);
+}
 }
