@@ -13,29 +13,37 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Knp\Component\Pager\PaginatorInterface;
 
 #[Route('/acquisition/leads')]
 #[IsGranted('ROLE_ADMIN')]
 class LeadController extends AbstractController
 {
     #[Route('', name: 'app_leads')]
-    public function index(LeadRepository $repo, LeadCategoryRepository $categoryRepo, Request $request): Response
-    {
-        $status = $request->query->get('status');
-        $city = $request->query->get('city');
-        $categoryId = $request->query->get('category');
+public function index(LeadRepository $repo, LeadCategoryRepository $categoryRepo, Request $request, PaginatorInterface $paginator): Response
+{
+    $status = $request->query->get('status');
+    $city = $request->query->get('city');
+    $categoryId = $request->query->get('category');
 
-        $leads = $repo->findWithFilters($status, $city, $categoryId);
-        $categories = $categoryRepo->findAll();
+    $query = $repo->findWithFiltersQuery($status, $city, $categoryId);
 
-        return $this->render('lead/index.html.twig', [
-            'leads' => $leads,
-            'categories' => $categories,
-            'currentStatus' => $status,
-            'currentCity' => $city,
-            'currentCategory' => $categoryId,
-        ]);
-    }
+    $leads = $paginator->paginate(
+        $query,
+        $request->query->getInt('page', 1),
+        10
+    );
+
+    $categories = $categoryRepo->findAll();
+
+    return $this->render('lead/index.html.twig', [
+        'leads' => $leads,
+        'categories' => $categories,
+        'currentStatus' => $status,
+        'currentCity' => $city,
+        'currentCategory' => $categoryId,
+    ]);
+}
 
     #[Route('/new', name: 'app_lead_new')]
     public function new(Request $request, EntityManagerInterface $em, LeadCategoryRepository $categoryRepo, ActivityLogService $logger): Response

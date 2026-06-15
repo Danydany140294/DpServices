@@ -64,4 +64,28 @@ class LeadRepository extends ServiceEntityRepository
 
     return $qb->getQuery()->getResult();
 }
+
+public function findWithFiltersQuery(?string $status, ?string $city, ?string $categoryId): \Doctrine\ORM\Query
+{
+    $qb = $this->createQueryBuilder('l')
+        ->leftJoin('l.category', 'c')
+        ->orderBy('l.score', 'DESC');
+
+    if ($status) {
+        $qb->andWhere('l.status = :status')
+           ->setParameter('status', $status);
+    }
+
+    if ($city) {
+        $qb->andWhere('l.city LIKE :city')
+           ->setParameter('city', '%' . $city . '%');
+    }
+
+    if ($categoryId) {
+        $qb->andWhere('c.id = :category')
+           ->setParameter('category', $categoryId);
+    }
+
+    return $qb->getQuery();
+}
 }

@@ -147,6 +147,33 @@
         </tbody>
     </table>
 
+    {# ── Pagination ── #}
+{% if leads.pageCount > 1 %}
+<div style="margin-top:1rem; display:flex; gap:0.5rem; align-items:center; justify-content:center;">
+    {% if leads.hasPreviousPage %}
+        <a href="{{ path('app_leads', {'page': leads.previousPage, 'status': currentStatus, 'city': currentCity, 'category': currentCategory}) }}"
+           style="padding:0.5rem 1rem; background:#f1f5f9; border-radius:4px; text-decoration:none; color:#475569;">← Précédent</a>
+    {% endif %}
+
+    {% for i in leads.paginationData.pagesInRange %}
+        <a href="{{ path('app_leads', {'page': i, 'status': currentStatus, 'city': currentCity, 'category': currentCategory}) }}"
+           style="padding:0.5rem 0.75rem; border-radius:4px; text-decoration:none;
+                  {{ i == leads.currentPageNumber ? 'background:#2563eb; color:white;' : 'background:#f1f5f9; color:#475569;' }}">
+            {{ i }}
+        </a>
+    {% endfor %}
+
+    {% if leads.hasNextPage %}
+        <a href="{{ path('app_leads', {'page': leads.nextPage, 'status': currentStatus, 'city': currentCity, 'category': currentCategory}) }}"
+           style="padding:0.5rem 1rem; background:#f1f5f9; border-radius:4px; text-decoration:none; color:#475569;">Suivant →</a>
+    {% endif %}
+
+    <span style="color:#94a3b8; font-size:0.875rem;">
+        {{ leads.totalItemCount }} prospect(s) au total
+    </span>
+</div>
+{% endif %}
+
     <style>
         .hidden { display: none; }
     </style>
