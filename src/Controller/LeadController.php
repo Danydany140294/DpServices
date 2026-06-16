@@ -16,6 +16,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Knp\Component\Pager\PaginatorInterface;
 use App\Service\GooglePlacesService;
 use App\Service\ScoringService;
+use App\Service\MistralService;
 
 
 #[Route('/acquisition/leads')]
@@ -205,6 +206,23 @@ public function rescoreAll(LeadRepository $repo, EntityManagerInterface $em, Sco
     $logger->log('Recalcul global scores', $count . ' prospects mis à jour');
     $this->addFlash('success', $count . ' scores recalculés.');
     return $this->redirectToRoute('app_leads');
+}
+
+    #[Route('/{id}/summarize', name: 'app_lead_summarize', methods: ['POST'])]
+public function summarize(Lead $lead, MistralService $mistral): Response
+{
+    $category  = $lead->getCategory()?->getName() ?? 'inconnue';
+    $city      = $lead->getCity() ?? 'inconnue';
+    $score     = $lead->getScore();
+    $status    = $lead->getStatus();
+    $activities = $lead->getLeadActivities()->count();
+
+    $prompt = "Voici un prospect commercial : entreprise '$category' à $city, score $score/100, statut $status, $activities action(s) enregistrée(s). Fais une synthèse en 3 lignes maximum : qui est ce prospect, où il en est, et quel est ton conseil pour la prochaine action commerciale. Sois direct et pratique.";
+
+    $summary = $mistral->generate($prompt);
+
+    $this->addFlash('ai_summary', $summary);
+    return $this->redirectToRoute('app_lead_show', ['id' => $lead->getId()]);
 }
 
     #[Route('/{id}', name: 'app_lead_show')]

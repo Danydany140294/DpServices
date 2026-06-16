@@ -7,6 +7,7 @@ use App\Repository\LeadRepository;
 use App\Service\LeadEmailService;
 use App\Service\LeadSmsService;
 use App\Service\ActivityLogService;
+use App\Service\MistralService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -25,13 +26,29 @@ class LeadCampaignController extends AbstractController
         LeadRepository $repo,
         LeadEmailService $emailService,
         EntityManagerInterface $em,
-        ActivityLogService $logger
+        ActivityLogService $logger,
+        MistralService $mistral
     ): Response {
         $lead = $repo->find($id);
 
         if ($request->isMethod('POST')) {
             $subject = $request->request->get('subject');
             $body    = $request->request->get('body');
+
+            // Génération IA
+            if ($request->request->get('generate_ai')) {
+                $category = $lead->getCategory()?->getName() ?? 'conciergerie';
+                $city     = $lead->getCity() ?? 'votre ville';
+                $prompt   = "Écris un email de prospection professionnel et personnalisé pour proposer des services de ménage Airbnb à une entreprise de type '$category' située à $city. Signe avec 'L\'équipe DP Services'. Email direct, chaleureux, 150 mots max. Donne uniquement l'email sans commentaires.";
+
+                $aiBody = $mistral->generate($prompt);
+
+                return $this->render('lead_campaign/email.html.twig', [
+                    'lead'      => $lead,
+                    'aiBody'    => $aiBody,
+                    'aiSubject' => 'Nos services de ménage Airbnb — ' . $city,
+                ]);
+            }
 
             if ($request->request->get('confirmed')) {
                 try {
@@ -72,12 +89,27 @@ class LeadCampaignController extends AbstractController
         LeadRepository $repo,
         LeadSmsService $smsService,
         EntityManagerInterface $em,
-        ActivityLogService $logger
+        ActivityLogService $logger,
+        MistralService $mistral
     ): Response {
         $lead = $repo->find($id);
 
         if ($request->isMethod('POST')) {
             $message = $request->request->get('message');
+
+            // Génération IA
+            if ($request->request->get('generate_ai')) {
+                $category = $lead->getCategory()?->getName() ?? 'conciergerie';
+                $city     = $lead->getCity() ?? 'votre ville';
+                $prompt   = "Écris un SMS de prospection pour proposer des services de ménage Airbnb à une entreprise de type '$category' à $city. Maximum 160 caractères. SMS direct et professionnel. Donne uniquement le texte du SMS sans commentaires.";
+
+                $aiMessage = $mistral->generate($prompt);
+
+                return $this->render('lead_campaign/sms.html.twig', [
+                    'lead'      => $lead,
+                    'aiMessage' => substr($aiMessage, 0, 160),
+                ]);
+            }
 
             if ($request->request->get('confirmed')) {
                 try {

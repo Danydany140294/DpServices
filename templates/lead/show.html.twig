@@ -5,6 +5,8 @@
 
 {% block body %}
 
+
+
     <div style="display:grid; grid-template-columns: 2fr 1fr; gap:1.5rem;">
 
         {# ── Fiche principale ── #}
@@ -120,6 +122,11 @@
                     <a href="{{ path('app_lead_sms', {id: lead.id}) }}" style="padding:0.75rem; background:#7c3aed; color:white; border-radius:6px; text-decoration:none; text-align:center;">📱 Envoyer un SMS</a>
                     <a href="{{ path('devis_nouveau', {leadId: lead.id}) }}" style="padding:0.75rem; background:#d97706; color:white; border-radius:6px; text-decoration:none; text-align:center;">📄 Nouveau devis</a>
                     <a href="{{ path('devis_liste', {leadId: lead.id}) }}" style="padding:0.75rem; background:#f1f5f9; color:#475569; border-radius:6px; text-decoration:none; text-align:center;">📋 Voir les devis</a>
+                    <form method="post" action="{{ path('app_lead_summarize', {id: lead.id}) }}">
+    <button type="submit" style="width:100%; padding:0.75rem; background:#0ea5e9; color:white; border:none; border-radius:6px; cursor:pointer; text-align:center;">
+        🤖 Résumer avec l'IA
+    </button>
+</form>
                 </div>
             </div>
         </div>
