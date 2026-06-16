@@ -25,9 +25,20 @@
                class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition">
                 📄 Voir PDF
             </a>
-            <span class="bg-gray-300 text-gray-500 px-4 py-2 rounded-lg text-sm font-medium cursor-not-allowed">
-    ✉️ Envoyer par email (J47)
-</span>
+            {% if devis.status == 'brouillon' %}
+    <form method="post" action="{{ path('devis_envoyer', {id: devis.id}) }}"
+          onsubmit="return confirm('Envoyer le devis à {{ devis.lead.email }} ?')">
+        <input type="hidden" name="_token" value="{{ csrf_token('envoyer' ~ devis.id) }}">
+        <button type="submit"
+                class="bg-green-700 hover:bg-green-800 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
+            ✉️ Envoyer par email
+        </button>
+    </form>
+{% else %}
+    <span class="bg-gray-100 text-gray-500 px-4 py-2 rounded-lg text-sm font-medium">
+        ✅ Envoyé
+    </span>
+{% endif %}
         </div>
     </div>
 

@@ -13,6 +13,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Service\EmailService;
 
 #[Route('/acquisition/devis')]
 class DevisController extends AbstractController
@@ -76,6 +77,32 @@ class DevisController extends AbstractController
             'tarifs' => $tarifs,
         ]);
     }
+
+
+    #[Route('/envoyer/{id}', name: 'devis_envoyer', methods: ['POST'])]
+public function envoyer(
+    Devis $devis,
+    DevisPdfService $pdfService,
+    EmailService $emailService,
+    EntityManagerInterface $em
+): Response {
+    $lead = $devis->getLead();
+    $email = $lead->getEmail();
+
+    if (!$email) {
+        $this->addFlash('error', 'Ce prospect n\'a pas d\'adresse email.');
+        return $this->redirectToRoute('devis_apercu', ['id' => $devis->getId()]);
+    }
+
+    $pdfContent = $pdfService->generer($devis);
+    $emailService->sendDevis($email, $lead->getCompanyName(), $pdfContent, $devis->getId());
+
+    $devis->setStatus('envoye');
+    $em->flush();
+
+    $this->addFlash('success', 'Devis envoyé à ' . $email . ' avec succès !');
+    return $this->redirectToRoute('devis_apercu', ['id' => $devis->getId()]);
+}
 
     #[Route('/apercu/{id}', name: 'devis_apercu')]
     public function apercu(Devis $devis): Response

@@ -65,4 +65,21 @@ class EmailService
 
         $this->mailer->send($email);
     }
+
+    public function sendDevis(string $to, string $companyName, string $pdfContent, int $devisId): void
+{
+    $email = (new Email())
+        ->from('dpservicesud@gmail.com')
+        ->to($to)
+        ->subject('Votre devis DP Services N°' . $devisId)
+        ->html(
+            '<h1>Bonjour,</h1>' .
+            '<p>Veuillez trouver ci-joint votre devis N°' . $devisId . ' établi par DP Services.</p>' .
+            '<p>N\'hésitez pas à nous contacter pour toute question.</p>' .
+            '<p>Cordialement,<br>L\'équipe DP Services</p>'
+        )
+        ->attach($pdfContent, 'devis-' . $devisId . '.pdf', 'application/pdf');
+
+    $this->mailer->send($email);
+}
 }
