@@ -225,6 +225,20 @@ public function summarize(Lead $lead, MistralService $mistral): Response
     return $this->redirectToRoute('app_lead_show', ['id' => $lead->getId()]);
 }
 
+    #[Route('/{id}/ai-suggest', name: 'app_lead_ai_suggest', methods: ['POST'])]
+public function aiSuggest(Lead $lead, MistralService $mistral): Response
+{
+    $category = $lead->getCategory()?->getName() ?? 'conciergerie';
+    $city     = $lead->getCity() ?? 'votre ville';
+
+    $prompt = "Pour une entreprise de type '$category' à $city, quelles prestations de ménage Airbnb recommandes-tu parmi cette liste : Ménage Standard ≤45m², Option Linge, Entretien canapé/Matelas, Ménage approfondi, Check-in/check-out, Stock consommables, Main d'œuvre ménage. Réponds avec une liste courte et une phrase d'explication pour chaque prestation recommandée.";
+
+    $suggestions = $mistral->generate($prompt);
+
+    $this->addFlash('ai_summary', $suggestions);
+    return $this->redirectToRoute('devis_nouveau', ['leadId' => $lead->getId()]);
+}
+
     #[Route('/{id}', name: 'app_lead_show')]
     public function show(Lead $lead): Response
     {

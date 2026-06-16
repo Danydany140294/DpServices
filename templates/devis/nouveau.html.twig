@@ -17,6 +17,14 @@
         </div>
     </div>
 
+    <div style="margin-bottom:1rem; text-align:right;">
+    <form method="post" action="{{ path('app_lead_ai_suggest', {id: lead.id}) }}">
+        <button type="submit" style="padding:0.75rem 1.5rem; background:#7c3aed; color:white; border:none; border-radius:8px; cursor:pointer;">
+            🤖 Suggestions IA
+        </button>
+    </form>
+</div>
+
     <form method="POST" id="devis-form">
     <div class="grid grid-cols-1 gap-6">
 
