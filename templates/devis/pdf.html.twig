@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+    body { font-family: DejaVu Sans, sans-serif; font-size: 12px; color: #333; margin: 0; padding: 20px; }
+    .header { display: table; width: 100%; margin-bottom: 30px; }
+    .header-left { display: table-cell; width: 60%; }
+    .header-right { display: table-cell; width: 40%; text-align: right; color: #2d6a4f; }
+    h1 { color: #2d6a4f; font-size: 28px; margin: 0 0 5px 0; }
+    .company-name { font-size: 18px; font-weight: bold; color: #2d6a4f; }
+    .badge { background: #2d6a4f; color: white; padding: 4px 12px; border-radius: 4px; font-size: 11px; display: inline-block; margin-bottom: 10px; }
+    .info-block { margin-bottom: 25px; }
+    .info-block table { width: 100%; }
+    .info-block td { padding: 3px 0; }
+    .label { color: #888; width: 120px; }
+    table.prestations { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+    table.prestations th { background: #2d6a4f; color: white; padding: 8px 10px; text-align: left; }
+    table.prestations td { padding: 8px 10px; border-bottom: 1px solid #eee; }
+    table.prestations tr:nth-child(even) td { background: #f9f9f9; }
+    .total-block { text-align: right; margin-top: 10px; }
+    .total-line { font-size: 14px; margin-bottom: 5px; }
+    .total-final { font-size: 18px; font-weight: bold; color: #2d6a4f; border-top: 2px solid #2d6a4f; padding-top: 8px; margin-top: 8px; }
+    .statut { display: inline-block; padding: 4px 12px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+    .statut-brouillon { background: #fef3c7; color: #92400e; }
+    .statut-envoye { background: #dbeafe; color: #1e40af; }
+    .statut-accepte { background: #d1fae5; color: #065f46; }
+    .statut-refuse { background: #fee2e2; color: #991b1b; }
+    .footer { margin-top: 40px; border-top: 1px solid #eee; padding-top: 15px; color: #888; font-size: 10px; text-align: center; }
+    .notes { background: #f8f9fa; border-left: 3px solid #2d6a4f; padding: 10px 15px; margin-top: 20px; font-size: 11px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+    <div class="header-left">
+        <div class="company-name">DP Services Sud</div>
+        <div style="color:#888; font-size:11px; margin-top:4px;">
+            06 08 12 81 03<br>
+            Dpservicesud@gmail.com<br>
+            Disponible 7j/7 — Intervention rapide
+        </div>
+    </div>
+    <div class="header-right">
+        <h1>DEVIS</h1>
+        <div>N° {{ devis.id }}</div>
+        <div>{{ devis.createdAt|date('d/m/Y') }}</div>
+        <div style="margin-top:8px;">
+            <span class="statut statut-{{ devis.status }}">{{ devis.status|upper }}</span>
+        </div>
+    </div>
+</div>
+
+<div class="info-block">
+    <strong>Prospect / Client</strong>
+    <table>
+        <tr>
+            <td class="label">Entreprise</td>
+            <td>{{ devis.lead.companyName }}</td>
+        </tr>
+        <tr>
+            <td class="label">Contact</td>
+            <td>{{ devis.lead.contactName }}</td>
+        </tr>
+        <tr>
+            <td class="label">Email</td>
+            <td>{{ devis.lead.email }}</td>
+        </tr>
+        <tr>
+            <td class="label">Téléphone</td>
+            <td>{{ devis.lead.phone }}</td>
+        </tr>
+        <tr>
+            <td class="label">Ville</td>
+            <td>{{ devis.lead.city }}</td>
+        </tr>
+    </table>
+</div>
+
+<table class="prestations">
+    <thead>
+        <tr>
+            <th style="width:50%">Prestation</th>
+            <th style="width:20%">Unité</th>
+            <th style="width:10%; text-align:center">Qté</th>
+            <th style="width:20%; text-align:right">Prix HT</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for ligne in devis.devisLignes %}
+        <tr>
+            <td>
+                {{ ligne.tarifPrestation.nom }}
+                {% if ligne.description %}
+                    <br><span style="color:#888; font-size:10px;">{{ ligne.description }}</span>
+                {% endif %}
+            </td>
+            <td>{{ ligne.tarifPrestation.unite }}</td>
+            <td style="text-align:center">{{ ligne.quantite }}</td>
+            <td style="text-align:right">{{ (ligne.prixUnitaire * ligne.quantite)|number_format(2, ',', ' ') }} €</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div class="total-block">
+    {% set subtotal = devis.total %}
+    {% if devis.discount %}
+        <div class="total-line">Sous-total : {{ subtotal|number_format(2, ',', ' ') }} €</div>
+        <div class="total-line" style="color:#e74c3c;">Remise : -{{ devis.discount|number_format(2, ',', ' ') }} €</div>
+        <div class="total-final">TOTAL : {{ (subtotal - devis.discount)|number_format(2, ',', ' ') }} €</div>
+    {% else %}
+        <div class="total-final">TOTAL : {{ subtotal|number_format(2, ',', ' ') }} €</div>
+    {% endif %}
+    <div style="color:#888; font-size:10px; margin-top:5px;">TVA non applicable — Art. 293 B du CGI</div>
+</div>
+
+{% if devis.notes %}
+<div class="notes">
+    <strong>Notes :</strong><br>{{ devis.notes }}
+</div>
+{% endif %}
+
+<div class="footer">
+    DP Services Sud · 06 08 12 81 03 · Dpservicesud@gmail.com · Disponible 7j/7<br>
+    Devis valable 30 jours à compter de sa date d'émission.
+</div>
+
+</body>
+</html>

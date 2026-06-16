@@ -118,6 +118,8 @@
                     <a href="{{ path('app_leads') }}" style="padding:0.75rem; background:#f1f5f9; color:#475569; border-radius:6px; text-decoration:none; text-align:center;">← Retour liste</a>
                     <a href="{{ path('app_lead_email', {id: lead.id}) }}" style="padding:0.75rem; background:#059669; color:white; border-radius:6px; text-decoration:none; text-align:center;">📧 Envoyer un email</a>
                     <a href="{{ path('app_lead_sms', {id: lead.id}) }}" style="padding:0.75rem; background:#7c3aed; color:white; border-radius:6px; text-decoration:none; text-align:center;">📱 Envoyer un SMS</a>
+                    <a href="{{ path('devis_nouveau', {leadId: lead.id}) }}" style="padding:0.75rem; background:#d97706; color:white; border-radius:6px; text-decoration:none; text-align:center;">📄 Nouveau devis</a>
+                    <a href="{{ path('devis_liste', {leadId: lead.id}) }}" style="padding:0.75rem; background:#f1f5f9; color:#475569; border-radius:6px; text-decoration:none; text-align:center;">📋 Voir les devis</a>
                 </div>
             </div>
         </div>

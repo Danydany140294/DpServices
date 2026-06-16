@@ -1,0 +1,89 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Devis N°{{ devis.id }}{% endblock %}
+{% block page_title %}Devis N°{{ devis.id }} — {{ devis.lead.companyName }}{% endblock %}
+
+{% block body %}
+<div class="max-w-3xl mx-auto space-y-6">
+
+    {# Statut + actions #}
+    <div class="bg-white rounded-xl shadow p-5 flex items-center justify-between">
+        <div>
+            <span class="text-sm text-gray-500">Créé le {{ devis.createdAt|date('d/m/Y') }}</span>
+            {% set colors = {
+                'brouillon': 'bg-yellow-100 text-yellow-800',
+                'envoye': 'bg-blue-100 text-blue-800',
+                'accepte': 'bg-green-100 text-green-700',
+                'refuse': 'bg-red-100 text-red-700'
+            } %}
+            <span class="ml-3 px-3 py-1 rounded-full text-xs font-semibold {{ colors[devis.status] ?? 'bg-gray-100 text-gray-600' }}">
+                {{ devis.status|upper }}
+            </span>
+        </div>
+        <div class="flex gap-3">
+            <a href="{{ path('devis_pdf', {id: devis.id}) }}" target="_blank"
+               class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition">
+                📄 Voir PDF
+            </a>
+            <span class="bg-gray-300 text-gray-500 px-4 py-2 rounded-lg text-sm font-medium cursor-not-allowed">
+    ✉️ Envoyer par email (J47)
+</span>
+        </div>
+    </div>
+
+    {# Lignes #}
+    <div class="bg-white rounded-xl shadow overflow-hidden">
+        <table class="w-full text-sm">
+            <thead class="bg-green-700 text-white">
+                <tr>
+                    <th class="text-left px-4 py-3">Prestation</th>
+                    <th class="text-center px-4 py-3">Qté</th>
+                    <th class="text-right px-4 py-3">Prix unit.</th>
+                    <th class="text-right px-4 py-3">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for ligne in devis.devisLignes %}
+            <tr class="border-b border-gray-100 hover:bg-gray-50">
+                <td class="px-4 py-3">
+                    <div class="font-medium">{{ ligne.tarifPrestation.nom }}</div>
+                    {% if ligne.description %}
+                        <div class="text-xs text-gray-400">{{ ligne.description }}</div>
+                    {% endif %}
+                </td>
+                <td class="px-4 py-3 text-center">{{ ligne.quantite }}</td>
+                <td class="px-4 py-3 text-right">{{ ligne.prixUnitaire|number_format(2, ',', ' ') }} €</td>
+                <td class="px-4 py-3 text-right font-medium">{{ (ligne.prixUnitaire * ligne.quantite)|number_format(2, ',', ' ') }} €</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+            <tfoot class="bg-gray-50">
+                {% if devis.discount %}
+                <tr>
+                    <td colspan="3" class="px-4 py-2 text-right text-gray-500">Sous-total</td>
+                    <td class="px-4 py-2 text-right">{{ devis.total|number_format(2, ',', ' ') }} €</td>
+                </tr>
+                <tr>
+                    <td colspan="3" class="px-4 py-2 text-right text-red-500">Remise</td>
+                    <td class="px-4 py-2 text-right text-red-500">-{{ devis.discount|number_format(2, ',', ' ') }} €</td>
+                </tr>
+                {% endif %}
+                <tr>
+                    <td colspan="3" class="px-4 py-3 text-right font-bold text-gray-800">TOTAL</td>
+                    <td class="px-4 py-3 text-right font-bold text-green-700 text-lg">
+                        {{ (devis.total - (devis.discount ?? 0))|number_format(2, ',', ' ') }} €
+                    </td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    {% if devis.notes %}
+    <div class="bg-white rounded-xl shadow p-5">
+        <div class="text-sm font-medium text-gray-700 mb-1">Notes</div>
+        <div class="text-gray-600 text-sm">{{ devis.notes }}</div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

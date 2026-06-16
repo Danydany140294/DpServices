@@ -70,6 +70,12 @@ class Lead
     #[ORM\OneToMany(targetEntity: LeadActivity::class, mappedBy: 'lead', orphanRemoval: true)]
     private Collection $leadActivities;
 
+    /**
+     * @var Collection<int, Devis>
+     */
+    #[ORM\OneToMany(targetEntity: Devis::class, mappedBy: 'lead')]
+    private Collection $devis;
+
     public function __construct()
 {
     $this->createdAt = new \DateTimeImmutable();
@@ -77,6 +83,7 @@ class Lead
     $this->status = 'NEW';
     $this->hasAirbnb = false;
     $this->leadActivities = new ArrayCollection();
+    $this->devis = new ArrayCollection();
 }
 
     public function getId(): ?int
@@ -300,6 +307,36 @@ class Lead
             // set the owning side to null (unless already changed)
             if ($leadActivity->getLead() === $this) {
                 $leadActivity->setLead(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Devis>
+     */
+    public function getDevis(): Collection
+    {
+        return $this->devis;
+    }
+
+    public function addDevi(Devis $devi): static
+    {
+        if (!$this->devis->contains($devi)) {
+            $this->devis->add($devi);
+            $devi->setLead($this);
+        }
+
+        return $this;
+    }
+
+    public function removeDevi(Devis $devi): static
+    {
+        if ($this->devis->removeElement($devi)) {
+            // set the owning side to null (unless already changed)
+            if ($devi->getLead() === $this) {
+                $devi->setLead(null);
             }
         }
 
