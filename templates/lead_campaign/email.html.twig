@@ -1,0 +1,45 @@
+{% extends 'base.html.twig' %}
+{% block title %}Envoyer email — {{ lead.companyName }}{% endblock %}
+{% block page_title %}📧 Envoyer un email à {{ lead.companyName }}{% endblock %}
+
+{% block body %}
+<div class="welcome">
+    <p style="color:#64748b; margin-bottom:1.5rem;">
+        Destinataire : <strong>{{ lead.email ?? 'Aucun email renseigné' }}</strong>
+    </p>
+
+    {% if not lead.email %}
+        <div style="background:#fee2e2; color:#dc2626; padding:1rem; border-radius:6px;">
+            ❌ Ce prospect n'a pas d'adresse email. <a href="{{ path('app_lead_edit', {id: lead.id}) }}">Ajouter un email</a>
+        </div>
+    {% else %}
+        <form method="post">
+            <div style="margin-bottom:1rem;">
+                <label style="display:block; margin-bottom:0.5rem; font-weight:500;">Objet</label>
+                <input type="text" name="subject" required
+                    value="Nos services de ménage Airbnb — {{ lead.city }}"
+                    style="width:100%; padding:0.625rem; border:1px solid #ddd; border-radius:6px;">
+            </div>
+            <div style="margin-bottom:1rem;">
+                <label style="display:block; margin-bottom:0.5rem; font-weight:500;">Message</label>
+                <textarea name="body" rows="10" required
+                    style="width:100%; padding:0.625rem; border:1px solid #ddd; border-radius:6px;">Bonjour,
+
+Nous sommes DP Services, spécialistes du ménage Airbnb à {{ lead.city }}.
+
+Nous proposons des prestations de ménage professionnel pour les conciergeries et gestionnaires de locations courte durée.
+
+Seriez-vous intéressé(e) par un devis gratuit ?
+
+Cordialement,
+L'équipe DP Services</textarea>
+            </div>
+            <button type="submit" name="preview" value="1"
+                style="padding:0.75rem 2rem; background:#2563eb; color:white; border:none; border-radius:4px; cursor:pointer;">
+                👁️ Aperçu avant envoi
+            </button>
+            <a href="{{ path('app_lead_show', {id: lead.id}) }}" style="margin-left:1rem; color:#64748b;">Annuler</a>
+        </form>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends 'base.html.twig' %}
+{% block title %}Email groupé{% endblock %}
+{% block page_title %}📧 Email groupé{% endblock %}
+
+{% block body %}
+<div class="welcome">
+    <form method="post">
+        <div style="margin-bottom:1rem;">
+            <label style="display:block; margin-bottom:0.5rem; font-weight:500;">Objet</label>
+            <input type="text" name="subject" required
+                value="Nos services de ménage Airbnb"
+                style="width:100%; padding:0.625rem; border:1px solid #ddd; border-radius:6px;">
+        </div>
+        <div style="margin-bottom:1rem;">
+            <label style="display:block; margin-bottom:0.5rem; font-weight:500;">Message</label>
+            <textarea name="body" rows="8" required
+                style="width:100%; padding:0.625rem; border:1px solid #ddd; border-radius:6px;">Bonjour,
+
+Nous sommes DP Services, spécialistes du ménage Airbnb.
+
+Nous proposons des prestations professionnelles pour les conciergeries et gestionnaires.
+
+Seriez-vous intéressé(e) par un devis gratuit ?
+
+Cordialement,
+L'équipe DP Services</textarea>
+        </div>
+
+        <div style="margin-bottom:1rem;">
+            <label style="display:block; margin-bottom:0.5rem; font-weight:500;">
+                Sélectionner les prospects
+                <span style="font-weight:normal; color:#64748b;">(uniquement ceux avec un email)</span>
+            </label>
+            <div style="background:#f8fafc; border:1px solid #ddd; border-radius:6px; max-height:300px; overflow-y:auto; padding:1rem;">
+                {% for lead in leads %}
+                    {% if lead.email %}
+                    <label style="display:flex; align-items:center; gap:0.5rem; padding:0.5rem; cursor:pointer;">
+                        <input type="checkbox" name="lead_ids[]" value="{{ lead.id }}" checked>
+                        <span>{{ lead.companyName }}</span>
+                        <span style="color:#64748b; font-size:0.8rem;">— {{ lead.city }} — {{ lead.email }}</span>
+                    </label>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <button type="submit" name="preview" value="1"
+            style="padding:0.75rem 2rem; background:#2563eb; color:white; border:none; border-radius:4px; cursor:pointer;">
+            👁️ Aperçu avant envoi
+        </button>
+        <a href="{{ path('app_leads') }}" style="margin-left:1rem; color:#64748b;">Annuler</a>
+    </form>
+</div>
+{% endblock %}

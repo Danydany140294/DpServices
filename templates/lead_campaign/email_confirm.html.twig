@@ -1,0 +1,27 @@
+{% extends 'base.html.twig' %}
+{% block title %}Confirmer l'envoi{% endblock %}
+{% block page_title %}Confirmer l'envoi email{% endblock %}
+
+{% block body %}
+<div class="welcome">
+    <div style="background:#fef3c7; border:1px solid #fcd34d; padding:1rem; border-radius:6px; margin-bottom:1.5rem;">
+        ⚠️ Vous allez envoyer un email à <strong>{{ lead.companyName }}</strong> ({{ lead.email }})
+    </div>
+
+    <div style="background:#f8fafc; padding:1rem; border-radius:6px; margin-bottom:1.5rem;">
+        <p><strong>Objet :</strong> {{ subject }}</p>
+        <hr style="margin:0.75rem 0; border-color:#e2e8f0;">
+        <p style="white-space:pre-line;">{{ body }}</p>
+    </div>
+
+    <form method="post">
+        <input type="hidden" name="subject" value="{{ subject }}">
+        <input type="hidden" name="body" value="{{ body }}">
+        <input type="hidden" name="confirmed" value="1">
+        <button type="submit" style="padding:0.75rem 2rem; background:#059669; color:white; border:none; border-radius:4px; cursor:pointer;">
+            ✅ Confirmer l'envoi
+        </button>
+        <a href="{{ path('app_lead_email', {id: lead.id}) }}" style="margin-left:1rem; color:#64748b;">← Modifier</a>
+    </form>
+</div>
+{% endblock %}

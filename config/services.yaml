@@ -26,3 +26,7 @@ services:
     #     arguments:
     #         $googlePlacesApiKey: '%env(GOOGLE_PLACES_API_KEY)%'
 
+    App\Service\LeadSmsService:
+        arguments:
+            $brevoApiKey: '%env(BREVO_API_KEY)%'
+
