@@ -80,12 +80,12 @@ class DevisController extends AbstractController
 
 
     #[Route('/envoyer/{id}', name: 'devis_envoyer', methods: ['POST'])]
-public function envoyer(
+    public function envoyer(
     Devis $devis,
     DevisPdfService $pdfService,
     EmailService $emailService,
     EntityManagerInterface $em
-): Response {
+    ): Response {
     $lead = $devis->getLead();
     $email = $lead->getEmail();
 
@@ -98,6 +98,8 @@ public function envoyer(
     $emailService->sendDevis($email, $lead->getCompanyName(), $pdfContent, $devis->getId());
 
     $devis->setStatus('envoye');
+    $devis->setSentAt(new \DateTimeImmutable());
+
     $em->flush();
 
     $this->addFlash('success', 'Devis envoyé à ' . $email . ' avec succès !');
@@ -111,6 +113,43 @@ public function envoyer(
             'devis' => $devis,
         ]);
     }
+    #[Route('/accepter/{id}', name: 'devis_accepter', methods: ['POST'])]
+public function accepter(Devis $devis, EntityManagerInterface $em): Response
+{
+    $devis->setStatus('accepte');
+
+    $activity = new \App\Entity\LeadActivity();
+    $activity->setLead($devis->getLead());
+    $activity->setType('devis');
+    $activity->setResult('positif');
+    $activity->setNote('Devis N°' . $devis->getId() . ' accepté — ' . number_format($devis->getTotal(), 2, ',', ' ') . ' €');
+    $em->persist($activity);
+
+    $devis->getLead()->setStatus('CLIENT');
+    $em->flush();
+
+    $this->addFlash('success', 'Devis accepté ! Le prospect est maintenant CLIENT.');
+    return $this->redirectToRoute('devis_apercu', ['id' => $devis->getId()]);
+}
+
+#[Route('/refuser/{id}', name: 'devis_refuser', methods: ['POST'])]
+public function refuser(Devis $devis, EntityManagerInterface $em): Response
+{
+    $devis->setStatus('refuse');
+
+    $activity = new \App\Entity\LeadActivity();
+    $activity->setLead($devis->getLead());
+    $activity->setType('devis');
+    $activity->setResult('negatif');
+    $activity->setNote('Devis N°' . $devis->getId() . ' refusé.');
+    $em->persist($activity);
+
+    $devis->getLead()->setStatus('PERDU');
+    $em->flush();
+
+    $this->addFlash('warning', 'Devis refusé. Le prospect est passé en PERDU.');
+    return $this->redirectToRoute('devis_apercu', ['id' => $devis->getId()]);
+}
 
     #[Route('/pdf/{id}', name: 'devis_pdf')]
     public function pdf(Devis $devis, DevisPdfService $pdfService): Response
