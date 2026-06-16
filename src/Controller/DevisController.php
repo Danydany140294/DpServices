@@ -19,64 +19,72 @@ use App\Service\EmailService;
 class DevisController extends AbstractController
 {
     #[Route('/nouveau/{leadId}', name: 'devis_nouveau')]
-    public function nouveau(
-        int $leadId,
-        Request $request,
-        LeadRepository $leadRepo,
-        TarifPrestationRepository $tarifRepo,
-        EntityManagerInterface $em
-    ): Response {
-        $lead = $leadRepo->find($leadId);
-        if (!$lead) {
-            throw $this->createNotFoundException('Lead introuvable');
-        }
-
-        $tarifs = $tarifRepo->findBy([], ['categorie' => 'ASC', 'nom' => 'ASC']);
-
-        if ($request->isMethod('POST')) {
-            $devis = new Devis();
-            $devis->setLead($lead);
-            $devis->setStatus('brouillon');
-            $devis->setCreatedAt(new \DateTimeImmutable());
-            $devis->setNotes($request->request->get('notes'));
-            $devis->setDiscount((float) $request->request->get('discount', 0) ?: null);
-
-            $total = 0;
-            $tarifIds = $request->request->all('tarif_id');
-            $quantites = $request->request->all('quantite');
-
-            foreach ($tarifIds as $i => $tarifId) {
-                $qte = (int)($quantites[$i] ?? 1);
-                if ($qte <= 0) continue;
-
-                $tarif = $tarifRepo->find($tarifId);
-                if (!$tarif) continue;
-
-                $ligne = new DevisLigne();
-                $ligne->setDevis($devis);
-                $ligne->setTarifPrestation($tarif);
-                $ligne->setQuantite($qte);
-                $ligne->setPrixUnitaire($tarif->getPrix());
-                $ligne->setDescription($tarif->getDescription());
-
-                $total += $tarif->getPrix() * $qte;
-                $devis->addDevisLigne($ligne);
-                $em->persist($ligne);
-            }
-
-            $devis->setTotal($total);
-            $em->persist($devis);
-            $em->flush();
-
-            $this->addFlash('success', 'Devis créé avec succès.');
-            return $this->redirectToRoute('devis_apercu', ['id' => $devis->getId()]);
-        }
-
-        return $this->render('devis/nouveau.html.twig', [
-            'lead' => $lead,
-            'tarifs' => $tarifs,
-        ]);
+public function nouveau(
+    int $leadId,
+    Request $request,
+    LeadRepository $leadRepo,
+    TarifPrestationRepository $tarifRepo,
+    EntityManagerInterface $em
+): Response {
+    $lead = $leadRepo->find($leadId);
+    if (!$lead) {
+        throw $this->createNotFoundException('Lead introuvable');
     }
+
+    $tarifs = $tarifRepo->findBy([], ['categorie' => 'ASC', 'nom' => 'ASC']);
+
+    // Lecture unique des flash IA
+    $flashBag      = $request->getSession()->getFlashBag();
+    $aiSuggestions = json_decode($flashBag->get('ai_suggestions')[0] ?? '[]', true) ?: [];
+    $aiSummary     = $flashBag->get('ai_summary')[0] ?? '';
+
+    if ($request->isMethod('POST')) {
+        $devis = new Devis();
+        $devis->setLead($lead);
+        $devis->setStatus('brouillon');
+        $devis->setCreatedAt(new \DateTimeImmutable());
+        $devis->setNotes($request->request->get('notes'));
+        $devis->setDiscount((float) $request->request->get('discount', 0) ?: null);
+
+        $total = 0;
+        $tarifIds  = $request->request->all('tarif_id');
+        $quantites = $request->request->all('quantite');
+
+        foreach ($tarifIds as $i => $tarifId) {
+            $qte = (int)($quantites[$i] ?? 1);
+            if ($qte <= 0) continue;
+
+            $tarif = $tarifRepo->find($tarifId);
+            if (!$tarif) continue;
+
+            $ligne = new DevisLigne();
+            $ligne->setDevis($devis);
+            $ligne->setTarifPrestation($tarif);
+            $ligne->setQuantite($qte);
+            $ligne->setPrixUnitaire($tarif->getPrix());
+            $ligne->setDescription($tarif->getDescription());
+
+            $total += $tarif->getPrix() * $qte;
+            $devis->addDevisLigne($ligne);
+            $em->persist($ligne);
+        }
+
+        $devis->setTotal($total);
+        $em->persist($devis);
+        $em->flush();
+
+        $this->addFlash('success', 'Devis créé avec succès.');
+        return $this->redirectToRoute('devis_apercu', ['id' => $devis->getId()]);
+    }
+
+    // $aiSuggestions et $aiSummary déjà lus plus haut — on les passe directement
+    return $this->render('devis/nouveau.html.twig', [
+        'lead'          => $lead,
+        'tarifs'        => $tarifs,
+        'aiSuggestions' => $aiSuggestions,
+        'aiSummary'     => $aiSummary,
+    ]);
+}
 
 
     #[Route('/envoyer/{id}', name: 'devis_envoyer', methods: ['POST'])]

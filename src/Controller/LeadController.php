@@ -225,17 +225,20 @@ public function summarize(Lead $lead, MistralService $mistral): Response
     return $this->redirectToRoute('app_lead_show', ['id' => $lead->getId()]);
 }
 
-    #[Route('/{id}/ai-suggest', name: 'app_lead_ai_suggest', methods: ['POST'])]
+   #[Route('/{id}/ai-suggest', name: 'app_lead_ai_suggest', methods: ['POST'])]
 public function aiSuggest(Lead $lead, MistralService $mistral): Response
 {
     $category = $lead->getCategory()?->getName() ?? 'conciergerie';
     $city     = $lead->getCity() ?? 'votre ville';
 
-    $prompt = "Pour une entreprise de type '$category' à $city, quelles prestations de ménage Airbnb recommandes-tu parmi cette liste : Ménage Standard ≤45m², Option Linge, Entretien canapé/Matelas, Ménage approfondi, Check-in/check-out, Stock consommables, Main d'œuvre ménage. Réponds avec une liste courte et une phrase d'explication pour chaque prestation recommandée.";
+    $prompt = "Pour une entreprise de type '$category' à $city, quelles prestations de ménage Airbnb recommandes-tu parmi cette liste exacte : 'Ménage Standard ≤45m²', 'Option Linge', 'Entretien canapé/Matelas/Tapis', 'Ménage approfondi', 'Check-in / Check-out', 'Stock consommables', 'Main d'œuvre ménage'. Réponds UNIQUEMENT avec un JSON de ce format, sans aucun texte avant ou après : {\"suggestions\": [\"nom exact 1\", \"nom exact 2\"], \"explication\": \"2 phrases max\"}";
 
-    $suggestions = $mistral->generate($prompt);
+    $raw = $mistral->generate($prompt);
+    $data = json_decode($raw, true);
 
-    $this->addFlash('ai_summary', $suggestions);
+    $this->addFlash('ai_summary', $data['explication'] ?? 'Suggestions générées.');
+    $this->addFlash('ai_suggestions', json_encode($data['suggestions'] ?? []));
+
     return $this->redirectToRoute('devis_nouveau', ['leadId' => $lead->getId()]);
 }
 
