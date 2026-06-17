@@ -33,7 +33,7 @@ public function index(UserRepository $userRepository): Response
 
     #[Route('/api/calendar/events', name: 'app_calendar_events')]
 #[IsGranted('ROLE_USER')]
-public function events(CleaningRequestRepository $repo, Request $request): JsonResponse
+public function events(CleaningRequestRepository $repo, \App\Repository\LeadRepository $leadRepo, Request $request): JsonResponse
 {
     $cleanerId = $request->query->get('cleaner');
     $ownerId = $request->query->get('owner');
@@ -65,7 +65,7 @@ public function events(CleaningRequestRepository $repo, Request $request): JsonR
         }
 
         $events[] = [
-            'id' => $req->getId(),
+            'id' => 'cr_' . $req->getId(),
             'title' => $req->getProperty()->getName(),
             'start' => $req->getScheduledDate()->format('Y-m-d') . 'T' . $req->getScheduledTime()->format('H:i:s'),
             'backgroundColor' => $req->getProperty()->getColor(),
@@ -76,6 +76,28 @@ public function events(CleaningRequestRepository $repo, Request $request): JsonR
                 'cleaner' => $req->getAssignedCleaner() ? $req->getAssignedCleaner()->getFirstname() . ' ' . $req->getAssignedCleaner()->getLastname() : 'Non assigné',
             ],
         ];
+    }
+
+    // J59 — Rappels de prospection (uniquement visibles par l'admin)
+    if ($this->isGranted('ROLE_ADMIN')) {
+        $leadsToFollow = $leadRepo->findBy(['status' => 'TO_FOLLOW_UP']);
+        foreach ($leadsToFollow as $lead) {
+            if (!$lead->getNextFollowUp()) {
+                continue;
+            }
+            $events[] = [
+                'id' => 'lead_' . $lead->getId(),
+                'title' => '📞 Relancer : ' . $lead->getCompanyName(),
+                'start' => $lead->getNextFollowUp()->format('Y-m-d'),
+                'backgroundColor' => '#7c3aed',
+                'borderColor' => '#7c3aed',
+                'url' => $this->generateUrl('app_lead_show', ['id' => $lead->getId()]),
+                'extendedProps' => [
+                    'type' => 'prospection',
+                    'city' => $lead->getCity(),
+                ],
+            ];
+        }
     }
 
     return $this->json($events);
