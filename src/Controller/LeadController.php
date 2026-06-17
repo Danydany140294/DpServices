@@ -285,6 +285,37 @@ public function convert(
     return $this->redirectToRoute('app_lead_show', ['id' => $lead->getId()]);
 }
 
+
+#[Route('/kanban', name: 'app_leads_kanban')]
+public function kanban(LeadRepository $repo): Response
+{
+    $statuses = ['NEW', 'CONTACTED', 'DISCUSSION', 'QUOTE_SENT', 'TO_FOLLOW_UP', 'CLIENT', 'LOST'];
+    $leadsByStatus = [];
+
+    foreach ($statuses as $status) {
+        $leadsByStatus[$status] = $repo->findBy(['status' => $status], ['score' => 'DESC']);
+    }
+
+    return $this->render('lead/kanban.html.twig', [
+        'leadsByStatus' => $leadsByStatus,
+    ]);
+}
+
+#[Route('/{id}/kanban-status', name: 'app_lead_kanban_status', methods: ['POST'])]
+public function kanbanStatus(Lead $lead, Request $request, EntityManagerInterface $em, ActivityLogService $logger): Response
+{
+    $data = json_decode($request->getContent(), true);
+    $newStatus = $data['status'] ?? null;
+
+    if ($newStatus) {
+        $lead->setStatus($newStatus);
+        $em->flush();
+        $logger->log('Statut changé via Kanban', $lead->getCompanyName() . ' → ' . $newStatus);
+    }
+
+    return $this->json(['success' => true]);
+}
+
     #[Route('/{id}', name: 'app_lead_show')]
     public function show(Lead $lead): Response
     {

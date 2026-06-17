@@ -1,0 +1,106 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Kanban Prospects — DP Services{% endblock %}
+{% block page_title %}📋 Vue Kanban{% endblock %}
+
+{% block body %}
+
+<div style="margin-bottom:1rem;">
+    <a href="{{ path('app_leads') }}" style="padding:0.5rem 1rem; background:#f1f5f9; color:#475569; border-radius:4px; text-decoration:none;">← Retour vue tableau</a>
+</div>
+
+{% set statusConfig = {
+    'NEW': {'label': '🔵 Nouveau', 'color': '#2563eb', 'bg': '#dbeafe'},
+    'CONTACTED': {'label': '🟡 Contacté', 'color': '#d97706', 'bg': '#fef3c7'},
+    'DISCUSSION': {'label': '🟠 En discussion', 'color': '#ea580c', 'bg': '#ffedd5'},
+    'QUOTE_SENT': {'label': '🟣 Devis envoyé', 'color': '#7c3aed', 'bg': '#f3e8ff'},
+    'TO_FOLLOW_UP': {'label': '⚪ À relancer', 'color': '#64748b', 'bg': '#f1f5f9'},
+    'CLIENT': {'label': '🟢 Client', 'color': '#059669', 'bg': '#d1fae5'},
+    'LOST': {'label': '🔴 Perdu', 'color': '#dc2626', 'bg': '#fee2e2'}
+} %}
+
+<div style="display:flex; gap:1rem; overflow-x:auto; padding-bottom:1rem;">
+    {% for status, leads in leadsByStatus %}
+        {% set config = statusConfig[status] %}
+        <div class="kanban-column" data-status="{{ status }}"
+             style="min-width:280px; background:#f8fafc; border-radius:8px; padding:1rem; flex-shrink:0;">
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; padding-bottom:0.5rem; border-bottom:2px solid {{ config.color }};">
+                <span style="font-weight:600; color:{{ config.color }};">{{ config.label }}</span>
+                <span style="background:{{ config.bg }}; color:{{ config.color }}; padding:0.15rem 0.5rem; border-radius:12px; font-size:0.75rem; font-weight:bold;">{{ leads|length }}</span>
+            </div>
+
+            <div class="kanban-cards" style="display:flex; flex-direction:column; gap:0.5rem; min-height:100px;">
+                {% for lead in leads %}
+                    {% set score = lead.score %}
+                    {% set scoreColor = score >= 80 ? '#dc2626' : (score >= 50 ? '#ea580c' : (score >= 20 ? '#d97706' : '#94a3b8')) %}
+                    <div class="kanban-card" draggable="true" data-id="{{ lead.id }}"
+                         style="background:white; border-radius:6px; padding:0.75rem; box-shadow:0 1px 3px rgba(0,0,0,0.1); cursor:grab;">
+                        <a href="{{ path('app_lead_show', {id: lead.id}) }}" style="text-decoration:none; color:inherit;">
+                            <div style="font-weight:500; color:#1e293b; font-size:0.875rem;">{{ lead.companyName }}</div>
+                            <div style="font-size:0.75rem; color:#64748b; margin-top:0.25rem;">📍 {{ lead.city }}</div>
+                            <div style="margin-top:0.5rem; display:flex; justify-content:space-between; align-items:center;">
+                                <span style="font-size:0.7rem; color:#94a3b8;">{{ lead.category ? lead.category.name : '—' }}</span>
+                                <span style="font-size:0.75rem; font-weight:bold; color:{{ scoreColor }};">{{ score }}</span>
+                            </div>
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let draggedCard = null;
+
+    document.querySelectorAll('.kanban-card').forEach(card => {
+        card.addEventListener('dragstart', function(e) {
+            draggedCard = this;
+            e.dataTransfer.effectAllowed = 'move';
+            this.style.opacity = '0.5';
+        });
+        card.addEventListener('dragend', function() {
+            this.style.opacity = '1';
+        });
+    });
+
+    document.querySelectorAll('.kanban-column').forEach(column => {
+        column.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.style.background = '#e2e8f0';
+        });
+        column.addEventListener('dragleave', function() {
+            this.style.background = '#f8fafc';
+        });
+        column.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.style.background = '#f8fafc';
+
+            if (!draggedCard) return;
+
+            const newStatus = this.dataset.status;
+            const leadId = draggedCard.dataset.id;
+
+            this.querySelector('.kanban-cards').appendChild(draggedCard);
+
+            fetch(`/acquisition/leads/${leadId}/kanban-status`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: newStatus })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                }
+            });
+
+            draggedCard = null;
+        });
+    });
+});
+</script>
+
+{% endblock %}
