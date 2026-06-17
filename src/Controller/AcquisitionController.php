@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Repository\LeadRepository;
 use App\Repository\DevisRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -20,7 +21,7 @@ class AcquisitionController extends AbstractController
     }
 
     #[Route('/dashboard', name: 'app_acquisition_dashboard')]
-    public function dashboard(LeadRepository $leadRepo): Response
+    public function dashboard(LeadRepository $leadRepo, EntityManagerInterface $em): Response
     {
         $allLeads = $leadRepo->findAll();
 
@@ -47,6 +48,17 @@ class AcquisitionController extends AbstractController
             $byStatus[$lead->getStatus()] = ($byStatus[$lead->getStatus()] ?? 0) + 1;
         }
 
+        // J65 — Stats campagnes
+        $activityRepo = $em->getRepository(\App\Entity\LeadActivity::class);
+        $allActivities = $activityRepo->findAll();
+
+        $emailsSent = count(array_filter($allActivities, fn($a) => $a->getType() === 'EMAIL'));
+        $smsSent = count(array_filter($allActivities, fn($a) => $a->getType() === 'SMS'));
+
+        $positiveResponses = count(array_filter($allActivities, fn($a) => $a->getResult() === 'POSITIVE'));
+        $totalContacted = count(array_filter($allActivities, fn($a) => in_array($a->getType(), ['EMAIL', 'SMS', 'CALL'])));
+        $responseRate = $totalContacted > 0 ? round(($positiveResponses / $totalContacted) * 100, 1) : 0;
+
         return $this->render('acquisition/dashboard.html.twig', [
             'total' => $total,
             'clients' => $clients,
@@ -57,6 +69,9 @@ class AcquisitionController extends AbstractController
             'potentialRevenue' => $potentialRevenue,
             'byCategory' => $byCategory,
             'byStatus' => $byStatus,
+            'emailsSent' => $emailsSent,
+            'smsSent' => $smsSent,
+            'responseRate' => $responseRate,
         ]);
     }
 }

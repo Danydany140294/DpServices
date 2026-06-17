@@ -39,6 +39,26 @@
         <p style="font-size:2.5rem; font-weight:bold;">{{ potentialRevenue|number_format(0, ',', ' ') }} €</p>
     </div>
 
+    {# ── Stats campagnes (J65) ── #}
+<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
+
+    <div style="background:white; border-radius:8px; padding:1.5rem; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+        <p style="font-size:0.8rem; color:#94a3b8; text-transform:uppercase; margin-bottom:0.5rem;">📧 Emails envoyés</p>
+        <p style="font-size:2rem; font-weight:bold; color:#059669;">{{ emailsSent }}</p>
+    </div>
+
+    <div style="background:white; border-radius:8px; padding:1.5rem; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+        <p style="font-size:0.8rem; color:#94a3b8; text-transform:uppercase; margin-bottom:0.5rem;">📱 SMS envoyés</p>
+        <p style="font-size:2rem; font-weight:bold; color:#7c3aed;">{{ smsSent }}</p>
+    </div>
+
+    <div style="background:white; border-radius:8px; padding:1.5rem; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+        <p style="font-size:0.8rem; color:#94a3b8; text-transform:uppercase; margin-bottom:0.5rem;">Taux de réponse positive</p>
+        <p style="font-size:2rem; font-weight:bold; color:#2563eb;">{{ responseRate }}%</p>
+    </div>
+
+</div>
+
     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem;">
 
         {# ── Répartition par statut ── #}
