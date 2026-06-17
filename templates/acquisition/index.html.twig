@@ -19,11 +19,11 @@
                 <h3 style="margin:0.5rem 0;">Recherche</h3>
                 <p style="color:#64748b; font-size:0.875rem;">Trouver des prospects</p>
             </div>
-            <div style="background:#f1f5f9; padding:1.5rem; border-radius:8px; text-align:center;">
-                <div style="font-size:2rem;">📊</div>
-                <h3 style="margin:0.5rem 0;">Dashboard</h3>
-                <p style="color:#64748b; font-size:0.875rem;">Statistiques</p>
-            </div>
+            <a href="{{ path('app_acquisition_dashboard') }}" target="_blank" style="background:#f1f5f9; padding:1.5rem; border-radius:8px; text-align:center; text-decoration:none; color:inherit; display:block; transition:background 0.2s;">
+    <div style="font-size:2rem;">📊</div>
+    <h3 style="margin:0.5rem 0; color:#1e293b;">Dashboard</h3>
+    <p style="color:#64748b; font-size:0.875rem;">Statistiques</p>
+</a>
         </div>
     </div>
 {% endblock %}

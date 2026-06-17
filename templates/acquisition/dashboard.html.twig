@@ -1,0 +1,81 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard Acquisition — DP Services{% endblock %}
+{% block page_title %}📊 Dashboard Acquisition{% endblock %}
+
+{% block body %}
+
+    {# ── KPIs principaux ── #}
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
+
+        <div style="background:white; border-radius:8px; padding:1.5rem; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+            <p style="font-size:0.8rem; color:#94a3b8; text-transform:uppercase; margin-bottom:0.5rem;">Total prospects</p>
+            <p style="font-size:2rem; font-weight:bold; color:#1e293b;">{{ total }}</p>
+        </div>
+
+        <div style="background:white; border-radius:8px; padding:1.5rem; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+            <p style="font-size:0.8rem; color:#94a3b8; text-transform:uppercase; margin-bottom:0.5rem;">Qualifiés (score ≥ 50)</p>
+            <p style="font-size:2rem; font-weight:bold; color:#d97706;">{{ qualified }}</p>
+        </div>
+
+        <div style="background:white; border-radius:8px; padding:1.5rem; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+            <p style="font-size:0.8rem; color:#94a3b8; text-transform:uppercase; margin-bottom:0.5rem;">Clients</p>
+            <p style="font-size:2rem; font-weight:bold; color:#059669;">{{ clients }}</p>
+        </div>
+
+        <div style="background:white; border-radius:8px; padding:1.5rem; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+            <p style="font-size:0.8rem; color:#94a3b8; text-transform:uppercase; margin-bottom:0.5rem;">Taux de conversion</p>
+            <p style="font-size:2rem; font-weight:bold; color:#2563eb;">{{ conversionRate }}%</p>
+        </div>
+
+    </div>
+
+    {# ── CA potentiel ── #}
+    <div style="background:#059669; color:white; border-radius:8px; padding:1.5rem; margin-bottom:1.5rem; display:flex; justify-content:space-between; align-items:center;">
+        <div>
+            <p style="font-size:0.875rem; opacity:0.9;">💰 CA potentiel mensuel estimé</p>
+            <p style="font-size:0.75rem; opacity:0.75; margin-top:0.25rem;">{{ potentialLeads }} prospect(s) qualifié(s) non-clients × 45€ tarif moyen</p>
+        </div>
+        <p style="font-size:2.5rem; font-weight:bold;">{{ potentialRevenue|number_format(0, ',', ' ') }} €</p>
+    </div>
+
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem;">
+
+        {# ── Répartition par statut ── #}
+        <div style="background:white; border-radius:8px; padding:1.5rem; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+            <h3 style="margin-bottom:1rem; color:#1e293b;">Répartition par statut</h3>
+            {% set statusLabels = {
+                'NEW': '🔵 Nouveau',
+                'CONTACTED': '🟡 Contacté',
+                'DISCUSSION': '🟠 En discussion',
+                'QUOTE_SENT': '🟣 Devis envoyé',
+                'CLIENT': '🟢 Client',
+                'LOST': '🔴 Perdu',
+                'TO_FOLLOW_UP': '⚪ À relancer'
+            } %}
+            {% for status, count in byStatus %}
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:0.5rem 0; border-bottom:1px solid #f1f5f9;">
+                    <span style="color:#475569;">{{ statusLabels[status] ?? status }}</span>
+                    <span style="font-weight:600; color:#1e293b;">{{ count }}</span>
+                </div>
+            {% endfor %}
+        </div>
+
+        {# ── Répartition par catégorie ── #}
+        <div style="background:white; border-radius:8px; padding:1.5rem; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+            <h3 style="margin-bottom:1rem; color:#1e293b;">Répartition par catégorie</h3>
+            {% for category, count in byCategory %}
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:0.5rem 0; border-bottom:1px solid #f1f5f9;">
+                    <span style="color:#475569;">{{ category }}</span>
+                    <span style="font-weight:600; color:#1e293b;">{{ count }}</span>
+                </div>
+            {% endfor %}
+        </div>
+
+    </div>
+
+    <div style="margin-top:1.5rem;">
+        <a href="{{ path('app_leads') }}" style="padding:0.75rem 1.5rem; background:#2563eb; color:white; border-radius:4px; text-decoration:none;">← Retour aux prospects</a>
+    </div>
+
+{% endblock %}
