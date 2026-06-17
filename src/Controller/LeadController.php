@@ -244,6 +244,47 @@ public function aiSuggest(Lead $lead, MistralService $mistral): Response
     return $this->redirectToRoute('devis_nouveau', ['leadId' => $lead->getId()]);
 }
 
+#[Route('/{id}/convert', name: 'app_lead_convert', methods: ['POST'])]
+public function convert(
+    Lead $lead,
+    EntityManagerInterface $em,
+    ActivityLogService $logger,
+    \Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface $passwordHasher
+): Response {
+    if (!$lead->getEmail()) {
+        $this->addFlash('error', 'Impossible de convertir : ce prospect n\'a pas d\'email.');
+        return $this->redirectToRoute('app_lead_show', ['id' => $lead->getId()]);
+    }
+
+    $existingUser = $em->getRepository(\App\Entity\User::class)->findOneBy(['email' => $lead->getEmail()]);
+    if ($existingUser) {
+        $this->addFlash('error', 'Un compte existe déjà avec cet email.');
+        return $this->redirectToRoute('app_lead_show', ['id' => $lead->getId()]);
+    }
+
+    $user = new \App\Entity\User();
+    $user->setEmail($lead->getEmail());
+    $user->setRoles(['ROLE_OWNER']);
+
+    $nameParts = explode(' ', $lead->getContactName() ?? $lead->getCompanyName(), 2);
+    $user->setFirstname($nameParts[0] ?? $lead->getCompanyName());
+    $user->setLastname($nameParts[1] ?? '');
+    $user->setPhone($lead->getPhone());
+
+    $tempPassword = bin2hex(random_bytes(8));
+    $user->setPassword($passwordHasher->hashPassword($user, $tempPassword));
+
+    $em->persist($user);
+
+    $lead->setStatus('CLIENT');
+    $em->flush();
+
+    $logger->log('Prospect converti en client', $lead->getCompanyName() . ' → ' . $lead->getEmail());
+    $this->addFlash('success', $lead->getCompanyName() . ' converti en client ! Mot de passe temporaire : ' . $tempPassword);
+
+    return $this->redirectToRoute('app_lead_show', ['id' => $lead->getId()]);
+}
+
     #[Route('/{id}', name: 'app_lead_show')]
     public function show(Lead $lead): Response
     {
