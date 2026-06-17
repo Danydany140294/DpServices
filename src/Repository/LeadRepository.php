@@ -94,4 +94,18 @@ public function findWithFiltersQuery(?string $status, ?string $city, ?string $ca
 
     return $qb->getQuery();
 }
+
+public function findNoResponseSince7Days(): array
+{
+    $sevenDaysAgo = new \DateTimeImmutable('-7 days');
+
+    return $this->createQueryBuilder('l')
+        ->where('l.status IN (:statuses)')
+        ->andWhere('l.createdAt <= :sevenDaysAgo')
+        ->setParameter('statuses', ['CONTACTED', 'DISCUSSION', 'QUOTE_SENT'])
+        ->setParameter('sevenDaysAgo', $sevenDaysAgo)
+        ->orderBy('l.score', 'DESC')
+        ->getQuery()
+        ->getResult();
+}
 }

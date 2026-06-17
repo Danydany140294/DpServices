@@ -31,6 +31,7 @@ public function index(LeadRepository $repo, LeadCategoryRepository $categoryRepo
     $categoryId = $request->query->get('category');
     $scoreMin = $request->query->get('score_min');
     $scoreMin = is_numeric($scoreMin) ? $scoreMin : null;
+    $noResponse = $repo->findNoResponseSince7Days();
     $followUp = $request->query->get('follow_up');
 
     $query = $repo->findWithFiltersQuery($status, $city, $categoryId, $scoreMin, $followUp);
@@ -44,14 +45,15 @@ public function index(LeadRepository $repo, LeadCategoryRepository $categoryRepo
     $categories = $categoryRepo->findAll();
 
     return $this->render('lead/index.html.twig', [
-        'leads' => $leads,
-        'categories' => $categories,
-        'currentStatus' => $status,
-        'currentCity' => $city,
-        'currentCategory' => $categoryId,
-        'currentScoreMin' => $scoreMin,
-        'currentFollowUp' => $followUp,
-    ]);
+    'leads' => $leads,
+    'categories' => $categories,
+    'currentStatus' => $status,
+    'currentCity' => $city,
+    'currentCategory' => $categoryId,
+    'currentScoreMin' => $scoreMin,
+    'currentFollowUp' => $followUp,
+    'noResponse' => $noResponse,
+]);
 }
 
     #[Route('/new', name: 'app_lead_new')]
