@@ -5,53 +5,53 @@
 
 {% block body %}
 
-    <div style="margin-bottom:1rem;">
-        <a href="{{ path('app_user_new') }}" style="padding:0.75rem 1.5rem; background:#2563eb; color:white; border-radius:4px; text-decoration:none;">
+    <div class="mb-md">
+        <a href="{{ path('app_user_new') }}" class="btn btn--primary btn--md">
             + Nouvel utilisateur
         </a>
     </div>
 
-    <div style="margin-bottom: 2rem;">
+    <div class="mb-xl">
         <h2>Propriétaires ({{ owners|length }})</h2>
-        <table style="width:100%; background:white; border-radius:8px; border-collapse:collapse; margin-top:1rem;">
+        <table class="data-table mt-md">
             <thead>
-                <tr style="background:#f1f5f9;">
-                    <th style="padding:1rem; text-align:left;">Nom</th>
-                    <th style="padding:1rem; text-align:left;">Email</th>
-                    <th style="padding:1rem; text-align:left;">Téléphone</th>
-                    <th style="padding:1rem; text-align:left;">Créé le</th>
-                    <th style="padding:1rem; text-align:left;">Statut</th>
-                    <th style="padding:1rem; text-align:left;">Actions</th>
+                <tr>
+                    <th>Nom</th>
+                    <th>Email</th>
+                    <th>Téléphone</th>
+                    <th>Créé le</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
                 {% for owner in owners %}
-                <tr style="border-top:1px solid #e2e8f0; {{ 'ROLE_DISABLED' in owner.roles ? 'opacity:0.5;' : '' }}">
-                    <td style="padding:1rem;">{{ owner.firstname }} {{ owner.lastname }}</td>
-                    <td style="padding:1rem;">{{ owner.email }}</td>
-                    <td style="padding:1rem;">{{ owner.phone ?? '-' }}</td>
-                    <td style="padding:1rem;">{{ owner.createdAt|date('d/m/Y') }}</td>
-                    <td style="padding:1rem;">
+                <tr class="{{ 'ROLE_DISABLED' in owner.roles ? 'data-table__row--disabled' : '' }}">
+                    <td>{{ owner.firstname }} {{ owner.lastname }}</td>
+                    <td>{{ owner.email }}</td>
+                    <td>{{ owner.phone ?? '-' }}</td>
+                    <td>{{ owner.createdAt|date('d/m/Y') }}</td>
+                    <td>
                         {% if 'ROLE_DISABLED' in owner.roles %}
-                            <span style="background:#fee2e2; color:#dc2626; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem;">Désactivé</span>
+                            <span class="status-badge status-badge--sm status-badge--danger">Désactivé</span>
                         {% else %}
-                            <span style="background:#d1fae5; color:#059669; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem;">Actif</span>
+                            <span class="status-badge status-badge--sm status-badge--success">Actif</span>
                         {% endif %}
                     </td>
-                    <td style="padding:1rem;">
-                        <a href="{{ path('app_user_edit', {id: owner.id}) }}" style="color:#2563eb;">Modifier</a>
-                        <a href="{{ path('app_user_toggle', {id: owner.id}) }}" style="color:{{ 'ROLE_DISABLED' in owner.roles ? '#059669' : '#d97706' }}; margin-left:0.5rem;">
+                    <td>
+                        <a href="{{ path('app_user_edit', {id: owner.id}) }}" class="text-link">Modifier</a>
+                        <a href="{{ path('app_user_toggle', {id: owner.id}) }}" class="text-link {{ 'ROLE_DISABLED' in owner.roles ? 'text-link--success' : 'text-link--warning' }} ml-sm">
                             {{ 'ROLE_DISABLED' in owner.roles ? 'Activer' : 'Désactiver' }}
                         </a>
-                        <form method="post" action="{{ path('app_user_delete', {id: owner.id}) }}" style="display:inline;" onsubmit="return confirm('Supprimer définitivement {{ owner.firstname }} {{ owner.lastname }} ?')">
+                        <form method="post" action="{{ path('app_user_delete', {id: owner.id}) }}" class="inline" onsubmit="return confirm('Supprimer définitivement {{ owner.firstname }} {{ owner.lastname }} ?')">
                             <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ owner.id) }}">
-                            <button type="submit" style="color:#dc2626; background:none; border:none; cursor:pointer; margin-left:0.5rem;">Supprimer</button>
+                            <button type="submit" class="text-btn text-btn--danger ml-sm">Supprimer</button>
                         </form>
                     </td>
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="6" style="padding:1rem; text-align:center; color:#94a3b8;">Aucun propriétaire</td>
+                    <td colspan="6" class="data-table__empty">Aucun propriétaire</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -60,45 +60,45 @@
 
     <div>
         <h2>Femmes de ménage ({{ cleaners|length }})</h2>
-        <table style="width:100%; background:white; border-radius:8px; border-collapse:collapse; margin-top:1rem;">
+        <table class="data-table mt-md">
             <thead>
-                <tr style="background:#f1f5f9;">
-                    <th style="padding:1rem; text-align:left;">Nom</th>
-                    <th style="padding:1rem; text-align:left;">Email</th>
-                    <th style="padding:1rem; text-align:left;">Téléphone</th>
-                    <th style="padding:1rem; text-align:left;">Créé le</th>
-                    <th style="padding:1rem; text-align:left;">Statut</th>
-                    <th style="padding:1rem; text-align:left;">Actions</th>
+                <tr>
+                    <th>Nom</th>
+                    <th>Email</th>
+                    <th>Téléphone</th>
+                    <th>Créé le</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
                 {% for cleaner in cleaners %}
-                <tr style="border-top:1px solid #e2e8f0; {{ 'ROLE_DISABLED' in cleaner.roles ? 'opacity:0.5;' : '' }}">
-                    <td style="padding:1rem;">{{ cleaner.firstname }} {{ cleaner.lastname }}</td>
-                    <td style="padding:1rem;">{{ cleaner.email }}</td>
-                    <td style="padding:1rem;">{{ cleaner.phone ?? '-' }}</td>
-                    <td style="padding:1rem;">{{ cleaner.createdAt|date('d/m/Y') }}</td>
-                    <td style="padding:1rem;">
+                <tr class="{{ 'ROLE_DISABLED' in cleaner.roles ? 'data-table__row--disabled' : '' }}">
+                    <td>{{ cleaner.firstname }} {{ cleaner.lastname }}</td>
+                    <td>{{ cleaner.email }}</td>
+                    <td>{{ cleaner.phone ?? '-' }}</td>
+                    <td>{{ cleaner.createdAt|date('d/m/Y') }}</td>
+                    <td>
                         {% if 'ROLE_DISABLED' in cleaner.roles %}
-                            <span style="background:#fee2e2; color:#dc2626; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem;">Désactivé</span>
+                            <span class="status-badge status-badge--sm status-badge--danger">Désactivé</span>
                         {% else %}
-                            <span style="background:#d1fae5; color:#059669; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem;">Actif</span>
+                            <span class="status-badge status-badge--sm status-badge--success">Actif</span>
                         {% endif %}
                     </td>
-                    <td style="padding:1rem;">
-                        <a href="{{ path('app_user_edit', {id: cleaner.id}) }}" style="color:#2563eb;">Modifier</a>
-                        <a href="{{ path('app_user_toggle', {id: cleaner.id}) }}" style="color:{{ 'ROLE_DISABLED' in cleaner.roles ? '#059669' : '#d97706' }}; margin-left:0.5rem;">
+                    <td>
+                        <a href="{{ path('app_user_edit', {id: cleaner.id}) }}" class="text-link">Modifier</a>
+                        <a href="{{ path('app_user_toggle', {id: cleaner.id}) }}" class="text-link {{ 'ROLE_DISABLED' in cleaner.roles ? 'text-link--success' : 'text-link--warning' }} ml-sm">
                             {{ 'ROLE_DISABLED' in cleaner.roles ? 'Activer' : 'Désactiver' }}
                         </a>
-                        <form method="post" action="{{ path('app_user_delete', {id: cleaner.id}) }}" style="display:inline;" onsubmit="return confirm('Supprimer définitivement {{ cleaner.firstname }} {{ cleaner.lastname }} ?')">
+                        <form method="post" action="{{ path('app_user_delete', {id: cleaner.id}) }}" class="inline" onsubmit="return confirm('Supprimer définitivement {{ cleaner.firstname }} {{ cleaner.lastname }} ?')">
                             <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ cleaner.id) }}">
-                            <button type="submit" style="color:#dc2626; background:none; border:none; cursor:pointer; margin-left:0.5rem;">Supprimer</button>
+                            <button type="submit" class="text-btn text-btn--danger ml-sm">Supprimer</button>
                         </form>
                     </td>
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="6" style="padding:1rem; text-align:center; color:#94a3b8;">Aucune femme de ménage</td>
+                    <td colspan="6" class="data-table__empty">Aucune femme de ménage</td>
                 </tr>
                 {% endfor %}
             </tbody>

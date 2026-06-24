@@ -8,26 +8,26 @@
     {# ── Alertes ── #}
     {% set toFollowUp = leads|filter(l => l.nextFollowUp is not null and l.nextFollowUp <= date()) %}
     {% if toFollowUp|length > 0 %}
-        <div style="background:#fef3c7; border:1px solid #fcd34d; padding:0.75rem 1.5rem; border-radius:6px; margin-bottom:1rem;">
+        <div class="alert-banner alert-banner--warning">
             🔔 <strong>{{ toFollowUp|length }} prospect(s) à relancer aujourd'hui</strong>
         </div>
     {% endif %}
 
     {% if noResponse|length > 0 %}
-    <div style="background:#fee2e2; border:1px solid #fca5a5; padding:0.75rem 1.5rem; border-radius:6px; margin-bottom:1rem;">
-        ⏰ <strong>{{ noResponse|length }} prospect(s) sans réponse depuis 7 jours ou plus</strong>
-        <span style="font-size:0.875rem; color:#991b1b;"> — pensez à relancer :</span>
-        {% for lead in noResponse|slice(0, 3) %}
-            <a href="{{ path('app_lead_show', {id: lead.id}) }}" style="margin-left:0.5rem; color:#dc2626; text-decoration:underline;">{{ lead.companyName }}</a>
-        {% endfor %}
-        {% if noResponse|length > 3 %}<span style="color:#991b1b;"> et {{ noResponse|length - 3 }} autre(s)</span>{% endif %}
-    </div>
-{% endif %}
+        <div class="alert-banner alert-banner--danger">
+            ⏰ <strong>{{ noResponse|length }} prospect(s) sans réponse depuis 7 jours ou plus</strong>
+            <span class="alert-banner__note"> — pensez à relancer :</span>
+            {% for lead in noResponse|slice(0, 3) %}
+                <a href="{{ path('app_lead_show', {id: lead.id}) }}" class="alert-banner__link">{{ lead.companyName }}</a>
+            {% endfor %}
+            {% if noResponse|length > 3 %}<span class="alert-banner__note"> et {{ noResponse|length - 3 }} autre(s)</span>{% endif %}
+        </div>
+    {% endif %}
 
     {# ── Filtres ── #}
-    <div style="background:white; padding:1rem 1.5rem; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.1); margin-bottom:1rem;">
-        <form method="get" style="display:flex; gap:1rem; align-items:center; flex-wrap:wrap;">
-            <select name="status" style="padding:0.5rem; border:1px solid #ddd; border-radius:4px;">
+    <div class="filters">
+        <form method="get" class="filters__form">
+            <select name="status">
                 <option value="">Tous les statuts</option>
                 <option value="NEW" {{ currentStatus == 'NEW' ? 'selected' : '' }}>🔵 Nouveau</option>
                 <option value="CONTACTED" {{ currentStatus == 'CONTACTED' ? 'selected' : '' }}>🟡 Contacté</option>
@@ -38,51 +38,46 @@
                 <option value="TO_FOLLOW_UP" {{ currentStatus == 'TO_FOLLOW_UP' ? 'selected' : '' }}>⚪ À relancer</option>
             </select>
 
-            <select name="category" style="padding:0.5rem; border:1px solid #ddd; border-radius:4px;">
+            <select name="category">
                 <option value="">Toutes les catégories</option>
                 {% for cat in categories %}
                     <option value="{{ cat.id }}" {{ currentCategory == cat.id ~ '' ? 'selected' : '' }}>{{ cat.name }}</option>
                 {% endfor %}
             </select>
 
-            <input type="text" name="city" value="{{ currentCity }}" placeholder="Ville..."
-                style="padding:0.5rem; border:1px solid #ddd; border-radius:4px;">
+            <input type="text" name="city" value="{{ currentCity }}" placeholder="Ville...">
 
-            <input type="number" name="score_min" value="{{ currentScoreMin }}" placeholder="Score min..."
-                style="padding:0.5rem; border:1px solid #ddd; border-radius:4px; width:100px;">
+            <input type="number" name="score_min" value="{{ currentScoreMin }}" placeholder="Score min..." class="filters__input--narrow">
 
-            <input type="date" name="follow_up" value="{{ currentFollowUp }}"
-                style="padding:0.5rem; border:1px solid #ddd; border-radius:4px;">
+            <input type="date" name="follow_up" value="{{ currentFollowUp }}">
 
-            <button type="submit" style="padding:0.5rem 1rem; background:#2563eb; color:white; border:none; border-radius:4px; cursor:pointer;">Filtrer</button>
-            <a href="{{ path('app_leads') }}" style="padding:0.5rem 1rem; background:#64748b; color:white; border-radius:4px; text-decoration:none;">Réinitialiser</a>
+            <button type="submit">Filtrer</button>
+            <a href="{{ path('app_leads') }}" class="filters__reset">Réinitialiser</a>
 
             {# ── Légende ── #}
-            <div style="position:relative; margin-left:auto;">
-                <button type="button" onclick="document.getElementById('legend').classList.toggle('hidden')"
-                    style="padding:0.5rem 1rem; background:#f1f5f9; border:1px solid #ddd; border-radius:4px; cursor:pointer;">
+            <div class="legend-wrapper">
+                <button type="button" onclick="document.getElementById('legend').classList.toggle('hidden')" class="legend-trigger">
                     ? Aide
                 </button>
-                <div id="legend" class="hidden" style="position:absolute; right:0; top:2.5rem; background:white; border:1px solid #ddd; border-radius:8px; padding:1.5rem; width:320px; z-index:100; box-shadow:0 4px 12px rgba(0,0,0,0.15);">
-                    <h3 style="margin-bottom:1rem; color:#1e293b;">📊 Comprendre le score</h3>
-                    <p style="font-size:0.8rem; color:#64748b; margin-bottom:1rem;">Plus le score est élevé, plus ce prospect a de chances de devenir client.</p>
-                    <div style="margin-bottom:0.5rem; font-size:0.8rem;">🔴 <strong>80-100</strong> — Priorité absolue → Appeler aujourd'hui</div>
-                    <div style="margin-bottom:0.5rem; font-size:0.8rem;">🟠 <strong>50-79</strong> — Important → Appeler cette semaine</div>
-                    <div style="margin-bottom:0.5rem; font-size:0.8rem;">🟡 <strong>20-49</strong> — Secondaire → Email suffira</div>
-                    <div style="margin-bottom:1rem; font-size:0.8rem;">⚪ <strong>0-19</strong> — Faible potentiel</div>
-                    <h3 style="margin-bottom:0.5rem; color:#1e293b;">📋 Statuts</h3>
-                    <div style="font-size:0.8rem; line-height:1.8;">
+                <div id="legend" class="hidden legend-panel">
+                    <h3 class="legend-panel__title legend-panel__title--intro">📊 Comprendre le score</h3>
+                    <p class="legend-panel__intro">Plus le score est élevé, plus ce prospect a de chances de devenir client.</p>
+                    <div class="legend-panel__row">🔴 <strong>80-100</strong> — Priorité absolue → Appeler aujourd'hui</div>
+                    <div class="legend-panel__row">🟠 <strong>50-79</strong> — Important → Appeler cette semaine</div>
+                    <div class="legend-panel__row">🟡 <strong>20-49</strong> — Secondaire → Email suffira</div>
+                    <div class="legend-panel__row legend-panel__row--gap">⚪ <strong>0-19</strong> — Faible potentiel</div>
+                    <h3 class="legend-panel__title">📋 Statuts</h3>
+                    <div class="legend-panel__list">
                         🔵 Nouveau · 🟡 Contacté · 🟠 En discussion<br>
                         🟣 Devis envoyé · 🟢 Client · 🔴 Perdu · ⚪ À relancer
                     </div>
-                    <h3 style="margin-top:1rem; margin-bottom:0.5rem; color:#1e293b;">🎯 Barème score</h3>
-                    <div style="font-size:0.8rem; line-height:1.8;">
+                    <h3 class="legend-panel__title u-mt-1">🎯 Barème score</h3>
+                    <div class="legend-panel__list">
                         Conciergerie Airbnb +50 · Gestion locative +30<br>
                         Agence immo +20 · >100 avis +20 · Site web +10<br>
                         Note >4.5 +10 · 50-100 avis +10 · Ville prioritaire +10
                     </div>
-                    <button type="button" onclick="document.getElementById('legend').classList.toggle('hidden')"
-                        style="margin-top:1rem; padding:0.25rem 1rem; background:#f1f5f9; border:1px solid #ddd; border-radius:4px; cursor:pointer; width:100%;">
+                    <button type="button" onclick="document.getElementById('legend').classList.toggle('hidden')" class="legend-panel__close">
                         ✖ Fermer
                     </button>
                 </div>
@@ -91,134 +86,127 @@
     </div>
 
     {# ── Boutons actions ── #}
-    <div style="margin-bottom:1rem; display:flex; gap:0.5rem; align-items:center;">
-        <a href="{{ path('app_lead_new') }}" style="padding:0.75rem 1.5rem; background:#2563eb; color:white; border-radius:4px; text-decoration:none;">+ Nouveau prospect</a>
-        <a href="{{ path('app_lead_search') }}" style="padding:0.75rem 1.5rem; background:#059669; color:white; border-radius:4px; text-decoration:none;">🔍 Rechercher</a>
-        <a href="{{ path('app_lead_group_email') }}" style="padding:0.75rem 1.5rem; background:#7c3aed; color:white; border-radius:4px; text-decoration:none;">📧 Email groupé</a>
-        <a href="{{ path('app_lead_import_file') }}" style="padding:0.75rem 1.5rem; background:#0ea5e9; color:white; border-radius:4px; text-decoration:none;">📂 Importer un fichier</a>
-        <a href="{{ path('app_lead_export_excel', {status: currentStatus, city: currentCity, category: currentCategory, score_min: currentScoreMin}) }}" style="padding:0.75rem 1.5rem; background:#16a34a; color:white; border-radius:4px; text-decoration:none;">📊 Export Excel</a>
-        <a href="{{ path('app_leads_kanban') }}" style="padding:0.75rem 1.5rem; background:#7c3aed; color:white; border-radius:4px; text-decoration:none;">📋 Vue Kanban</a> 
+    <div class="action-bar">
+        <a href="{{ path('app_lead_new') }}" class="btn-quick btn-quick--blue">+ Nouveau prospect</a>
+        <a href="{{ path('app_lead_search') }}" class="btn-quick btn-quick--green">🔍 Rechercher</a>
+        <a href="{{ path('app_lead_group_email') }}" class="btn-quick btn-quick--purple">📧 Email groupé</a>
+        <a href="{{ path('app_lead_import_file') }}" class="btn-quick btn-quick--cyan">📂 Importer un fichier</a>
+        <a href="{{ path('app_lead_export_excel', {status: currentStatus, city: currentCity, category: currentCategory, score_min: currentScoreMin}) }}" class="btn-quick btn-quick--emerald">📊 Export Excel</a>
+        <a href="{{ path('app_leads_kanban') }}" class="btn-quick btn-quick--purple">📋 Vue Kanban</a>
         <form method="post" action="{{ path('app_leads_rescore_all') }}">
-            <button type="submit" style="padding:0.75rem 1.5rem; background:#f59e0b; color:white; border:none; border-radius:4px; cursor:pointer;">
+            <button type="submit" class="btn-quick btn-quick--amber">
                 🔄 Recalculer tous les scores
             </button>
         </form>
     </div>
 
     {# ── Recherche rapide ── #}
-    <div style="margin-bottom:1rem;">
-        <input type="text" id="searchInput" placeholder="🔍 Rechercher par nom ou ville..."
-            style="width:100%; padding:0.75rem 1rem; border:1px solid #ddd; border-radius:8px; font-size:0.95rem; box-sizing:border-box;">
+    <div class="u-mb-1">
+        <input type="text" id="searchInput" placeholder="🔍 Rechercher par nom ou ville..." class="quick-search">
     </div>
 
     {# ── Tableau ── #}
-    <table style="width:100%; background:white; border-radius:8px; border-collapse:collapse; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
-        <thead>
-            <tr style="background:#f1f5f9;">
-                <th style="padding:1rem; text-align:left; cursor:pointer;" onclick="sortTable(0)">Entreprise ↕</th>
-                <th style="padding:1rem; text-align:left; cursor:pointer;" onclick="sortTable(1)">Ville ↕</th>
-                <th style="padding:1rem; text-align:left; cursor:pointer;" onclick="sortTable(2)">Catégorie ↕</th>
-                <th style="padding:1rem; text-align:left; cursor:pointer;" onclick="sortTable(3)">Score ↕</th>
-                <th style="padding:1rem; text-align:left; cursor:pointer;" onclick="sortTable(4)">Statut ↕</th>
-                <th style="padding:1rem; text-align:left; cursor:pointer;" onclick="sortTable(5)">Relance ↕</th>
-                <th style="padding:1rem; text-align:left;">Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for lead in leads %}
-            <tr style="border-top:1px solid #e2e8f0;">
-                <td style="padding:1rem;">
-                    <div style="font-weight:500;">{{ lead.companyName }}</div>
-                    {% if lead.contactName %}<div style="font-size:0.8rem; color:#64748b;">{{ lead.contactName }}</div>{% endif %}
-                </td>
-                <td style="padding:1rem; color:#475569;">{{ lead.city }}</td>
-                <td style="padding:1rem; color:#475569;">{{ lead.category ? lead.category.name : '—' }}</td>
+    <div class="table-wrapper">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th class="data-table__th--sortable" onclick="sortTable(0)">Entreprise ↕</th>
+                    <th class="data-table__th--sortable" onclick="sortTable(1)">Ville ↕</th>
+                    <th class="data-table__th--sortable" onclick="sortTable(2)">Catégorie ↕</th>
+                    <th class="data-table__th--sortable" onclick="sortTable(3)">Score ↕</th>
+                    <th class="data-table__th--sortable" onclick="sortTable(4)">Statut ↕</th>
+                    <th class="data-table__th--sortable" onclick="sortTable(5)">Relance ↕</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for lead in leads %}
+                <tr>
+                    <td>
+                        <div class="data-table__cell-title">{{ lead.companyName }}</div>
+                        {% if lead.contactName %}<div class="data-table__cell-subtitle">{{ lead.contactName }}</div>{% endif %}
+                    </td>
+                    <td class="data-table__text">{{ lead.city }}</td>
+                    <td class="data-table__text">{{ lead.category ? lead.category.name : '—' }}</td>
 
-                {# Colonne Score — avec barre #}
-                <td style="padding:1rem;">
-                    {% set score = lead.score %}
-                    {% set barColor = score >= 80 ? '#dc2626' : (score >= 50 ? '#ea580c' : (score >= 20 ? '#d97706' : '#94a3b8')) %}
-                    {% if score >= 80 %}
-                        <span style="background:#fee2e2; color:#dc2626; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem; font-weight:bold;">🔴 {{ score }}</span>
-                    {% elseif score >= 50 %}
-                        <span style="background:#ffedd5; color:#ea580c; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem; font-weight:bold;">🟠 {{ score }}</span>
-                    {% elseif score >= 20 %}
-                        <span style="background:#fef3c7; color:#d97706; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem; font-weight:bold;">🟡 {{ score }}</span>
-                    {% else %}
-                        <span style="background:#f1f5f9; color:#64748b; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem; font-weight:bold;">⚪ {{ score }}</span>
-                    {% endif %}
-                    <div style="margin-top:0.25rem; background:#e2e8f0; border-radius:4px; height:4px; width:80px;">
-                        <div style="width:{{ score }}%; background:{{ barColor }}; height:4px; border-radius:4px;"></div>
-                    </div>
-                </td>
+                    {# Colonne Score — avec barre #}
+                    <td>
+                        {% set score = lead.score %}
+                        {% set scoreTier = score >= 80 ? 'critical' : (score >= 50 ? 'high' : (score >= 20 ? 'medium' : 'low')) %}
+                        {% if score >= 80 %}
+                            <span class="score-badge score-badge--critical">🔴 {{ score }}</span>
+                        {% elseif score >= 50 %}
+                            <span class="score-badge score-badge--high">🟠 {{ score }}</span>
+                        {% elseif score >= 20 %}
+                            <span class="score-badge score-badge--medium">🟡 {{ score }}</span>
+                        {% else %}
+                            <span class="score-badge score-badge--low">⚪ {{ score }}</span>
+                        {% endif %}
+                        <div class="score-bar">
+                            <div class="score-bar__fill score-bar__fill--{{ scoreTier }}" style="width:{{ score }}%;"></div>
+                        </div>
+                    </td>
 
-                {# Colonne Statut #}
-                <td style="padding:1rem;">
-                    {% if lead.status == 'NEW' %}
-                        <span style="background:#dbeafe; color:#2563eb; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem;">🔵 Nouveau</span>
-                    {% elseif lead.status == 'CONTACTED' %}
-                        <span style="background:#fef3c7; color:#d97706; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem;">🟡 Contacté</span>
-                    {% elseif lead.status == 'DISCUSSION' %}
-                        <span style="background:#ffedd5; color:#ea580c; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem;">🟠 En discussion</span>
-                    {% elseif lead.status == 'QUOTE_SENT' %}
-                        <span style="background:#f3e8ff; color:#7c3aed; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem;">🟣 Devis envoyé</span>
-                    {% elseif lead.status == 'CLIENT' %}
-                        <span style="background:#d1fae5; color:#059669; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem;">🟢 Client</span>
-                    {% elseif lead.status == 'LOST' %}
-                        <span style="background:#fee2e2; color:#dc2626; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem;">🔴 Perdu</span>
-                    {% elseif lead.status == 'TO_FOLLOW_UP' %}
-                        <span style="background:#f1f5f9; color:#64748b; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem;">⚪ À relancer</span>
-                    {% endif %}
-                </td>
+                    {# Colonne Statut #}
+                    <td>
+                        {% if lead.status == 'NEW' %}
+                            <span class="status-badge status-badge--new">🔵 Nouveau</span>
+                        {% elseif lead.status == 'CONTACTED' %}
+                            <span class="status-badge status-badge--contacted">🟡 Contacté</span>
+                        {% elseif lead.status == 'DISCUSSION' %}
+                            <span class="status-badge status-badge--discussion">🟠 En discussion</span>
+                        {% elseif lead.status == 'QUOTE_SENT' %}
+                            <span class="status-badge status-badge--quote-sent">🟣 Devis envoyé</span>
+                        {% elseif lead.status == 'CLIENT' %}
+                            <span class="status-badge status-badge--client">🟢 Client</span>
+                        {% elseif lead.status == 'LOST' %}
+                            <span class="status-badge status-badge--lost">🔴 Perdu</span>
+                        {% elseif lead.status == 'TO_FOLLOW_UP' %}
+                            <span class="status-badge status-badge--follow-up">⚪ À relancer</span>
+                        {% endif %}
+                    </td>
 
-                <td style="padding:1rem; font-size:0.875rem; color:{{ lead.nextFollowUp is not null and lead.nextFollowUp <= date() ? '#dc2626' : '#475569' }};">
-                    {{ lead.nextFollowUp ? lead.nextFollowUp|date('d/m/Y') : '—' }}
-                </td>
-                <td style="padding:1rem;">
-                    <a href="{{ path('app_lead_show', {id: lead.id}) }}" style="color:#2563eb; margin-right:0.5rem;">Voir</a>
-                    <a href="{{ path('app_lead_edit', {id: lead.id}) }}" style="color:#d97706;">Modifier</a>
-                </td>
-            </tr>
-            {% else %}
-            <tr>
-                <td colspan="7" style="padding:2rem; text-align:center; color:#94a3b8;">
-                    Aucun prospect. <a href="{{ path('app_lead_search') }}" style="color:#2563eb;">Lancer une recherche</a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+                    {% set overdue = lead.nextFollowUp is not null and lead.nextFollowUp <= date() %}
+                    <td class="data-table__text{{ overdue ? ' data-table__text--overdue' : '' }}">
+                        {{ lead.nextFollowUp ? lead.nextFollowUp|date('d/m/Y') : '—' }}
+                    </td>
+                    <td>
+                        <a href="{{ path('app_lead_show', {id: lead.id}) }}" class="table-action-link">Voir</a>
+                        <a href="{{ path('app_lead_edit', {id: lead.id}) }}" class="table-action-link--warning">Modifier</a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="table-wrapper__empty">
+                        Aucun prospect. <a href="{{ path('app_lead_search') }}" class="table-action-link">Lancer une recherche</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
     {# ── Pagination ── #}
-{% if leads.pageCount > 1 %}
-<div style="margin-top:1rem; display:flex; gap:0.5rem; align-items:center; justify-content:center;">
-    {% if leads.currentPageNumber > 1 %}
-        <a href="{{ path('app_leads', {'page': leads.currentPageNumber - 1, 'status': currentStatus, 'city': currentCity, 'category': currentCategory}) }}"
-           style="padding:0.5rem 1rem; background:#f1f5f9; border-radius:4px; text-decoration:none; color:#475569;">← Précédent</a>
+    {% if leads.pageCount > 1 %}
+    <div class="pagination">
+        {% if leads.currentPageNumber > 1 %}
+            <a href="{{ path('app_leads', {'page': leads.currentPageNumber - 1, 'status': currentStatus, 'city': currentCity, 'category': currentCategory}) }}" class="pagination__link">← Précédent</a>
+        {% endif %}
+
+        {% for i in leads.paginationData.pagesInRange %}
+            <a href="{{ path('app_leads', {'page': i, 'status': currentStatus, 'city': currentCity, 'category': currentCategory}) }}"
+               class="pagination__page{{ i == leads.currentPageNumber ? ' pagination__page--active' : '' }}">
+                {{ i }}
+            </a>
+        {% endfor %}
+
+        {% if leads.currentPageNumber < leads.pageCount %}
+            <a href="{{ path('app_leads', {'page': leads.currentPageNumber + 1, 'status': currentStatus, 'city': currentCity, 'category': currentCategory}) }}" class="pagination__link">Suivant →</a>
+        {% endif %}
+
+        <span class="pagination__total">{{ leads.totalItemCount }} prospect(s) au total</span>
+    </div>
     {% endif %}
-
-    {% for i in leads.paginationData.pagesInRange %}
-        <a href="{{ path('app_leads', {'page': i, 'status': currentStatus, 'city': currentCity, 'category': currentCategory}) }}"
-           style="padding:0.5rem 0.75rem; border-radius:4px; text-decoration:none;
-                  {{ i == leads.currentPageNumber ? 'background:#2563eb; color:white;' : 'background:#f1f5f9; color:#475569;' }}">
-            {{ i }}
-        </a>
-    {% endfor %}
-
-    {% if leads.currentPageNumber < leads.pageCount %}
-        <a href="{{ path('app_leads', {'page': leads.currentPageNumber + 1, 'status': currentStatus, 'city': currentCity, 'category': currentCategory}) }}"
-           style="padding:0.5rem 1rem; background:#f1f5f9; border-radius:4px; text-decoration:none; color:#475569;">Suivant →</a>
-    {% endif %}
-
-    <span style="color:#94a3b8; font-size:0.875rem;">
-        {{ leads.totalItemCount }} prospect(s) au total
-    </span>
-</div>
-{% endif %}
-
-    <style>
-        .hidden { display: none; }
-    </style>
 
     <script>
         document.getElementById('searchInput').addEventListener('input', function() {

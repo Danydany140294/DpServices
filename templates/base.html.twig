@@ -4,43 +4,98 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}DP Services{% endblock %}</title>
-    <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
+
+    {# Polices : Inter (texte courant) + Cormorant Garamond (logo sidebar) #}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cormorant+Garamond:wght@600&display=swap" rel="stylesheet">
+
+    {# Font Awesome (icônes sidebar/topbar) #}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
     {% block stylesheets %}{% endblock %}
     {{ encore_entry_link_tags('app') }}
 </head>
 <body>
 
+    <div class="app-layout">
+
     <aside class="sidebar">
-        <h2>DP Services</h2>
+        <div class="sidebar-logo">
+            <img src="{{ asset('assets/images/LOGO.jpg') }}" alt="DP Services Sud">
+        </div>
 
         {% if is_granted('ROLE_ADMIN') %}
-            <a href="{{ path('app_admin') }}" {% if app.request.get('_route') == 'app_admin' %}class="active"{% endif %}>⚙️ Admin</a>
-            <a href="{{ path('app_users') }}" {% if app.request.get('_route') starts with 'app_user' %}class="active"{% endif %}>👥 Utilisateurs</a>
-            <a href="{{ path('app_properties') }}" {% if app.request.get('_route') starts with 'app_propert' %}class="active"{% endif %}>🏠 Logements</a>
-            <a href="{{ path('app_services') }}" {% if app.request.get('_route') starts with 'app_service' %}class="active"{% endif %}>🧹 Prestations</a>
-            <a href="{{ path('app_requests') }}" {% if app.request.get('_route') starts with 'app_request' %}class="active"{% endif %}>📋 Demandes</a>
-            <a href="{{ path('app_calendar') }}" {% if app.request.get('_route') == 'app_calendar' %}class="active"{% endif %}>📅 Calendrier</a>
-            <a href="{{ path('app_logs') }}" {% if app.request.get('_route') == 'app_logs' %}class="active"{% endif %}>📜 Historique</a>
-            <a href="{{ path('app_acquisition') }}" {% if app.request.get('_route') starts with 'app_acquisition' or app.request.get('_route') starts with 'app_lead' %}class="active"{% endif %}>🎯 Acquisition</a>
+            <a href="{{ path('app_admin') }}" {% if app.request.get('_route') == 'app_admin' %}class="active"{% endif %}><i class="fa-solid fa-gear"></i> Admin</a>
+            <a href="{{ path('app_users') }}" {% if app.request.get('_route') starts with 'app_user' %}class="active"{% endif %}><i class="fa-solid fa-users"></i> Utilisateurs</a>
+            <a href="{{ path('app_properties') }}" {% if app.request.get('_route') starts with 'app_propert' %}class="active"{% endif %}><i class="fa-solid fa-house"></i> Logements</a>
+            <a href="{{ path('app_services') }}" {% if app.request.get('_route') starts with 'app_service' %}class="active"{% endif %}><i class="fa-solid fa-broom"></i> Prestations</a>
+            <a href="{{ path('app_requests') }}" {% if app.request.get('_route') starts with 'app_request' %}class="active"{% endif %}><i class="fa-solid fa-clipboard-list"></i> Demandes</a>
+            <a href="{{ path('app_calendar') }}" {% if app.request.get('_route') == 'app_calendar' %}class="active"{% endif %}><i class="fa-solid fa-calendar-days"></i> Calendrier</a>
+            <a href="{{ path('app_logs') }}" {% if app.request.get('_route') == 'app_logs' %}class="active"{% endif %}><i class="fa-solid fa-clock-rotate-left"></i> Historique</a>
+            <a href="{{ path('app_acquisition') }}" {% if app.request.get('_route') starts with 'app_acquisition' or app.request.get('_route') starts with 'app_lead' %}class="active"{% endif %}><i class="fa-solid fa-bullseye"></i> Acquisition</a>
         {% elseif is_granted('ROLE_OWNER') %}
-            <a href="{{ path('app_owner') }}" {% if app.request.get('_route') == 'app_owner' %}class="active"{% endif %}>👤 Mon espace</a>
-            <a href="#">🏠 Mes logements</a>
-            <a href="#">📋 Mes demandes</a>
-            <a href="{{ path('app_calendar') }}" {% if app.request.get('_route') == 'app_calendar' %}class="active"{% endif %}>📅 Calendrier</a>
+            <a href="{{ path('app_owner') }}" {% if app.request.get('_route') == 'app_owner' %}class="active"{% endif %}><i class="fa-solid fa-user"></i> Mon espace</a>
+            <a href="#"><i class="fa-solid fa-house"></i> Mes logements</a>
+            <a href="#"><i class="fa-solid fa-clipboard-list"></i> Mes demandes</a>
+            <a href="{{ path('app_calendar') }}" {% if app.request.get('_route') == 'app_calendar' %}class="active"{% endif %}><i class="fa-solid fa-calendar-days"></i> Calendrier</a>
         {% elseif is_granted('ROLE_CLEANER') %}
-            <a href="{{ path('app_cleaner') }}" {% if app.request.get('_route') == 'app_cleaner' %}class="active"{% endif %}>🧹 Mes missions</a>
-            <a href="{{ path('app_calendar') }}" {% if app.request.get('_route') == 'app_calendar' %}class="active"{% endif %}>📅 Calendrier</a>
+            <a href="{{ path('app_cleaner') }}" {% if app.request.get('_route') == 'app_cleaner' %}class="active"{% endif %}><i class="fa-solid fa-broom"></i> Mes missions</a>
+            <a href="{{ path('app_calendar') }}" {% if app.request.get('_route') == 'app_calendar' %}class="active"{% endif %}><i class="fa-solid fa-calendar-days"></i> Calendrier</a>
         {% endif %}
     </aside>
 
     <div class="main">
         <div class="topbar">
-            <h1>{% block page_title %}DP Services{% endblock %}</h1>
-            <div class="user-info">
+            <h1 class="topbar-title">{% block page_title %}DP Services{% endblock %}</h1>
+
+            {# -- Barre de recherche --
+               ⚠️ CONTROLLER : pas de soumission/route branchée pour l'instant.
+               À connecter à une route de recherche globale (ex: app_search)
+               qui interroge demandes/logements/propriétaires. -- #}
+            <div class="topbar-search">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" placeholder="Rechercher (demande, logement, propriétaire...)">
+            </div>
+
+            <div class="topbar-actions">
+                {# -- Cloche de notifications --
+                   ⚠️ CONTROLLER : remplacer `notificationsCount` par le nombre
+                   réel de notifications non lues de app.user (ex: via une
+                   méthode du repository Notification, injectée dans le
+                   controller qui rend ce template, ou un service global
+                   exposé en variable globale Twig). -- #}
+                <button class="topbar-icon-btn" type="button" aria-label="Notifications">
+                    <i class="fa-solid fa-bell"></i>
+                    {% if notificationsCount|default(0) > 0 %}
+                        <span class="topbar-badge">{{ notificationsCount }}</span>
+                    {% endif %}
+                </button>
+
                 {% if app.user %}
-                    <span>{{ app.user.firstname }} {{ app.user.lastname }}</span>
-                    <a href="{{ path('app_logout') }}" class="logout">Déconnexion</a>
+                    <div class="topbar-user">
+                        <span class="topbar-avatar">{{ app.user.firstname|first }}{{ app.user.lastname|first }}</span>
+                        <span class="topbar-user-info">
+                            <span class="topbar-user-name">{{ app.user.firstname }} {{ app.user.lastname }}</span>
+                            <span class="topbar-user-role">
+                                {% if is_granted('ROLE_ADMIN') %}Administrateur
+                                {% elseif is_granted('ROLE_OWNER') %}Propriétaire
+                                {% elseif is_granted('ROLE_CLEANER') %}Femme de ménage
+                                {% endif %}
+                            </span>
+                        </span>
+                        <a href="{{ path('app_logout') }}" class="logout" title="Déconnexion"><i class="fa-solid fa-arrow-right-from-bracket"></i></a>
+                    </div>
                 {% endif %}
+
+                {# -- CTA Nouvelle demande --
+                   ⚠️ CONTROLLER : adapter la route si le nom diffère
+                   (actuellement supposé app_request_new, cohérent avec le
+                   bouton "+ Demande" déjà utilisé dans le dashboard). -- #}
+                <a href="{{ path('app_request_new') }}" class="topbar-cta">
+                    <i class="fa-solid fa-plus"></i> Nouvelle demande
+                </a>
             </div>
         </div>
 
@@ -48,14 +103,11 @@
             {% for type, messages in app.flashes %}
                 {% for message in messages %}
                     {% if type == 'ai_summary' %}
-                        <div style="background:#e0f2fe; border:1px solid #7dd3fc; padding:1rem 1.5rem; border-radius:8px; margin-bottom:1rem; color:#0c4a6e;">
+                        <div class="ai-flash-banner">
                             🤖 <strong>Résumé IA :</strong> {{ message|replace({'**': ''})|nl2br }}
                         </div>
                     {% else %}
-                        <div style="padding:0.75rem 1.5rem; margin-bottom:1rem; border-radius:6px; font-weight:500;
-                            background: {{ type == 'success' ? '#d1fae5' : '#fee2e2' }};
-                            color: {{ type == 'success' ? '#059669' : '#dc2626' }};
-                            border: 1px solid {{ type == 'success' ? '#6ee7b7' : '#fca5a5' }};">
+                        <div class="alert alert--mb-sm {{ type == 'success' ? 'alert--success' : 'alert--danger' }}">
                             {{ type == 'success' ? '✅' : '❌' }} {{ message }}
                         </div>
                     {% endif %}
@@ -64,6 +116,8 @@
 
             {% block body %}{% endblock %}
         </div>
+    </div>
+
     </div>
 
     {% block javascripts %}{% endblock %}

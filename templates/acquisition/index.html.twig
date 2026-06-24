@@ -3,29 +3,33 @@
 {% block title %}Acquisition — DP Services{% endblock %}
 {% block page_title %}Module Acquisition{% endblock %}
 
+{# Pas de <link> ici : app.css est chargé une seule fois dans base.html.twig #}
+
 {% block body %}
     <div class="welcome">
         <h2>🎯 Bienvenue dans le module Acquisition</h2>
         <p>Ce module vous permet de trouver et gérer vos prospects.</p>
 
-        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:1rem; margin-top:2rem;">
-           <a href="{{ path('app_leads') }}" style="background:#f1f5f9; padding:1.5rem; border-radius:8px; text-align:center; text-decoration:none; color:inherit; display:block;">
-    <div style="font-size:2rem;">👥</div>
-    <h3 style="margin:0.5rem 0; color:#1e293b;">Prospects</h3>
-    <p style="color:#64748b; font-size:0.875rem;">Gérer vos leads</p>
-</a>
-            <a href="{{ path('app_lead_search') }}" style="text-decoration:none; color:inherit;">
-    <div style="background:#f1f5f9; padding:1.5rem; border-radius:8px; text-align:center;">
-        <div style="font-size:2rem;">🔍</div>
-        <h3 style="margin:0.5rem 0;">Recherche</h3>
-        <p style="color:#64748b; font-size:0.875rem;">Trouver des prospects</p>
-    </div>
-</a>
-            <a href="{{ path('app_acquisition_dashboard') }}" target="_blank" style="background:#f1f5f9; padding:1.5rem; border-radius:8px; text-align:center; text-decoration:none; color:inherit; display:block; transition:background 0.2s;">
-    <div style="font-size:2rem;">📊</div>
-    <h3 style="margin:0.5rem 0; color:#1e293b;">Dashboard</h3>
-    <p style="color:#64748b; font-size:0.875rem;">Statistiques</p>
-</a>
+        <div class="action-grid">
+
+            <a href="{{ path('app_leads') }}" class="action-card">
+                <div class="action-card__icon">👥</div>
+                <h3 class="action-card__title">Prospects</h3>
+                <p class="action-card__desc">Gérer vos leads</p>
+            </a>
+
+            <a href="{{ path('app_lead_search') }}" class="action-card">
+                <div class="action-card__icon">🔍</div>
+                <h3 class="action-card__title">Recherche</h3>
+                <p class="action-card__desc">Trouver des prospects</p>
+            </a>
+
+            <a href="{{ path('app_acquisition_dashboard') }}" target="_blank" class="action-card">
+                <div class="action-card__icon">📊</div>
+                <h3 class="action-card__title">Dashboard</h3>
+                <p class="action-card__desc">Statistiques</p>
+            </a>
+
         </div>
     </div>
 {% endblock %}

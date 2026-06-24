@@ -6,82 +6,82 @@
 {% block body %}
 
     {# ── Filtres ── #}
-    <div style="background:white; padding:1rem 1.5rem; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.1); margin-bottom:1rem; display:flex; gap:1rem; align-items:center; flex-wrap:wrap;">
-        <form method="get" style="display:flex; gap:1rem; align-items:center; flex-wrap:wrap;">
-            <select name="status" style="padding:0.5rem; border:1px solid #ddd; border-radius:4px;">
+    <div class="filters">
+        <form method="get" class="filters__form">
+            <select name="status">
                 <option value="">Tous les statuts</option>
                 <option value="PENDING" {{ currentStatus == 'PENDING' ? 'selected' : '' }}>⏳ En attente</option>
                 <option value="VALIDATED" {{ currentStatus == 'VALIDATED' ? 'selected' : '' }}>✅ Validée</option>
                 <option value="COMPLETED" {{ currentStatus == 'COMPLETED' ? 'selected' : '' }}>🏁 Terminée</option>
                 <option value="CANCELLED" {{ currentStatus == 'CANCELLED' ? 'selected' : '' }}>❌ Annulée</option>
             </select>
-            <input type="date" name="date" value="{{ currentDate }}" style="padding:0.5rem; border:1px solid #ddd; border-radius:4px;">
-            <button type="submit" style="padding:0.5rem 1rem; background:#2563eb; color:white; border:none; border-radius:4px; cursor:pointer;">Filtrer</button>
-            <a href="{{ path('app_requests') }}" style="padding:0.5rem 1rem; background:#64748b; color:white; border-radius:4px; text-decoration:none;">Réinitialiser</a>
+            <input type="date" name="date" value="{{ currentDate }}">
+            <button type="submit">Filtrer</button>
+            <a href="{{ path('app_requests') }}" class="filters__reset">Réinitialiser</a>
         </form>
     </div>
 
-    <div style="margin-bottom:1rem;">
-        <a href="{{ path('app_request_new') }}" style="padding:0.75rem 1.5rem; background:#2563eb; color:white; border-radius:4px; text-decoration:none;">
+    <div class="u-mb-1">
+        <a href="{{ path('app_request_new') }}" class="btn-link">
             + Nouvelle demande
         </a>
     </div>
 
-    <table style="width:100%; background:white; border-radius:8px; border-collapse:collapse;">
+    <table class="data-table">
         <thead>
-            <tr style="background:#f1f5f9;">
-                <th style="padding:1rem; text-align:left;">Logement</th>
-                <th style="padding:1rem; text-align:left;">Prestation</th>
-                <th style="padding:1rem; text-align:left;">Date</th>
-                <th style="padding:1rem; text-align:left;">Heure</th>
-                <th style="padding:1rem; text-align:left;">Femme de ménage</th>
-                <th style="padding:1rem; text-align:left;">Statut</th>
-                <th style="padding:1rem; text-align:left;">Actions</th>
+            <tr>
+                <th>Logement</th>
+                <th>Prestation</th>
+                <th>Date</th>
+                <th>Heure</th>
+                <th>Femme de ménage</th>
+                <th>Statut</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
             {% for req in requests %}
-            <tr style="border-top:1px solid #e2e8f0;">
-                <td style="padding:1rem;">
-                    <span style="display:inline-block; width:12px; height:12px; background:{{ req.property.color }}; border-radius:2px; margin-right:6px;"></span>
+            <tr>
+                <td>
+                    <span class="property-dot property-dot--square" style="background:{{ req.property.color }};"></span>
                     {{ req.property.name }}
                 </td>
-                <td style="padding:1rem;">{{ req.service.name }}</td>
-                <td style="padding:1rem;">{{ req.scheduledDate|date('d/m/Y') }}</td>
-                <td style="padding:1rem;">{{ req.scheduledTime|date('H:i') }}</td>
-                <td style="padding:1rem;">{{ req.assignedCleaner ? req.assignedCleaner.firstname ~ ' ' ~ req.assignedCleaner.lastname : '—' }}</td>
-                <td style="padding:1rem;">
+                <td>{{ req.service.name }}</td>
+                <td>{{ req.scheduledDate|date('d/m/Y') }}</td>
+                <td>{{ req.scheduledTime|date('H:i') }}</td>
+                <td>{{ req.assignedCleaner ? req.assignedCleaner.firstname ~ ' ' ~ req.assignedCleaner.lastname : '—' }}</td>
+                <td>
                     {% if req.status == 'PENDING' %}
-                        <span style="background:#fef3c7; color:#d97706; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem;">En attente</span>
+                        <span class="status-badge status-badge--pending">En attente</span>
                     {% elseif req.status == 'VALIDATED' %}
-                        <span style="background:#d1fae5; color:#059669; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem;">Validée</span>
+                        <span class="status-badge status-badge--validated">Validée</span>
                     {% elseif req.status == 'COMPLETED' %}
-                        <span style="background:#dbeafe; color:#2563eb; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem;">Terminée</span>
+                        <span class="status-badge status-badge--completed">Terminée</span>
                     {% elseif req.status == 'CANCELLED' %}
-                        <span style="background:#fee2e2; color:#dc2626; padding:0.25rem 0.5rem; border-radius:4px; font-size:0.8rem;">Annulée</span>
+                        <span class="status-badge status-badge--cancelled">Annulée</span>
                     {% endif %}
                 </td>
-                <td style="padding:1rem;">
-                    <a href="{{ path('app_request_validate', {id: req.id}) }}" style="color:#2563eb; margin-right:0.5rem;">Valider</a>
-                    <form method="post" action="{{ path('app_request_complete', {id: req.id}) }}" style="display:inline;">
+                <td>
+                    <a href="{{ path('app_request_validate', {id: req.id}) }}" class="table-action-link">Valider</a>
+                    <form method="post" action="{{ path('app_request_complete', {id: req.id}) }}" class="inline-form">
                         <input type="hidden" name="_token" value="{{ csrf_token('complete' ~ req.id) }}">
-                        <button type="submit" style="color:#059669; background:none; border:none; cursor:pointer;">Terminer</button>
+                        <button type="submit" class="table-action-btn table-action-btn--success">Terminer</button>
                     </form>
-                    <form method="post" action="{{ path('app_request_cancel', {id: req.id}) }}" style="display:inline;" onsubmit="return confirm('Annuler ?')">
+                    <form method="post" action="{{ path('app_request_cancel', {id: req.id}) }}" class="inline-form" onsubmit="return confirm('Annuler ?')">
                         <input type="hidden" name="_token" value="{{ csrf_token('cancel' ~ req.id) }}">
-                        <button type="submit" style="color:#dc2626; background:none; border:none; cursor:pointer; margin-left:0.5rem;">Annuler</button>
+                        <button type="submit" class="table-action-btn table-action-btn--danger">Annuler</button>
                     </form>
                 </td>
             </tr>
             {% else %}
             <tr>
-                <td colspan="7" style="padding:1rem; text-align:center; color:#94a3b8;">Aucune demande</td>
+                <td colspan="7" class="table-empty-cell">Aucune demande</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 
-    <div style="margin-top:1rem;">
+    <div class="u-mt-1">
         {{ knp_pagination_render(requests) }}
     </div>
 

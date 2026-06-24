@@ -5,43 +5,38 @@
 
 {% block body %}
 
-<div style="margin-bottom:1rem;">
-    <a href="{{ path('app_leads') }}" style="padding:0.5rem 1rem; background:#f1f5f9; color:#475569; border-radius:4px; text-decoration:none;">← Retour vue tableau</a>
-</div>
+<a href="{{ path('app_leads') }}" class="back-link back-link--pill">← Retour vue tableau</a>
 
 {% set statusConfig = {
-    'NEW': {'label': '🔵 Nouveau', 'color': '#2563eb', 'bg': '#dbeafe'},
-    'CONTACTED': {'label': '🟡 Contacté', 'color': '#d97706', 'bg': '#fef3c7'},
-    'DISCUSSION': {'label': '🟠 En discussion', 'color': '#ea580c', 'bg': '#ffedd5'},
-    'QUOTE_SENT': {'label': '🟣 Devis envoyé', 'color': '#7c3aed', 'bg': '#f3e8ff'},
-    'TO_FOLLOW_UP': {'label': '⚪ À relancer', 'color': '#64748b', 'bg': '#f1f5f9'},
-    'CLIENT': {'label': '🟢 Client', 'color': '#059669', 'bg': '#d1fae5'},
-    'LOST': {'label': '🔴 Perdu', 'color': '#dc2626', 'bg': '#fee2e2'}
+    'NEW': '🔵 Nouveau',
+    'CONTACTED': '🟡 Contacté',
+    'DISCUSSION': '🟠 En discussion',
+    'QUOTE_SENT': '🟣 Devis envoyé',
+    'TO_FOLLOW_UP': '⚪ À relancer',
+    'CLIENT': '🟢 Client',
+    'LOST': '🔴 Perdu'
 } %}
 
-<div style="display:flex; gap:1rem; overflow-x:auto; padding-bottom:1rem;">
+<div class="kanban-board">
     {% for status, leads in leadsByStatus %}
-        {% set config = statusConfig[status] %}
-        <div class="kanban-column" data-status="{{ status }}"
-             style="min-width:280px; background:#f8fafc; border-radius:8px; padding:1rem; flex-shrink:0;">
+        <div class="kanban-column" data-status="{{ status }}">
 
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; padding-bottom:0.5rem; border-bottom:2px solid {{ config.color }};">
-                <span style="font-weight:600; color:{{ config.color }};">{{ config.label }}</span>
-                <span style="background:{{ config.bg }}; color:{{ config.color }}; padding:0.15rem 0.5rem; border-radius:12px; font-size:0.75rem; font-weight:bold;">{{ leads|length }}</span>
+            <div class="kanban-column__header">
+                <span class="kanban-column__label">{{ statusConfig[status] }}</span>
+                <span class="kanban-column__count">{{ leads|length }}</span>
             </div>
 
-            <div class="kanban-cards" style="display:flex; flex-direction:column; gap:0.5rem; min-height:100px;">
+            <div class="kanban-cards">
                 {% for lead in leads %}
                     {% set score = lead.score %}
-                    {% set scoreColor = score >= 80 ? '#dc2626' : (score >= 50 ? '#ea580c' : (score >= 20 ? '#d97706' : '#94a3b8')) %}
-                    <div class="kanban-card" draggable="true" data-id="{{ lead.id }}"
-                         style="background:white; border-radius:6px; padding:0.75rem; box-shadow:0 1px 3px rgba(0,0,0,0.1); cursor:grab;">
-                        <a href="{{ path('app_lead_show', {id: lead.id}) }}" style="text-decoration:none; color:inherit;">
-                            <div style="font-weight:500; color:#1e293b; font-size:0.875rem;">{{ lead.companyName }}</div>
-                            <div style="font-size:0.75rem; color:#64748b; margin-top:0.25rem;">📍 {{ lead.city }}</div>
-                            <div style="margin-top:0.5rem; display:flex; justify-content:space-between; align-items:center;">
-                                <span style="font-size:0.7rem; color:#94a3b8;">{{ lead.category ? lead.category.name : '—' }}</span>
-                                <span style="font-size:0.75rem; font-weight:bold; color:{{ scoreColor }};">{{ score }}</span>
+                    {% set scoreTier = score >= 80 ? 'critical' : (score >= 50 ? 'high' : (score >= 20 ? 'medium' : 'low')) %}
+                    <div class="kanban-card" draggable="true" data-id="{{ lead.id }}">
+                        <a href="{{ path('app_lead_show', {id: lead.id}) }}" class="kanban-card__link">
+                            <div class="kanban-card__title">{{ lead.companyName }}</div>
+                            <div class="kanban-card__city">📍 {{ lead.city }}</div>
+                            <div class="kanban-card__footer">
+                                <span class="kanban-card__category">{{ lead.category ? lead.category.name : '—' }}</span>
+                                <span class="kanban-card__score kanban-card__score--{{ scoreTier }}">{{ score }}</span>
                             </div>
                         </a>
                     </div>
@@ -59,24 +54,24 @@ document.addEventListener('DOMContentLoaded', function() {
         card.addEventListener('dragstart', function(e) {
             draggedCard = this;
             e.dataTransfer.effectAllowed = 'move';
-            this.style.opacity = '0.5';
+            this.classList.add('kanban-card--dragging');
         });
         card.addEventListener('dragend', function() {
-            this.style.opacity = '1';
+            this.classList.remove('kanban-card--dragging');
         });
     });
 
     document.querySelectorAll('.kanban-column').forEach(column => {
         column.addEventListener('dragover', function(e) {
             e.preventDefault();
-            this.style.background = '#e2e8f0';
+            this.classList.add('kanban-column--drag-over');
         });
         column.addEventListener('dragleave', function() {
-            this.style.background = '#f8fafc';
+            this.classList.remove('kanban-column--drag-over');
         });
         column.addEventListener('drop', function(e) {
             e.preventDefault();
-            this.style.background = '#f8fafc';
+            this.classList.remove('kanban-column--drag-over');
 
             if (!draggedCard) return;
 

@@ -4,8 +4,8 @@
 {% block page_title %}Valider la demande{% endblock %}
 
 {% block body %}
-    <div class="welcome">
-        <p style="margin-bottom:1rem; color:#64748b;">
+    <div class="card">
+        <p class="summary-text">
             <strong>Logement :</strong> {{ cleaningRequest.property.name }}<br>
             <strong>Prestation :</strong> {{ cleaningRequest.service.name }}<br>
             <strong>Date :</strong> {{ cleaningRequest.scheduledDate|date('d/m/Y') }} à {{ cleaningRequest.scheduledTime|date('H:i') }}
@@ -13,10 +13,10 @@
 
         {{ form_start(form) }}
             {{ form_row(form.assignedCleaner) }}
-            <button type="submit" style="margin-top:1rem; padding:0.75rem 2rem; background:#059669; color:white; border:none; border-radius:4px; cursor:pointer;">
+            <button type="submit" class="btn-submit btn-submit--success">
                 Valider et assigner
             </button>
-            <a href="{{ path('app_requests') }}" style="margin-left:1rem; color:#64748b;">Annuler</a>
+            <a href="{{ path('app_requests') }}" class="btn-cancel-link">Annuler</a>
         {{ form_end(form) }}
     </div>
 {% endblock %}

@@ -59,7 +59,7 @@ class AcquisitionController extends AbstractController
         $totalContacted = count(array_filter($allActivities, fn($a) => in_array($a->getType(), ['EMAIL', 'SMS', 'CALL'])));
         $responseRate = $totalContacted > 0 ? round(($positiveResponses / $totalContacted) * 100, 1) : 0;
 
-        return $this->render('acquisition/dashboard.html.twig', [
+        return $this->render('acquisition/dashboard_acquisition.html.twig', [
             'total' => $total,
             'clients' => $clients,
             'qualified' => $qualified,

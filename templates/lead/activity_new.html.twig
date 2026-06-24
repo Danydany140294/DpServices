@@ -4,10 +4,8 @@
 {% block page_title %}Nouvelle action — {{ lead.companyName }}{% endblock %}
 
 {% block body %}
-    <div class="welcome">
-        <div style="margin-bottom:1rem;">
-            <a href="{{ path('app_lead_show', {id: lead.id}) }}" style="color:#64748b;">← Retour à la fiche</a>
-        </div>
+    <div>
+        <a href="{{ path('app_lead_show', {id: lead.id}) }}" class="back-link">← Retour à la fiche</a>
 
         {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
             {{ form_row(form.type) }}
@@ -15,10 +13,10 @@
             {{ form_row(form.note) }}
             {{ form_row(form.followUpDate) }}
 
-            <button type="submit" style="margin-top:1rem; padding:0.75rem 2rem; background:#2563eb; color:white; border:none; border-radius:4px; cursor:pointer;">
+            <button type="submit" class="btn-submit">
                 Enregistrer
             </button>
-            <a href="{{ path('app_lead_show', {id: lead.id}) }}" style="margin-left:1rem; color:#64748b;">Annuler</a>
+            <a href="{{ path('app_lead_show', {id: lead.id}) }}" class="btn-cancel-link">Annuler</a>
         {{ form_end(form) }}
     </div>
 {% endblock %}

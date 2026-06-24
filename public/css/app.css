@@ -1,0 +1,3063 @@
+/* ==========================================================================
+   DP SERVICES — APP.CSS (feuille de style globale)
+   Chargé une seule fois dans base.html.twig — toutes les pages en héritent.
+
+   STRUCTURE DU FICHIER :
+   1. Reset / Base
+   2. Layout général (héritera du base.html.twig)
+   3. Composants partagés (cartes, boutons, badges...)
+   4. Page : Accueil Acquisition
+   5. Page : Dashboard Acquisition
+   6. Page : Historique
+   7. Page : Admin Dashboard
+   8. Page : Calendrier
+   9. Pages mobiles Cleaner (Missions + Historique)
+   10. Page : Demandes
+   11. Page : Nouvelle demande (formulaire)
+   12. Page : Valider demande (formulaire)
+   13. Page : Prestations (Services)
+   14. Page : Modifier prestation (formulaire)
+   15. Page : Nouvelle prestation (formulaire)
+   16. Page : Devis (placeholder, à remplacer)
+   17. Page : Détail Devis
+   18. Page : Nouveau Devis (formulaire)
+   19. Composants partagés — Fiche prospect / Timeline / Emails-SMS
+   20. Page : Fiche prospect (lead_show)
+   21. Page : Confirmation envoi email / SMS
+   22. Page : Formulaires d'envoi email / SMS
+   23. Pages : Espace propriétaire / Logements / Utilisateurs
+   24. Pages : Prospects — Kanban, Import, Formulaires (new/edit/action)
+   25. Composants partagés — Formulaires natifs Symfony (labels, inputs, erreurs)
+   26. Page : Connexion (login)
+   27. Page : Dashboard Admin enrichi (KPIs, calendrier semaine, demandes à
+       valider, missions assignées, messages, historique) — inspiré du
+       mockup dp-dashboard.css/index_html__1_.twig
+   -- les prochaines pages s'ajouteront ici, en sections séparées --
+
+   ⚠️ MISE À JOUR DESIGN (refonte thème sombre teal/or) :
+   Les sections 1 et 2 ont été réécrites pour reproduire le thème
+   "DP Services Sud" (palette dark teal + or + crème, police Inter +
+   Cormorant Garamond pour le logo) défini à l'origine dans le fichier
+   dp-dashboard.css (mockup). Les classes structurelles existantes
+   (.app-layout, .sidebar, .main, .topbar, .content) ont été CONSERVÉES
+   à l'identique — seul leur style a changé — afin de ne pas casser la
+   logique Twig de base.html.twig (nav par rôle, blocks, flashs...).
+   Aucune classe des sections 3 à 26 n'a été modifiée : tous les
+   composants de page (.card, .btn, .data-table, .kanban-card, etc.)
+   gardent leur ancien style clair jusqu'à migration future.
+   ========================================================================== */
+
+
+/* ==========================================================================
+   1. RESET / BASE
+   ========================================================================== */
+
+:root {
+    /* Palette DP Services Sud — dark teal + or + crème */
+    --bg:            #14474A;
+    --bg-2:          #103E3E;
+    --sidebar:       #0F3838;
+    --card:          #1A5052;
+    --card-2:        #16484A;
+    --card-alt:      #2C6B66;
+    --border:        rgba(232, 184, 74, 0.18);
+    --border-soft:   rgba(245, 240, 225, 0.08);
+    --text:          #F5F0E1;
+    --text-muted:    #B8C5C0;
+    --text-dim:      #8FA09B;
+    --gold:          #E8B84A;
+    --gold-soft:     rgba(232, 184, 74, 0.15);
+    --gold-strong:   #F0C868;
+    --teal-accent:   #2DD4BF;
+    --shadow-soft:   0 10px 30px -12px rgba(0, 0, 0, 0.35);
+    --shadow-gold:   0 8px 24px -10px rgba(232, 184, 74, 0.35);
+    --radius:        16px;
+    --radius-lg:     20px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+a {
+    color: inherit;
+}
+
+/* -- Couleur de texte par défaut à l'intérieur des cartes/conteneurs.
+      Ces conteneurs avaient un fond blanc à l'origine (texte sombre
+      hérité du body) ; ils ont désormais un fond vert clair --card-alt
+      (cf. section 2) pour rester dans la palette du thème plutôt que
+      de trancher en blanc sur le reste de l'interface — le texte passe
+      donc en clair (crème), cohérent avec le reste du thème sombre. -- */
+.card,
+.card-lg,
+.form-section,
+.devis-table-wrapper,
+.table-wrapper,
+.data-table,
+.kanban-card,
+.kanban-column,
+.login-box,
+.welcome,
+.lead-banner,
+.empty-state--card,
+.import-panel,
+.back-link--pill {
+    color: var(--text);
+}
+
+
+/* ==========================================================================
+   2. LAYOUT GÉNÉRAL
+   Fichier source : dashboard.css (fusionné ici), puis restylé pour suivre
+   le thème dark/or de dp-dashboard.css (mockup "DP Services Sud").
+   Structure de base.html.twig : <aside class="sidebar"> + <div class="main">
+   contenant <div class="topbar"> et <div class="content">.
+
+   ⚠️ Note de design : la topbar a été restylée visuellement (couleurs,
+   bordures, typo) mais sa STRUCTURE HTML reste celle d'origine (titre +
+   user-info + bouton logout) — pas la version "riche" du mockup
+   (search bar / cloche / CTA), par choix explicite.
+   ========================================================================== */
+
+/* -- Disposition flex sidebar + contenu (posée en classe sur le wrapper
+      englobant <aside class="sidebar"> + <div class="main">) -- */
+.app-layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* -- Sidebar de navigation -- */
+.sidebar {
+    width: 260px;
+    flex-shrink: 0;
+    background: var(--sidebar);
+    border-right: 1px solid var(--border);
+    color: var(--text);
+    padding: 24px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.sidebar-logo {
+    padding: 0 20px 20px;
+    margin-bottom: 12px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+}
+
+.sidebar-logo img {
+    max-width: 170px;
+    width: 100%;
+    height: auto;
+    /* ⚠️ Le fichier LOGO.jpg a actuellement un fond blanc plein. En
+       attendant une version détourée (transparente), un fond blanc
+       carré/rectangulaire restera visible autour de l'ovale du logo.
+       Dès que le fichier sera remplacé par une version PNG transparente,
+       aucune modification CSS ne sera nécessaire ici. */
+    border-radius: 8px;
+}
+
+.sidebar a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 2px 12px;
+    padding: 11px 14px;
+    border-radius: 12px;
+    color: rgba(245, 240, 225, 0.75);
+    text-decoration: none;
+    font-size: 14px;
+    position: relative;
+    transition: background 0.2s, color 0.2s;
+}
+
+.sidebar a i {
+    font-size: 16px;
+    width: 18px;
+    text-align: center;
+    opacity: 0.85;
+}
+
+.sidebar a:hover {
+    background: rgba(245, 240, 225, 0.04);
+    color: var(--text);
+}
+
+.sidebar a.active {
+    background: var(--gold-soft);
+    color: var(--gold);
+    font-weight: 500;
+}
+
+.sidebar a.active::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 8px;
+    bottom: 8px;
+    width: 2px;
+    background: var(--gold);
+    border-radius: 0 2px 2px 0;
+}
+
+/* -- Colonne principale (topbar + content) -- */
+.main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.topbar {
+    background: var(--card);
+    border-bottom: 1px solid var(--border-soft);
+    padding: 18px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--shadow-soft);
+}
+
+.topbar h1,
+.topbar-title {
+    margin: 0;
+    font-size: 1.2rem;
+    color: var(--text);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* -- Barre de recherche -- */
+.topbar-search {
+    position: relative;
+    flex: 1;
+    max-width: 480px;
+    margin: 0 24px;
+}
+
+.topbar-search i {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-dim);
+    font-size: 14px;
+}
+
+.topbar-search input {
+    width: 100%;
+    background: rgba(245, 240, 225, 0.05);
+    border: 1px solid var(--border-soft);
+    color: var(--text);
+    padding: 9px 14px 9px 38px;
+    border-radius: 999px;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.topbar-search input::placeholder {
+    color: var(--text-dim);
+}
+
+.topbar-search input:focus {
+    border-color: var(--gold);
+}
+
+/* -- Bloc actions à droite : cloche + user + CTA -- */
+.topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-shrink: 0;
+}
+
+.topbar-icon-btn {
+    position: relative;
+    height: 38px;
+    width: 38px;
+    display: grid;
+    place-items: center;
+    background: var(--card-2);
+    border: 1px solid var(--border-soft);
+    border-radius: 999px;
+    color: var(--text);
+    transition: background 0.2s;
+}
+
+.topbar-icon-btn:hover {
+    background: var(--card);
+}
+
+.topbar-icon-btn i {
+    font-size: 15px;
+}
+
+.topbar-badge {
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    height: 17px;
+    min-width: 17px;
+    padding: 0 4px;
+    border-radius: 999px;
+    background: var(--gold);
+    color: var(--bg);
+    font-size: 10px;
+    font-weight: 700;
+    display: grid;
+    place-items: center;
+}
+
+.topbar-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 6px 4px 4px;
+    background: var(--card-2);
+    border: 1px solid var(--border-soft);
+    border-radius: 999px;
+}
+
+.topbar-avatar {
+    height: 32px;
+    width: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--gold), #B8862E);
+    color: var(--bg);
+    font-size: 12px;
+    font-weight: 700;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+}
+
+.topbar-user-info {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+}
+
+.topbar-user-name {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+}
+
+.topbar-user-role {
+    font-size: 10.5px;
+    color: var(--text-dim);
+}
+
+.topbar .logout {
+    display: grid;
+    place-items: center;
+    height: 30px;
+    width: 30px;
+    margin-left: 2px;
+    background: var(--gold-soft);
+    color: var(--gold);
+    border-radius: 50%;
+    text-decoration: none;
+    font-size: 12px;
+    transition: background 0.2s;
+}
+
+.topbar .logout:hover {
+    background: var(--gold);
+    color: var(--bg);
+}
+
+.topbar-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 18px;
+    background: var(--gold);
+    color: var(--bg);
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    box-shadow: var(--shadow-gold);
+    transition: filter 0.2s;
+}
+
+.topbar-cta:hover {
+    filter: brightness(1.08);
+}
+
+@media (max-width: 1024px) {
+    .topbar-search { display: none; }
+    .topbar-cta span { display: none; }
+}
+
+.content {
+    padding: 2rem;
+    flex: 1;
+    background: var(--bg);
+}
+
+/* -- Sous-titres de section natifs (ex: "Propriétaires (2)", "Femmes de
+      ménage (3)") posés directement dans .content, sans classe dédiée.
+      Rendu plus voyant : doré, plus grand, avec un accent souligné. -- */
+.content > h2,
+.content > h3 {
+    color: var(--gold-strong);
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 1.75rem 0 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--gold-soft);
+    letter-spacing: 0.3px;
+}
+
+.content > h2:first-child,
+.content > h3:first-child {
+    margin-top: 0;
+}
+
+/* -- Grille de cartes KPI (page d'accueil dashboard) -- */
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.cards .card h3 {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 0.5rem;
+}
+
+.cards .card .number {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--text);
+}
+
+/* -- Bloc de bienvenue (dashboard) — .welcome h2 et .welcome p sont déjà
+      définis en section 4 (Accueil Acquisition), valeurs identiques -- */
+.welcome {
+    background: var(--card-alt);
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+
+/* ==========================================================================
+   3. COMPOSANTS PARTAGÉS
+   Réutilisables sur plusieurs pages. Si un composant d'une nouvelle page
+   ressemble à un de ceux-ci, on réutilise CES classes plutôt que d'en créer
+   des nouvelles.
+   ========================================================================== */
+
+/* -- Carte blanche générique (KPI, bloc d'info...) -- */
+.card {
+    background: var(--card-alt);
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1.5rem;
+}
+
+.card__title {
+    margin-bottom: 1rem;
+    color: var(--text);
+}
+
+/* -- Grille responsive auto (pour aligner des cartes) -- */
+.grid-auto {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+/* -- Grille 2 colonnes (split) -- */
+.grid-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .grid-split {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* -- Bouton lien (style "back-link" / action secondaire) -- */
+.btn-link {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    background: var(--gold);
+    color: var(--bg);
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.btn-link:hover {
+    filter: brightness(1.08);
+}
+
+/* -- Ligne statistique (label / valeur, ex: répartition) -- */
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.stat-row__label {
+    color: var(--text-muted);
+}
+
+.stat-row__value {
+    font-weight: 600;
+    color: var(--text);
+}
+
+
+/* ==========================================================================
+   4. PAGE : ACCUEIL ACQUISITION
+   Fichier source : acquisition_home.html.twig (page de bienvenue du module)
+   ========================================================================== */
+
+.welcome h2 {
+    margin-bottom: 0.5rem;
+}
+
+.welcome p {
+    color: var(--text-muted);
+}
+
+/* -- Grille des 3 raccourcis (Prospects / Recherche / Dashboard) -- */
+.action-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+/* -- Carte raccourci cliquable -- */
+.action-card {
+    background: #f1f5f9;
+    padding: 1.5rem;
+    border-radius: 8px;
+    text-align: center;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    transition: background 0.2s;
+}
+
+.action-card:hover {
+    background: #e2e8f0;
+}
+
+.action-card__icon {
+    font-size: 2rem;
+}
+
+.action-card__title {
+    margin: 0.5rem 0;
+    color: var(--text);
+}
+
+.action-card__desc {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+
+/* ==========================================================================
+   5. PAGE : DASHBOARD ACQUISITION
+   Fichier source : dashboard_acquisition.html.twig
+   ========================================================================== */
+
+/* -- Carte KPI (variante de .card avec label + grosse valeur) -- */
+.kpi-card__label {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+}
+
+.kpi-card__value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--text);
+}
+
+.kpi-card__value--total      { color: var(--text); }
+.kpi-card__value--qualified  { color: #d97706; }
+.kpi-card__value--clients    { color: #059669; }
+.kpi-card__value--conversion { color: #2563eb; }
+.kpi-card__value--emails     { color: #059669; }
+.kpi-card__value--sms        { color: #7c3aed; }
+.kpi-card__value--response   { color: #2563eb; }
+
+/* -- Bandeau CA potentiel -- */
+.revenue-banner {
+    background: #059669;
+    color: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.revenue-banner__title {
+    font-size: 0.875rem;
+    opacity: 0.9;
+}
+
+.revenue-banner__subtitle {
+    font-size: 0.75rem;
+    opacity: 0.75;
+    margin-top: 0.25rem;
+}
+
+.revenue-banner__amount {
+    font-size: 2.5rem;
+    font-weight: bold;
+}
+
+
+/* ==========================================================================
+   6. PAGE : HISTORIQUE
+   Fichier source : historique.html.twig
+   ========================================================================== */
+
+/* -- Conteneur blanc (variante de .card sans padding, pour table pleine largeur) -- */
+.table-wrapper {
+    background: var(--card-alt);
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.table-wrapper__empty {
+    padding: 2rem;
+    text-align: center;
+    color: var(--text-dim);
+}
+
+/* -- Table générique -- */
+.data-table {
+    width: 100%;
+    background: var(--card-alt);
+    border-radius: 8px;
+    border-collapse: collapse;
+}
+
+.data-table thead tr {
+    background: var(--card-2);
+}
+
+.data-table th {
+    padding: 1rem;
+    text-align: left;
+    color: var(--gold);
+}
+
+.data-table tbody tr {
+    border-top: 1px solid var(--border-soft);
+}
+
+.data-table td {
+    padding: 1rem;
+    font-size: 16px;
+}
+
+/* -- Variantes de cellule -- */
+.data-table__date {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    white-space: nowrap;
+}
+
+.data-table__text {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+/* -- Badge action (bleu) -- */
+.badge-action {
+    background: #dbeafe;
+    color: #2563eb;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+
+/* ==========================================================================
+   7. PAGE : ADMIN DASHBOARD
+   Fichier source : admin_dashboard.html.twig
+   ========================================================================== */
+
+/* -- Carte KPI avec bordure colorée en haut -- */
+.kpi-border {
+    background: var(--card-alt);
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border-top: 4px solid transparent;
+}
+
+.kpi-border--blue   { border-top-color: #2563eb; }
+.kpi-border--green  { border-top-color: #059669; }
+.kpi-border--orange { border-top-color: #d97706; }
+.kpi-border--purple { border-top-color: #7c3aed; }
+
+.kpi-border__label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.kpi-border__value {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: var(--text);
+}
+
+/* -- Titre de section (variante de .card__title, en majuscules) -- */
+.section-title {
+    margin-bottom: 1.5rem;
+    color: var(--text);
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* -- Pastille de statut (fond clair + texte coloré assorti) -- */
+.status-pill {
+    text-align: center;
+    padding: 1rem;
+    border-radius: 8px;
+}
+
+.status-pill--pending   { background: #fef3c7; }
+.status-pill--validated { background: #d1fae5; }
+.status-pill--completed { background: #dbeafe; }
+.status-pill--cancelled { background: #fee2e2; }
+
+.status-pill__value {
+    font-size: 1.75rem;
+    font-weight: bold;
+}
+
+.status-pill--pending   .status-pill__value { color: #d97706; }
+.status-pill--validated .status-pill__value { color: #059669; }
+.status-pill--completed .status-pill__value { color: #2563eb; }
+.status-pill--cancelled .status-pill__value { color: #dc2626; }
+
+.status-pill__label {
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.status-pill--pending   .status-pill__label { color: #92400e; }
+.status-pill--validated .status-pill__label { color: #065f46; }
+.status-pill--completed .status-pill__label { color: #1e40af; }
+.status-pill--cancelled .status-pill__label { color: #991b1b; }
+
+/* -- Conteneur d'accès rapides -- */
+.quick-links {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+/* -- Bouton d'accès rapide coloré -- */
+.btn-quick {
+    padding: 0.75rem 1.5rem;
+    color: white;
+    border-radius: 6px;
+    text-decoration: none;
+}
+
+.btn-quick--blue   { background: #2563eb; }
+.btn-quick--green  { background: #059669; }
+.btn-quick--orange { background: #d97706; }
+.btn-quick--purple { background: #7c3aed; }
+
+
+/* ==========================================================================
+   8. PAGE : CALENDRIER
+   Fichier source : calendar.html.twig
+   Note : le CSS de FullCalendar lui-même est chargé via Encore
+   (encore_entry_link_tags('calendar')) — non géré ici.
+   ========================================================================== */
+
+/* -- Conteneur du calendrier FullCalendar -- */
+/* ⚠️ Fond conservé clair (crème) plutôt que vert foncé : FullCalendar
+   génère son propre balisage interne avec du texte sombre par défaut,
+   non accessible/ajustable depuis app.css — un fond foncé rendrait ce
+   texte généré par la librairie illisible. -- */
+#calendar {
+    background: #F5F0E1;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: var(--shadow-soft);
+}
+
+/* -- Barre de filtres au-dessus du calendrier -- */
+.filters {
+    background: var(--card-alt);
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    box-shadow: var(--shadow-soft);
+    margin-bottom: 1rem;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+    color: var(--text);
+}
+
+.filters select {
+    padding: 0.5rem;
+    border: 1px solid var(--border-soft);
+    border-radius: 4px;
+    background: #F5F0E1;
+    color: #1e293b;
+}
+
+/* -- Form imbriqué dans .filters : reprend juste l'alignement flex,
+      sans dupliquer le fond/padding/ombre du conteneur parent -- */
+.filters__form {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.filters button {
+    padding: 0.5rem 1rem;
+    background: var(--gold);
+    color: var(--bg);
+    border: none;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* Bouton/lien "Réinitialiser" : même apparence que .filters button,
+   mais en gris. Fonctionne aussi bien sur un <a> que sur un <button>. */
+.filters__reset {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background: #64748b;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+
+/* ==========================================================================
+   9. PAGES MOBILES CLEANER (Missions + Historique)
+   Fichiers source : cleaner_missions.html.twig, cleaner_history.html.twig
+   Note de fusion : le contenu de cleaner.css est maintenant fusionné
+   ci-dessous ; le <link href="cleaner.css"> peut être retiré des templates
+   concernés, base.html.twig (avec app.css) suffit désormais.
+   ⚠️ cleaner.css définissait son propre `body` (padding-bottom: 70px, pour
+   laisser la place à .bottom-nav fixe en bas d'écran). Le `body` global
+   (section 1) ne porte pas ce padding ; appliquer la classe .has-bottom-nav
+   ci-dessous au <body> des pages mobiles Cleaner si la bottom nav est fixe.
+   ========================================================================== */
+
+/* -- À poser sur <body> des pages mobiles avec .bottom-nav fixe -- */
+.has-bottom-nav {
+    padding-bottom: 70px;
+}
+
+/* -- En-tête mobile sticky -- */
+.mobile-header {
+    background: #1e293b;
+    color: white;
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.mobile-header h1 {
+    font-size: 1.1rem;
+}
+
+.mobile-header .user-name {
+    font-size: 0.875rem;
+    color: #94a3b8;
+}
+
+/* -- Conteneur de contenu mobile -- */
+.mobile-content {
+    padding: 1rem;
+}
+
+/* -- Carte mission -- */
+.mission-card {
+    background: var(--card-alt);
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border-left: 5px solid #2563eb;
+}
+
+.mission-card.today {
+    border-left-color: #059669;
+}
+
+.mission-card .mission-date {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 0.5rem;
+}
+
+.mission-card .mission-property {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: var(--text);
+    margin-bottom: 0.25rem;
+}
+
+.mission-card .mission-service {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    margin-bottom: 0.75rem;
+}
+
+.mission-card .mission-time {
+    font-size: 0.875rem;
+    color: #2563eb;
+    font-weight: bold;
+    margin-bottom: 0.75rem;
+}
+
+/* -- Bouton "Terminer la mission" -- */
+.btn-complete {
+    width: 100%;
+    padding: 0.875rem;
+    background: #059669;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.btn-complete:hover {
+    background: #047857;
+}
+
+/* -- Emoji décoratif dans .empty-state (réutilise la classe partagée de
+      la section 19, padding: 2rem conservé plutôt que 3rem 1rem) -- */
+.empty-state .emoji {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+/* -- Barre de navigation mobile fixe en bas d'écran -- */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--card-alt);
+    border-top: 1px solid var(--border-soft);
+    display: flex;
+    z-index: 100;
+}
+
+.bottom-nav a {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.75rem 0.5rem;
+    text-decoration: none;
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    gap: 0.25rem;
+}
+
+.bottom-nav a.active {
+    color: var(--gold);
+}
+
+.bottom-nav a .icon {
+    font-size: 1.4rem;
+}
+
+
+/* -- Pastille de couleur du logement (la couleur reste dynamique en inline,
+      ex: style="background:{{ mission.property.color }}", car elle vient
+      de la base de données — seule la forme/taille est en classe) -- */
+.property-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 6px;
+}
+
+/* -- Carte mission terminée (variante "atténuée" de .mission-card) -- */
+.mission-card--done {
+    border-left-color: #059669;
+    opacity: 0.8;
+}
+
+/* -- Bandeau de statut "Terminée" -- */
+.mission-status-done {
+    text-align: center;
+    color: #059669;
+    font-weight: bold;
+    margin-top: 0.5rem;
+}
+
+/* -- Commentaire libre sur une mission -- */
+.mission-comment {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-bottom: 0.75rem;
+    font-style: italic;
+}
+
+/* -- Statut "en attente de validation" -- */
+.mission-status-pending {
+    text-align: center;
+    color: #d97706;
+    font-size: 0.875rem;
+}
+
+
+/* ==========================================================================
+   10. PAGE : DEMANDES (Requests)
+   Fichier source : requests.html.twig
+   ========================================================================== */
+
+/* -- Variante carrée de .property-dot (pour les tableaux denses) -- */
+.property-dot--square {
+    border-radius: 2px;
+    width: 12px;
+    height: 12px;
+}
+
+/* -- Badge de statut (taille standard "riche" — utilisée aussi par la fiche prospect) -- */
+.status-badge {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+
+.status-badge--lg { /* alias explicite de la taille par défaut ci-dessus */ }
+.status-badge--sm {
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: normal;
+}
+
+.status-badge--pending   { background: #fef3c7; color: #d97706; }
+.status-badge--validated { background: #d1fae5; color: #059669; }
+.status-badge--completed { background: #dbeafe; color: #2563eb; }
+.status-badge--cancelled { background: #fee2e2; color: #dc2626; }
+
+.status-badge--danger   { background: #fee2e2; color: #dc2626; }
+.status-badge--warning  { background: #ffedd5; color: #ea580c; }
+.status-badge--caution  { background: #fef3c7; color: #d97706; }
+.status-badge--neutral  { background: #f1f5f9; color: #64748b; }
+.status-badge--info     { background: #dbeafe; color: #2563eb; }
+.status-badge--purple   { background: #f3e8ff; color: #7c3aed; }
+.status-badge--success  { background: #d1fae5; color: #059669; }
+
+/* -- Lien d'action dans une cellule (ex: "Valider") -- */
+.table-action-link {
+    display: inline-block;
+    min-width: 88px;
+    text-align: center;
+    background: #3b82f6;
+    color: white;
+    font-weight: 700;
+    font-size: 0.8rem;
+    padding: 0.4rem 0.85rem;
+    border-radius: 999px;
+    margin-right: 0.5rem;
+    text-decoration: none;
+    transition: filter 0.15s, transform 0.15s;
+}
+
+.table-action-link:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+}
+
+/* -- Bouton d'action texte (dans un <form> de cellule, sans bordure/fond) -- */
+.table-action-btn {
+    display: inline-block;
+    min-width: 88px;
+    text-align: center;
+    border: none;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 0.8rem;
+    padding: 0.4rem 0.85rem;
+    border-radius: 999px;
+    margin-right: 0.5rem;
+    transition: filter 0.15s, transform 0.15s;
+}
+
+.table-action-btn:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+}
+
+.table-action-btn--success { background: #f97316; color: white; }
+.table-action-btn--danger  { background: #ef4444; color: white; margin-right: 0; }
+
+/* -- Formulaire inline (pour ne pas casser l'alignement dans une cellule) -- */
+.inline-form {
+    display: inline;
+}
+
+/* -- Cellule vide centrée (ex: "Aucune demande") -- */
+.table-empty-cell {
+    padding: 1rem;
+    text-align: center;
+    color: var(--text-dim);
+}
+
+/* -- Utilitaires d'espacement (à réutiliser sur d'autres pages au besoin) -- */
+.u-mb-1 { margin-bottom: 1rem; }
+.u-mt-1 { margin-top: 1rem; }
+
+
+/* ==========================================================================
+   11. PAGE : NOUVELLE DEMANDE (formulaire)
+   Fichier source : request_new.html.twig
+   ========================================================================== */
+
+/* -- Bouton de soumission principal (formulaires) -- */
+.btn-submit {
+    margin-top: 1rem;
+    padding: 0.75rem 2rem;
+    background: var(--gold);
+    color: var(--bg);
+    border: none;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-submit--success {
+    background: #059669;
+}
+
+/* -- Lien "Annuler" à côté du bouton de soumission -- */
+.btn-cancel-link {
+    margin-left: 1rem;
+    color: var(--text-muted);
+}
+
+
+/* ==========================================================================
+   12. PAGE : VALIDER DEMANDE (formulaire)
+   Fichier source : request_validate.html.twig
+   ========================================================================== */
+
+/* -- Bloc de résumé (infos de la demande au-dessus du formulaire) -- */
+.summary-text {
+    margin-bottom: 1rem;
+    color: var(--text-muted);
+}
+
+
+/* ==========================================================================
+   13. PAGE : PRESTATIONS (Services)
+   Fichier source : services.html.twig
+   Note : réutilise .data-table, .btn-link, .table-action-link,
+   .table-action-btn--danger, .inline-form, .table-empty-cell, .u-mb-1
+   déjà définis plus haut — aucune nouvelle classe nécessaire.
+   ========================================================================== */
+
+
+/* ==========================================================================
+   14. PAGE : MODIFIER PRESTATION (formulaire)
+   Fichier source : service_edit.html.twig
+   Note : réutilise .card, .btn-submit, .btn-cancel-link déjà définis
+   plus haut — aucune nouvelle classe nécessaire.
+   ========================================================================== */
+
+
+/* ==========================================================================
+   15. PAGE : NOUVELLE PRESTATION (formulaire)
+   Fichier source : service_new.html.twig
+   Note : réutilise .card, .btn-submit, .btn-cancel-link déjà définis
+   plus haut — aucune nouvelle classe nécessaire.
+   ========================================================================== */
+
+
+/* ==========================================================================
+   16. PAGE : DEVIS (placeholder Symfony à remplacer)
+   Fichier source : devis/index.html.twig
+   ⚠️ NOTE : template par défaut auto-généré par make:controller.
+   À SUPPRIMER/REMPLACER quand la vraie page Devis sera développée
+   (cf. roadmap V2 semaine 7 : génération PDF, formulaire devis...).
+   Ces classes sont temporaires.
+   ========================================================================== */
+
+.example-wrapper {
+    margin: 1em auto;
+    max-width: 800px;
+    width: 95%;
+    font: 18px/1.5 sans-serif;
+}
+
+.example-wrapper code {
+    background: #F5F5F5;
+    padding: 2px 6px;
+}
+
+
+/* ==========================================================================
+   17. PAGE : DÉTAIL DEVIS
+   Fichier source : devis_show.html.twig
+   Note : ce fichier utilisait des classes Tailwind à l'origine (projet
+   sans Tailwind installé) — tout est traduit ici en classes maison,
+   cohérentes avec le reste de app.css.
+   ========================================================================== */
+
+/* -- Conteneur centré max-width (équivalent max-w-3xl mx-auto) -- */
+.page-container--narrow {
+    max-width: 768px;
+    margin: 0 auto;
+}
+
+/* -- Empilement vertical avec espacement entre enfants (équivalent space-y-6) -- */
+.stack > * + * {
+    margin-top: 1.5rem;
+}
+
+/* -- Carte blanche avec coins arrondis (variante large de .card) -- */
+.card-lg {
+    background: var(--card-alt);
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 1.25rem;
+}
+
+/* -- Ligne d'en-tête devis : statut à gauche, actions à droite -- */
+.devis-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.devis-header__date {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.devis-header__actions {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+/* -- Badge de statut devis (pilule arrondie) -- */
+.status-pill-sm {
+    margin-left: 0.75rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.status-pill-sm--brouillon { background: #fef9c3; color: #854d0e; }
+.status-pill-sm--envoye    { background: #dbeafe; color: #1e40af; }
+.status-pill-sm--accepte   { background: #dcfce7; color: #15803d; }
+.status-pill-sm--refuse    { background: #fee2e2; color: #b91c1c; }
+.status-pill-sm--default   { background: #f3f4f6; color: #4b5563; }
+
+/* -- Alerte de relance (orange) -- */
+.alert-pill {
+    margin-left: 0.75rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: #ffedd5;
+    color: #c2410c;
+}
+
+/* -- Bouton d'action devis (variantes par couleur) -- */
+.btn-action {
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: background 0.15s;
+    display: inline-block;
+}
+
+.btn-action--neutral  { background: #f3f4f6; color: #374151; }
+.btn-action--neutral:hover  { background: #e5e7eb; }
+
+.btn-action--confirm  { background: #15803d; color: white; }
+.btn-action--confirm:hover  { background: #166534; }
+
+.btn-action--success  { background: #16a34a; color: white; }
+.btn-action--success:hover  { background: #15803d; }
+
+.btn-action--danger   { background: #ef4444; color: white; }
+.btn-action--danger:hover   { background: #dc2626; }
+
+.btn-action--disabled {
+    background: #f3f4f6;
+    color: #6b7280;
+    cursor: default;
+}
+
+/* -- Tableau devis (variante de .data-table avec en-tête vert) -- */
+.devis-table-wrapper {
+    background: var(--card-alt);
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.devis-table {
+    width: 100%;
+    font-size: 0.875rem;
+    border-collapse: collapse;
+}
+
+.devis-table thead {
+    background: #15803d;
+    color: white;
+}
+
+.devis-table th {
+    padding: 0.75rem 1rem;
+    text-align: left;
+}
+
+.devis-table .th--center { text-align: center; }
+.devis-table .th--right  { text-align: right; }
+
+.devis-table td {
+    padding: 0.75rem 1rem;
+}
+
+.devis-table tbody tr {
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.devis-table tbody tr:hover {
+    background: #f9fafb;
+}
+
+.devis-table .td--center { text-align: center; }
+.devis-table .td--right  { text-align: right; }
+.devis-table .td--bold   { font-weight: 500; }
+
+.devis-line__title {
+    font-weight: 500;
+}
+
+.devis-line__desc {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+}
+
+.devis-table tfoot {
+    background: #f9fafb;
+}
+
+.devis-total-label {
+    text-align: right;
+    color: var(--text-muted);
+}
+
+.devis-total-label--discount {
+    text-align: right;
+    color: #ef4444;
+}
+
+.devis-total-value--discount {
+    text-align: right;
+    color: #ef4444;
+}
+
+.devis-grand-total-label {
+    text-align: right;
+    font-weight: bold;
+    color: #1f2937;
+}
+
+.devis-grand-total-value {
+    text-align: right;
+    font-weight: bold;
+    color: #15803d;
+    font-size: 1.125rem;
+}
+
+/* -- Bloc notes -- */
+.notes-block__title {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 0.25rem;
+}
+
+.notes-block__text {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+
+/* ==========================================================================
+   18. PAGE : NOUVEAU DEVIS (formulaire)
+   Fichier source : devis_new.html.twig
+   Note : traduit depuis Tailwind, comme la section 17.
+   ⚠️ Le JS de cette page dépend de la structure .tarif-row (closest('.tarif-row'))
+   pour calculer le total — ne pas renommer .tarif-row sans adapter le <script>.
+   ========================================================================== */
+
+/* -- Conteneur centré, plus large que .page-container--narrow -- */
+.page-container {
+    max-width: 1024px;
+    margin: 0 auto;
+}
+
+/* -- Bandeau prospect (avatar + nom + ville/email) -- */
+.lead-banner {
+    background: var(--card-alt);
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.lead-banner__avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #dcfce7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #15803d;
+    font-weight: bold;
+    font-size: 1.125rem;
+    flex-shrink: 0;
+}
+
+.lead-banner__name {
+    font-weight: 600;
+    color: var(--text);
+}
+
+.lead-banner__meta {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+/* -- Bouton "Suggestions IA" -- */
+.ai-suggest-bar {
+    margin-bottom: 1rem;
+    text-align: right;
+}
+
+.btn-ai {
+    padding: 0.75rem 1.5rem;
+    background: #7c3aed;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+/* -- Bandeau explicatif des suggestions IA -- */
+.ai-banner {
+    margin-bottom: 1rem;
+    padding: 1rem 1.25rem;
+    background: #ede9fe;
+    border-left: 4px solid #7c3aed;
+    border-radius: 8px;
+    color: #4c1d95;
+    font-size: 0.9rem;
+}
+
+/* -- Section blanche du formulaire (variante de .card-lg avec padding plus grand) -- */
+.form-section {
+    background: var(--card-alt);
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+}
+
+.form-section__title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 1rem;
+}
+
+.form-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* -- Groupe de prestations par catégorie -- */
+.tarif-category {
+    margin-bottom: 1.5rem;
+}
+
+.tarif-category__title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.25rem;
+}
+
+.tarif-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+/* -- Ligne d'une prestation (checkbox + nom + prix + quantité) -- */
+.tarif-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-soft);
+    transition: border-color 0.15s, background 0.15s;
+}
+
+.tarif-row:hover {
+    border-color: var(--gold);
+    background: var(--card-2);
+}
+
+.tarif-row__checkbox {
+    width: 1rem;
+    height: 1rem;
+    accent-color: var(--gold);
+    border-radius: 4px;
+}
+
+.tarif-row__label {
+    flex: 1;
+    cursor: pointer;
+}
+
+.tarif-row__name {
+    font-weight: 500;
+    color: var(--text);
+}
+
+.tarif-row__desc {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    display: block;
+}
+
+.tarif-row__ai-badge {
+    font-size: 0.7rem;
+    background: #7c3aed;
+    color: white;
+    padding: 2px 7px;
+    border-radius: 9999px;
+}
+
+.tarif-row__on-quote {
+    font-size: 0.75rem;
+    color: #f97316;
+    font-weight: 500;
+}
+
+.tarif-row__price {
+    color: var(--gold-strong);
+    font-weight: 600;
+}
+
+.tarif-row__unit {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+}
+
+.tarif-row__qty-input {
+    width: 3.5rem;
+    text-align: center;
+    border: 1px solid var(--border-soft);
+    background: #F5F0E1;
+    color: #1e293b;
+    border-radius: 4px;
+    padding: 0.25rem;
+    font-size: 0.875rem;
+}
+
+/* -- Champs de formulaire en 2 colonnes (Remise / Notes) -- */
+.form-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+@media (max-width: 640px) {
+    .form-grid-2 {
+        grid-template-columns: 1fr;
+    }
+}
+
+.form-field__label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 0.25rem;
+}
+
+.form-field__input {
+    width: 100%;
+    border: 1px solid var(--border-soft);
+    border-radius: 8px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    background: #F5F0E1;
+    color: #1e293b;
+}
+
+/* -- Bandeau total + bouton de soumission -- */
+.total-banner {
+    background: #15803d;
+    color: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.total-banner__label {
+    font-size: 0.875rem;
+    opacity: 0.8;
+}
+
+.total-banner__value {
+    font-size: 1.875rem;
+    font-weight: bold;
+}
+
+.btn-create-devis {
+    background: white;
+    color: #15803d;
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.btn-create-devis:hover {
+    background: #f0fdf4;
+}
+
+
+/* ==========================================================================
+   19. COMPOSANTS PARTAGÉS — Fiche prospect / Timeline / Emails-SMS
+   Fichier source : app1.css (fusionné ici)
+   Réutilisables sur la fiche prospect, la timeline d'activités, les
+   formulaires/confirmations d'envoi email/SMS, l'espace propriétaire,
+   les logements et les utilisateurs.
+   ⚠️ Note de fusion : le reset de base (body, a, table...) de l'ancien
+   app1.css n'a pas été repris ici car il fait doublon avec la section 1
+   de ce fichier (déjà chargée partout). Seule différence notée :
+   app1.css utilisait background: #f1f5f9 sur le body (vs #f8fafc ici) —
+   valeur de ce fichier conservée car déjà en production sur toutes les pages.
+   ========================================================================== */
+
+.inline {
+    display: inline;
+}
+
+/* -- Espacements utilitaires -- */
+.mb-sm  { margin-bottom: 0.5rem; }
+.mb-md  { margin-bottom: 1rem; }
+.mb-lg  { margin-bottom: 1.5rem; }
+.mb-xl  { margin-bottom: 2rem; }
+.mt-md  { margin-top: 1rem; }
+.ml-sm  { margin-left: 0.5rem; }
+.mr-md  { margin-right: 1rem; }
+.fw-normal { font-weight: normal; }
+
+/* -- En-tête de carte (titre + actions) -- */
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+.card-header--align-start { align-items: flex-start; }
+.card-header--spaced      { margin-bottom: 1.5rem; }
+
+.card-title {
+    color: var(--text);
+}
+.card-title--spaced { margin-bottom: 1rem; }
+
+.card-section--divider {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+/* -- Variante carte avec accent latéral coloré (couleur dynamique en inline) -- */
+.card--accent {
+    border-left: 5px solid; /* couleur posée en inline via style="border-left-color:..." */
+}
+
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+/* -- Barre de progression (utilisée avec .status-badge--danger/--warning/--caution/--neutral) -- */
+.progress-bar {
+    margin-top: 0.5rem;
+    background: #e2e8f0;
+    border-radius: 4px;
+    height: 6px;
+    width: 120px;
+    margin-left: auto;
+}
+.progress-bar__fill {
+    height: 6px;
+    border-radius: 4px;
+    /* width posée en inline (valeur continue venant de la base) */
+}
+.progress-bar__fill--danger  { background: #dc2626; }
+.progress-bar__fill--warning { background: #ea580c; }
+.progress-bar__fill--caution { background: #d97706; }
+.progress-bar__fill--neutral { background: #94a3b8; }
+
+/* -- Grille d'infos type fiche -- */
+.info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+.field-label {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 0;
+}
+
+/* -- Boutons (famille .btn, distincte de .btn-submit/.btn-quick/.btn-action) -- */
+.btn {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    text-decoration: none;
+    text-align: center;
+    cursor: pointer;
+    font-size: 1rem;
+    color: white;
+}
+.btn--block { width: 100%; }
+.btn--lg    { padding: 0.75rem 2rem; }
+.btn--md    { padding: 0.75rem 1.5rem; border-radius: 4px; text-decoration: none; }
+
+.btn--primary   { background: var(--gold); color: var(--bg); font-weight: 600; }
+.btn--secondary { background: #f1f5f9; color: #475569; }
+.btn--success   { background: #059669; }
+.btn--accent    { background: #7c3aed; }
+.btn--warning   { background: #d97706; }
+.btn--confirm   { background: #16a34a; }
+.btn--info      { background: #0ea5e9; }
+
+/* -- Listes d'actions verticales -- */
+.action-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+/* -- Relance / follow-up -- */
+.follow-up-notice {
+    margin-top: 1rem;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+.follow-up-notice--overdue { color: #dc2626; }
+
+/* -- Timeline d'activités -- */
+.timeline {
+    position: relative;
+    padding-left: 2rem;
+}
+.timeline__line {
+    position: absolute;
+    left: 0.75rem;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #e2e8f0;
+}
+.timeline__item {
+    position: relative;
+    margin-bottom: 1.5rem;
+    padding-left: 1.5rem;
+}
+.timeline__item--call    { --tl-color: #2563eb; --tl-bg: #dbeafe; }
+.timeline__item--email   { --tl-color: #059669; --tl-bg: #d1fae5; }
+.timeline__item--sms     { --tl-color: #7c3aed; --tl-bg: #f3e8ff; }
+.timeline__item--quote   { --tl-color: #d97706; --tl-bg: #fef3c7; }
+.timeline__item--meeting { --tl-color: #dc2626; --tl-bg: #fee2e2; }
+.timeline__item--other   { --tl-color: #64748b; --tl-bg: #f1f5f9; }
+
+.timeline__dot {
+    position: absolute;
+    left: -0.35rem;
+    top: 0.25rem;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    background: var(--tl-bg);
+    border: 2px solid var(--tl-color);
+}
+.timeline__content {
+    background: #f8fafc;
+    border-radius: 6px;
+    padding: 1rem;
+    border-left: 3px solid var(--tl-color);
+}
+.timeline__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.5rem;
+}
+.timeline__label {
+    font-weight: 600;
+    color: var(--tl-color);
+}
+.timeline__meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+.timeline__date {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+}
+.timeline__note {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    margin: 0;
+}
+.timeline__followup {
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+    color: #d97706;
+}
+
+/* -- Boutons icône (ex: supprimer une ligne de timeline) -- */
+.icon-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.8rem;
+}
+.icon-btn--danger { color: #dc2626; }
+
+/* -- États vides (variante alternative à .table-wrapper__empty / .table-empty-cell) -- */
+.empty-state {
+    color: #94a3b8;
+    text-align: center;
+    padding: 2rem;
+}
+.empty-state--card {
+    background: var(--card-alt);
+    padding: 2rem;
+    border-radius: 8px;
+    text-align: center;
+    color: var(--text-dim);
+}
+
+/* -- Liens texte (pilules colorées, ex: Modifier/Désactiver/Supprimer) -- */
+.text-link {
+    display: inline-block;
+    min-width: 88px;
+    text-align: center;
+    background: #3b82f6;
+    color: white;
+    font-weight: 700;
+    font-size: 0.8rem;
+    padding: 0.4rem 0.85rem;
+    border-radius: 999px;
+    margin-right: 0.5rem;
+    text-decoration: none;
+    transition: filter 0.15s, transform 0.15s;
+}
+.text-link:hover { filter: brightness(1.1); transform: translateY(-1px); }
+
+.text-link--success { background: #f97316; color: white; }
+.text-link--success:hover { filter: brightness(1.1); transform: translateY(-1px); }
+
+.text-link--warning {
+    display: inline-block;
+    min-width: 88px;
+    text-align: center;
+    background: #f97316;
+    color: white;
+    font-weight: 700;
+    font-size: 0.8rem;
+    padding: 0.4rem 0.85rem;
+    border-radius: 999px;
+    margin-right: 0.5rem;
+    text-decoration: none;
+    transition: filter 0.15s, transform 0.15s;
+}
+.text-link--warning:hover { filter: brightness(1.1); transform: translateY(-1px); }
+
+/* -- Texte secondaire -- */
+.text-secondary { color: #64748b; }
+.text-secondary--spaced { margin-left: 1rem; }
+.text-secondary--sm { font-size: 0.875rem; }
+
+/* -- Alertes -- */
+.alert {
+    padding: 1rem;
+    border-radius: 6px;
+    margin-bottom: 1.5rem;
+}
+.alert--warning { background: #fef3c7; border: 1px solid #fcd34d; }
+.alert--danger  { background: #fee2e2; color: #dc2626; }
+.alert--success { background: #d1fae5; border: 1px solid #6ee7b7; }
+.alert--mb-sm   { margin-bottom: 1rem; }
+
+/* -- Bandeau "Résumé IA" dans les messages flash (base.html.twig) -- */
+.ai-flash-banner {
+    background: #e0f2fe;
+    border: 1px solid #7dd3fc;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    color: #0c4a6e;
+}
+
+/* -- Bloc d'aperçu (objet / message) -- */
+.preview-box {
+    background: #f8fafc;
+    padding: 1rem;
+    border-radius: 6px;
+    margin-bottom: 1.5rem;
+}
+.preview-box--mb-sm { margin-bottom: 1rem; }
+.preview-box hr {
+    margin: 0.75rem 0;
+    border-color: #e2e8f0;
+}
+.preview-box__body {
+    white-space: pre-line;
+}
+.preview-box__body--sm { font-size: 0.875rem; }
+
+/* -- Formulaires (famille .form-group/.form-control, distincte de .form-field) -- */
+.form-group { margin-bottom: 1rem; }
+.form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--text);
+}
+.form-control {
+    width: 100%;
+    padding: 0.625rem;
+    border: 1px solid var(--border-soft);
+    border-radius: 6px;
+    background: #F5F0E1;
+    color: #1e293b;
+}
+.form-textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border-soft);
+    border-radius: 6px;
+    font-size: 0.875rem;
+    color: #1e293b;
+    background: #F5F0E1;
+    resize: vertical;
+}
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+/* -- Liste de destinataires (envoi groupé) -- */
+.recipient-list {
+    margin-top: 0.5rem;
+    padding-left: 1.5rem;
+}
+.recipient-list__item {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+/* -- Liste à cocher (sélection de prospects) -- */
+.checkbox-list {
+    background: #f8fafc;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 1rem;
+    color: #1e293b;
+}
+.checkbox-list__item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    cursor: pointer;
+}
+.checkbox-list__meta {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+/* -- Compteur de caractères (SMS) -- */
+.char-counter {
+    text-align: right;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+/* -- Pastilles de couleur dynamique (logements) -- */
+.color-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 6px;
+    /* couleur posée en inline (vient de property.color) */
+}
+.color-swatch {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    /* couleur posée en inline (vient de property.color) */
+}
+
+/* -- Bouton texte (ex: actions destructives dans un tableau) -- */
+.text-btn {
+    display: inline-block;
+    min-width: 88px;
+    text-align: center;
+    background: #3b82f6;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 0.8rem;
+    padding: 0.4rem 0.85rem;
+    border-radius: 999px;
+    margin-right: 0.5rem;
+    transition: filter 0.15s, transform 0.15s;
+}
+.text-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+/* NOTE conservée de la fusion : collision détectée — la page Logements
+   utilisait à l'origine #ef4444 pour ce même bouton "Supprimer", la page
+   Utilisateurs #dc2626. #ef4444 (rouge vif) retenu pour les deux, dans
+   le cadre de la refonte boutons d'action en pilules colorées. */
+.text-btn--danger { background: #ef4444; color: white; margin-right: 0; }
+
+
+/* ==========================================================================
+   20. PAGE : FICHE PROSPECT (lead_show)
+   Fichier source : lead_show.html.twig
+   ========================================================================== */
+
+.lead-detail__grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 1.5rem;
+}
+
+.lead-detail__score {
+    text-align: right;
+}
+
+.lead-detail__sidebar {
+    /* regroupe les cartes Statut + Actions */
+}
+
+.lead-detail__timeline {
+    grid-column: 1 / -1;
+}
+
+
+/* ==========================================================================
+   21. PAGE : CONFIRMATION ENVOI EMAIL / SMS (simple & groupé)
+   Note : entièrement couverte par les composants partagés (.alert,
+   .preview-box, .recipient-list, .btn, .text-secondary) — aucune classe
+   spécifique à cette page.
+   ========================================================================== */
+
+
+/* ==========================================================================
+   22. PAGE : FORMULAIRES D'ENVOI EMAIL / SMS (simple & groupé)
+   Note : entièrement couverte par les composants partagés (.form-group,
+   .form-control, .checkbox-list, .char-counter, .btn, .alert) — aucune
+   classe spécifique à cette page.
+   ========================================================================== */
+
+
+/* ==========================================================================
+   23. PAGES : ESPACE PROPRIÉTAIRE / LOGEMENTS / UTILISATEURS
+   Note : entièrement couvertes par les composants partagés (.card-grid,
+   .card--accent, .data-table, .status-badge, .empty-state, .color-swatch,
+   .text-btn, .btn, .data-table__row--disabled, .text-link--success/--warning)
+   — aucune classe spécifique à ces pages.
+   ========================================================================== */
+
+
+/* ==========================================================================
+   24. PAGES : PROSPECTS — Kanban, Import, Formulaires (new/edit/action)
+   Fichiers source : leads_kanban.html.twig, leads_import.html.twig,
+   lead_new.html.twig, lead_edit.html.twig, lead_action_new.html.twig
+   Note : ces 5 pages réutilisent .btn-submit, .btn-cancel-link
+   (section 11), .card, .form-field__label, .form-field__input (section 18)
+   déjà définis plus haut — seules les classes ci-dessous sont nouvelles.
+   ⚠️ Le JS de la page Kanban dépend de .kanban-card, .kanban-card--dragging,
+   .kanban-column, .kanban-column--drag-over (classList/querySelectorAll
+   dans le <script>) — ne jamais renommer ces classes sans adapter le script.
+   ========================================================================== */
+
+/* -- Lien retour générique (variante texte simple) -- */
+.back-link {
+    display: inline-block;
+    margin-bottom: 1rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.875rem;
+}
+
+.back-link:hover {
+    color: var(--gold);
+}
+
+/* -- Variante "pilule" du lien retour (page Kanban) -- */
+.back-link--pill {
+    display: inline-block;
+    margin-bottom: 1.5rem;
+    padding: 0.5rem 1rem;
+    background: var(--card-alt);
+    border-radius: 9999px;
+    box-shadow: var(--shadow-soft);
+    color: var(--text);
+    text-decoration: none;
+    font-size: 0.875rem;
+}
+
+.back-link--pill:hover {
+    background: var(--card-2);
+}
+
+/* -- Panneau d'import (variante de .card avec contenu centré sur l'action) -- */
+.import-panel {
+    max-width: 640px;
+}
+
+.import-panel__intro {
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+}
+
+/* -- Bloc d'information (exemple de colonnes attendues pour l'import) -- */
+.info-box {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.875rem;
+    color: #475569;
+    line-height: 1.6;
+}
+
+/* -- Bouton d'action import (famille .btn-action, couleur cohérente avec
+      .btn-action--confirm déjà défini en section 17) -- */
+.btn-action--import {
+    background: #15803d;
+    color: white;
+}
+.btn-action--import:hover {
+    background: #166534;
+}
+
+/* -- Boutons d'accès rapide additionnels (famille .btn-quick, section 7) -- */
+.btn-quick--cyan {
+    background: #0ea5e9; /* cohérent avec .btn--info déjà défini en section 19 */
+}
+.btn-quick--emerald {
+    background: #10b981; /* distinct de .btn-quick--green (#059669) */
+}
+
+/* -- Tableau Kanban (colonnes par statut) -- */
+.kanban-board {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(220px, 1fr));
+    gap: 1rem;
+    overflow-x: auto;
+    padding-bottom: 1rem;
+}
+
+@media (max-width: 1280px) {
+    .kanban-board {
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    }
+}
+
+/* -- Colonne Kanban (une par statut) -- */
+.kanban-column {
+    background: var(--card-alt);
+    border-radius: 8px;
+    padding: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    min-height: 200px;
+    transition: background 0.15s;
+}
+
+/* ⚠️ Ciblée par le JS (dragover/dragleave) — ne pas renommer */
+.kanban-column--drag-over {
+    background: var(--card-2);
+}
+
+.kanban-column__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0.25rem;
+    margin-bottom: 0.5rem;
+}
+
+.kanban-column__label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.kanban-column__count {
+    background: var(--gold-soft);
+    border-radius: 9999px;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.75rem;
+    color: var(--gold);
+}
+
+.kanban-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex: 1;
+}
+
+/* -- Carte Kanban individuelle -- */
+/* ⚠️ Ciblée par le JS (draggable/dragstart/dragend) — ne pas renommer */
+.kanban-card {
+    background: var(--card-alt);
+    border-radius: 6px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+    cursor: grab;
+    transition: box-shadow 0.15s, opacity 0.15s;
+}
+
+.kanban-card--dragging {
+    opacity: 0.5;
+}
+
+.kanban-card__link {
+    display: block;
+    padding: 0.75rem;
+    text-decoration: none;
+    color: inherit;
+}
+
+.kanban-card__title {
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: var(--text);
+    margin-bottom: 0.25rem;
+}
+
+.kanban-card__city {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+}
+
+.kanban-card__footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.kanban-card__category {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+}
+
+/* -- Score sur la carte Kanban : réutilise le mapping de couleurs déjà
+      défini pour .status-badge--danger/--warning/--caution/--neutral
+      (section 19) plutôt qu'une palette parallèle -- */
+.kanban-card__score {
+    display: inline-block;
+    padding: 0.1rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.kanban-card__score--critical { background: #fee2e2; color: #dc2626; }
+.kanban-card__score--high     { background: #ffedd5; color: #ea580c; }
+.kanban-card__score--medium   { background: #fef3c7; color: #d97706; }
+.kanban-card__score--low      { background: #f1f5f9; color: #64748b; }
+
+
+/* ==========================================================================
+   25. COMPOSANTS PARTAGÉS — Formulaires natifs Symfony (labels, inputs, erreurs)
+   Fichier source : dashboard.css (fusionné ici)
+   Note : distincts de .form-group/.form-label/.form-control (section 19) et
+   .form-field__label/.form-field__input (section 18), qui sont des classes
+   posées explicitement par le développeur. Les règles ci-dessous ciblent
+   directement les éléments natifs <form>, <label>, <input> — utiles pour
+   les formulaires Symfony générés automatiquement (form_row Twig) sans
+   classes ajoutées manuellement.
+   ========================================================================== */
+
+form label {
+    display: block;
+    margin-bottom: 0.4rem;
+    color: var(--text);
+    font-weight: 500;
+    font-size: 0.875rem;
+}
+
+form input[type="text"],
+form input[type="email"],
+form input[type="password"],
+form input[type="tel"],
+form input[type="number"],
+form input[type="date"],
+form input[type="time"],
+form input[type="color"],
+form select,
+form textarea {
+    width: 100%;
+    padding: 0.625rem 0.875rem;
+    border: 1px solid var(--border-soft);
+    border-radius: 6px;
+    font-size: 0.875rem;
+    color: #1e293b;
+    background: #F5F0E1;
+    transition: border-color 0.2s;
+}
+
+form input:focus,
+form select:focus,
+form textarea:focus {
+    outline: none;
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px var(--gold-soft);
+}
+
+/* -- Erreurs de validation (Symfony form_errors) -- */
+form .form-error,
+form ul.form-error {
+    color: #dc2626;
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+    list-style: none;
+    padding: 0;
+}
+
+form .is-invalid,
+form input.is-invalid,
+form select.is-invalid {
+    border-color: #dc2626;
+    background: #fff5f5;
+}
+
+form .has-error input,
+form .has-error select,
+form .has-error textarea {
+    border-color: #dc2626;
+}
+
+form .invalid-feedback {
+    color: #dc2626;
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+}
+
+
+/* ==========================================================================
+   26. PAGE : CONNEXION (login)
+   Fichier source : login.css (fusionné ici)
+   ⚠️ Note de fusion : cette page n'utilise PAS base.html.twig (pas de
+   sidebar/topbar) — elle a son propre layout plein écran centré. Le `body`
+   global (section 1, désormais dark teal) reste appliqué ; le centrage
+   vertical/horizontal est porté par .login-page (à poser en classe sur
+   <body> de login.html.twig) plutôt que de redéfinir `body` globalement.
+   Les sélecteurs natifs `input`, `button`, `label` de login.css (non
+   scopés à .login-box dans l'original) sont volontairement scopés ici
+   sous .login-box pour ne pas affecter tous les <input>/<button> du site.
+   ========================================================================== */
+
+.login-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.login-box {
+    background: var(--card-alt);
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+}
+
+.login-box h1 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    color: var(--gold);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.8rem;
+}
+
+.login-box label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text);
+}
+
+.login-box input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border-soft);
+    border-radius: 4px;
+    font-size: 1rem;
+    background: #F5F0E1;
+    color: #1e293b;
+}
+
+.login-box button {
+    width: 100%;
+    padding: 0.75rem;
+    background: var(--gold);
+    color: var(--bg);
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 1rem;
+}
+
+.login-box button:hover {
+    filter: brightness(1.08);
+}
+
+/* -- Message d'erreur de connexion -- */
+.error {
+    background: #fee2e2;
+    color: #dc2626;
+    padding: 0.75rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+}
+
+
+/* ==========================================================================
+   27. PAGE : DASHBOARD ADMIN ENRICHI
+   Fichier source d'inspiration : dp-dashboard.css / index_html__1_.twig
+   (mockup Lovable). Reproduit ici : KPIs avec icône+tendance, calendrier
+   de la semaine, liste "Demandes à valider", liste "Missions assignées",
+   liste "Messages", timeline "Historique".
+
+   ⚠️ Note de nommage : la timeline ci-dessous est préfixée .dash- pour
+   éviter toute collision avec .timeline / .timeline__item (section 19,
+   utilisée par la fiche prospect) qui a une structure différente
+   (variables CSS --tl-color/--tl-bg par type d'événement).
+   ========================================================================== */
+
+/* -- Grille des 4 KPI riches (icône colorée + valeur + tendance) -- */
+.dash-kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+    margin-bottom: 2rem;
+}
+
+.dash-kpi {
+    background: var(--card-alt);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 22px 24px;
+    box-shadow: var(--shadow-soft);
+    transition: border-color 0.2s, transform 0.2s;
+}
+
+.dash-kpi:hover {
+    border-color: rgba(232, 184, 74, 0.45);
+    transform: translateY(-2px);
+}
+
+.dash-kpi-icon {
+    height: 44px;
+    width: 44px;
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    margin-bottom: 16px;
+    font-size: 19px;
+}
+
+.dash-kpi-icon--gold   { background: var(--gold-soft); color: var(--gold); }
+.dash-kpi-icon--teal   { background: rgba(45, 212, 191, 0.15); color: var(--teal-accent); }
+.dash-kpi-icon--blue   { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+.dash-kpi-icon--purple { background: rgba(124, 58, 237, 0.15); color: #a78bfa; }
+
+.dash-kpi-value {
+    font-size: 30px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.5px;
+}
+
+.dash-kpi-label {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+.dash-kpi-trend {
+    font-size: 11px;
+    color: var(--gold);
+    margin-top: 8px;
+}
+
+.dash-kpi-trend--down { color: #f87171; }
+
+/* -- Rangées de cartes (3+2 colonnes, ou 3 colonnes égales) -- */
+.dash-row {
+    display: grid;
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+.dash-row--3-2 { grid-template-columns: 3fr 2fr; }
+.dash-row--3   { grid-template-columns: repeat(3, 1fr); }
+
+@media (max-width: 1200px) {
+    .dash-row--3-2,
+    .dash-row--3 {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* -- En-tête de carte dashboard (titre + lien "voir tout") -- */
+.dash-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.dash-card-head h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    margin: 0;
+}
+
+.dash-card-head h3 .dim {
+    color: var(--text-dim);
+    font-weight: 400;
+}
+
+.dash-link {
+    font-size: 12px;
+    color: var(--gold);
+    text-decoration: none;
+}
+
+.dash-link:hover {
+    text-decoration: underline;
+}
+
+/* -- Mini calendrier semaine -- */
+.dash-cal-nav {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.dash-cal-nav button {
+    height: 30px;
+    width: 30px;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--border-soft);
+    border-radius: 8px;
+    color: var(--text-muted);
+    background: none;
+    cursor: pointer;
+}
+
+.dash-cal-nav button:hover {
+    background: var(--card-2);
+}
+
+.dash-cal-nav .dash-cal-today {
+    width: auto;
+    padding: 0 12px;
+    font-size: 11px;
+    background: var(--gold-soft);
+    color: var(--gold);
+    border-color: transparent;
+    font-weight: 500;
+}
+
+.dash-cal-days {
+    display: grid;
+    grid-template-columns: 44px repeat(7, 1fr);
+    gap: 6px;
+    text-align: center;
+}
+
+.dash-cal-day {
+    padding: 8px 0;
+}
+
+.dash-cal-day .dn {
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    color: var(--text-dim);
+}
+
+.dash-cal-day .num {
+    margin: 4px auto 0;
+    height: 28px;
+    width: 28px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    font-size: 13px;
+    color: var(--text);
+}
+
+.dash-cal-day.active .num {
+    background: var(--gold);
+    color: var(--bg);
+    font-weight: 600;
+}
+
+.dash-cal-grid {
+    position: relative;
+    margin-top: 12px;
+    height: 260px;
+    border-radius: 12px;
+    border: 1px solid var(--border-soft);
+    background: rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+}
+
+.dash-hour-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+}
+
+.dash-hour-line .h {
+    width: 44px;
+    font-size: 10px;
+    color: var(--text-dim);
+    padding-left: 10px;
+}
+
+.dash-hour-line .l {
+    flex: 1;
+    border-top: 1px solid var(--border-soft);
+}
+
+.dash-cal-cols {
+    position: absolute;
+    inset: 0;
+    padding-left: 44px;
+    padding-right: 6px;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+}
+
+.dash-cal-col {
+    position: relative;
+}
+
+.dash-event {
+    position: absolute;
+    left: 2px;
+    right: 2px;
+    padding: 5px 8px;
+    border-radius: 6px;
+    font-size: 10px;
+    line-height: 1.3;
+    border: 1px solid;
+}
+
+.dash-event .t { font-weight: 600; }
+.dash-event .p { opacity: 0.75; font-size: 9px; }
+
+.dash-event.gold {
+    background: rgba(232, 184, 74, 0.2);
+    border-color: rgba(232, 184, 74, 0.45);
+    color: var(--gold-strong);
+}
+
+.dash-event.teal {
+    background: rgba(45, 212, 191, 0.15);
+    border-color: rgba(45, 212, 191, 0.4);
+    color: #7EE7D8;
+}
+
+/* -- Liste "Demandes à valider" -- */
+.dash-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.dash-list-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.15);
+    border: 1px solid var(--border-soft);
+    margin-bottom: 10px;
+}
+
+.dash-list-item:last-child {
+    margin-bottom: 0;
+}
+
+.dash-li-icon {
+    height: 38px;
+    width: 38px;
+    border-radius: 10px;
+    background: var(--gold-soft);
+    color: var(--gold);
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    font-size: 15px;
+}
+
+.dash-li-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.dash-li-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+}
+
+.dash-li-sub {
+    font-size: 11px;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 2px;
+}
+
+.dash-li-time {
+    font-size: 10px;
+    color: var(--text-dim);
+    white-space: nowrap;
+}
+
+.dash-btn-validate {
+    padding: 7px 14px;
+    background: var(--gold);
+    color: var(--bg);
+    border: none;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: filter 0.15s;
+}
+
+.dash-btn-validate:hover {
+    filter: brightness(1.08);
+}
+
+/* -- Listes "Missions assignées" / "Messages" (avatar + texte + meta) -- */
+.dash-row-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+}
+
+.dash-row-item + .dash-row-item {
+    border-top: 1px solid var(--border-soft);
+}
+
+.dash-ri-avatar {
+    height: 38px;
+    width: 38px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(232, 184, 74, 0.4), rgba(232, 184, 74, 0.12));
+    color: var(--text);
+    font-size: 11px;
+    font-weight: 600;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+}
+
+.dash-ri-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.dash-ri-line1 {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.dash-ri-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dash-ri-time {
+    font-size: 10px;
+    color: var(--text-dim);
+    white-space: nowrap;
+}
+
+.dash-ri-sub {
+    font-size: 11px;
+    color: var(--text-dim);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dash-pill {
+    padding: 4px 9px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.dash-pill.gold  { background: var(--gold-soft); color: var(--gold); }
+.dash-pill.muted { background: rgba(245, 240, 225, 0.08); color: var(--text-muted); }
+
+.dash-unread {
+    height: 20px;
+    min-width: 20px;
+    background: var(--gold);
+    color: var(--bg);
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 700;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+}
+
+/* -- Timeline "Historique" (préfixée dash- pour éviter collision avec
+      .timeline de la section 19, structure différente) -- */
+.dash-timeline {
+    position: relative;
+    padding-left: 6px;
+    list-style: none;
+    margin: 0;
+}
+
+.dash-timeline::before {
+    content: "";
+    position: absolute;
+    left: 5px;
+    top: 6px;
+    bottom: 6px;
+    width: 1px;
+    background: var(--border-soft);
+}
+
+.dash-tl-item {
+    position: relative;
+    padding: 4px 0 16px 22px;
+}
+
+.dash-tl-item:last-child {
+    padding-bottom: 0;
+}
+
+.dash-tl-item::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 7px;
+    height: 12px;
+    width: 12px;
+    border-radius: 50%;
+    background: var(--gold);
+    box-shadow: 0 0 0 3px var(--card-alt);
+}
+
+.dash-tl-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+}
+
+.dash-tl-desc {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 2px;
+}
+
+.dash-tl-time {
+    font-size: 10px;
+    color: var(--text-dim);
+    opacity: 0.7;
+    margin-top: 2px;
+}
+
+/* -- Réorganisation des blocs existants (Statuts des demandes,
+      Accès rapides) pour s'intégrer en bas du dashboard enrichi,
+      sur une rangée à 2 colonnes plus compacte. -- */
+.dash-row--legacy {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+@media (max-width: 1024px) {
+    .dash-row--legacy {
+        grid-template-columns: 1fr;
+    }
+}
+
+.dash-row--legacy .card {
+    margin-bottom: 0;
+}
+
+/* Compacte légèrement .status-pill et .quick-links quand ils sont
+   utilisés dans ce contexte resserré (sans toucher leur style par
+   défaut utilisé ailleurs). */
+.dash-row--legacy .grid-auto {
+    margin-bottom: 0;
+    gap: 0.75rem;
+}
+
+.dash-row--legacy .quick-links {
+    gap: 0.6rem;
+}
+
+.dash-row--legacy .btn-quick {
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
+}

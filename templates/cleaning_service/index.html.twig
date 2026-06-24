@@ -5,35 +5,35 @@
 
 {% block body %}
 
-    <div style="margin-bottom:1rem;">
-        <a href="{{ path('app_service_new') }}" style="padding:0.75rem 1.5rem; background:#2563eb; color:white; border-radius:4px; text-decoration:none;">
+    <div class="u-mb-1">
+        <a href="{{ path('app_service_new') }}" class="btn-link">
             + Nouvelle prestation
         </a>
     </div>
 
-    <table style="width:100%; background:white; border-radius:8px; border-collapse:collapse;">
+    <table class="data-table">
         <thead>
-            <tr style="background:#f1f5f9;">
-                <th style="padding:1rem; text-align:left;">Nom</th>
-                <th style="padding:1rem; text-align:left;">Durée</th>
-                <th style="padding:1rem; text-align:left;">Actions</th>
+            <tr>
+                <th>Nom</th>
+                <th>Durée</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
             {% for service in services %}
-            <tr style="border-top:1px solid #e2e8f0;">
-                <td style="padding:1rem;">{{ service.name }}</td>
-                <td style="padding:1rem;">{{ service.duration }} min</td>
-                <td style="padding:1rem;">
-                    <a href="{{ path('app_service_edit', {id: service.id}) }}" style="color:#2563eb; margin-right:1rem;">Modifier</a>
-                    <form method="post" action="{{ path('app_service_delete', {id: service.id}) }}" style="display:inline;" onsubmit="return confirm('Supprimer cette prestation ?')">
-                        <button type="submit" style="color:#ef4444; background:none; border:none; cursor:pointer;">Supprimer</button>
+            <tr>
+                <td>{{ service.name }}</td>
+                <td>{{ service.duration }} min</td>
+                <td>
+                    <a href="{{ path('app_service_edit', {id: service.id}) }}" class="table-action-link">Modifier</a>
+                    <form method="post" action="{{ path('app_service_delete', {id: service.id}) }}" class="inline-form" onsubmit="return confirm('Supprimer cette prestation ?')">
+                        <button type="submit" class="table-action-btn table-action-btn--danger">Supprimer</button>
                     </form>
                 </td>
             </tr>
             {% else %}
             <tr>
-                <td colspan="3" style="padding:1rem; text-align:center; color:#94a3b8;">Aucune prestation</td>
+                <td colspan="3" class="table-empty-cell">Aucune prestation</td>
             </tr>
             {% endfor %}
         </tbody>

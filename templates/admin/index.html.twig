@@ -5,68 +5,309 @@
 
 {% block body %}
 
-    {# ── KPIs principaux ── #}
-    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:1rem; margin-bottom:2rem;">
+    {# ════════════════════════════════════════════════════════════════
+       KPIs PRINCIPAUX (version enrichie : icône + valeur + tendance)
 
-        <div style="background:white; padding:1.5rem; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.1); border-top:4px solid #2563eb;">
-            <div style="font-size:0.75rem; color:#64748b; text-transform:uppercase; letter-spacing:1px;">Propriétaires</div>
-            <div style="font-size:2.5rem; font-weight:bold; color:#1e293b;">{{ totalOwners }}</div>
+       Demandes en attente / Missions du jour : branchés sur les
+       vraies données du AdminController (pendingRequests,
+       missionsAujourdhuiCount).
+
+       ⚠️ CONTROLLER : Revenus (mois) et Taux de satisfaction n'ont pas
+       de source de données dans le projet actuel (pas de champ "prix"
+       sur CleaningRequest/CleaningService, pas de système de notation
+       client). Laissés en valeurs statiques pour l'instant — à
+       remplacer quand ces fonctionnalités existeront, ou à retirer
+       ces 2 cartes et repasser .dash-kpis sur 2 colonnes seulement.
+
+       Les pourcentages de tendance (-15%, +10%...) sont aussi statiques :
+       un vrai calcul demanderait de comparer aux données de la semaine/
+       du mois précédent (ex: compter les pendingRequests d'il y a 7
+       jours). Retiré pour l'instant pour ne pas afficher un chiffre
+       inventé qui n'aurait pas de sens métier réel. -- #}
+    <div class="dash-kpis">
+
+        <div class="dash-kpi">
+            <div class="dash-kpi-icon dash-kpi-icon--gold"><i class="fa-solid fa-clipboard-list"></i></div>
+            <div class="dash-kpi-value">{{ pendingRequests }}</div>
+            <div class="dash-kpi-label">Demandes en attente</div>
         </div>
 
-        <div style="background:white; padding:1.5rem; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.1); border-top:4px solid #059669;">
-            <div style="font-size:0.75rem; color:#64748b; text-transform:uppercase; letter-spacing:1px;">Femmes de ménage</div>
-            <div style="font-size:2.5rem; font-weight:bold; color:#1e293b;">{{ totalCleaners }}</div>
+        <div class="dash-kpi">
+            <div class="dash-kpi-icon dash-kpi-icon--teal"><i class="fa-solid fa-calendar-day"></i></div>
+            <div class="dash-kpi-value">{{ missionsAujourdhuiCount }}</div>
+            <div class="dash-kpi-label">Missions du jour</div>
         </div>
 
-        <div style="background:white; padding:1.5rem; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.1); border-top:4px solid #d97706;">
-            <div style="font-size:0.75rem; color:#64748b; text-transform:uppercase; letter-spacing:1px;">Logements</div>
-            <div style="font-size:2.5rem; font-weight:bold; color:#1e293b;">{{ totalProperties }}</div>
+        {# ⚠️ CONTROLLER : valeurs statiques, voir note ci-dessus #}
+        <div class="dash-kpi">
+            <div class="dash-kpi-icon dash-kpi-icon--blue"><i class="fa-solid fa-wallet"></i></div>
+            <div class="dash-kpi-value">—</div>
+            <div class="dash-kpi-label">Revenus (mois)</div>
         </div>
 
-        <div style="background:white; padding:1.5rem; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.1); border-top:4px solid #7c3aed;">
-            <div style="font-size:0.75rem; color:#64748b; text-transform:uppercase; letter-spacing:1px;">Total demandes</div>
-            <div style="font-size:2.5rem; font-weight:bold; color:#1e293b;">{{ totalRequests }}</div>
+        <div class="dash-kpi">
+            <div class="dash-kpi-icon dash-kpi-icon--purple"><i class="fa-solid fa-star"></i></div>
+            <div class="dash-kpi-value">—</div>
+            <div class="dash-kpi-label">Taux de satisfaction</div>
         </div>
 
     </div>
 
-    {# ── Statuts des demandes ── #}
-    <div style="background:white; padding:1.5rem; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.1); margin-bottom:2rem;">
-        <h2 style="margin-bottom:1.5rem; color:#1e293b; font-size:1rem; text-transform:uppercase; letter-spacing:1px;">Statuts des demandes</h2>
-        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:1rem;">
+    {# ════════════════════════════════════════════════════════════════
+       CALENDRIER (semaine) + DEMANDES À VALIDER
+       ⚠️ CONTROLLER : voir détail des variables dans chaque bloc.
+       ════════════════════════════════════════════════════════════════ #}
+    <div class="dash-row dash-row--3-2">
 
-            <div style="text-align:center; padding:1rem; background:#fef3c7; border-radius:8px;">
-                <div style="font-size:1.75rem; font-weight:bold; color:#d97706;">{{ pendingRequests }}</div>
-                <div style="font-size:0.875rem; color:#92400e; margin-top:0.25rem;">⏳ En attente</div>
+        {# -- Mini calendrier de la semaine --
+           ⚠️ CONTROLLER : `jours` doit être un tableau de 7 entrées
+           [{ code: 'LUN', num: 19, active: false }, ...] représentant
+           la semaine en cours (ex: généré via une boucle sur
+           CarbonPeriod ou DateTime dans le controller).
+           `evenements` : missions/réservations du calendrier existant
+           (probablement déjà en base pour FullCalendar — à transformer
+           ici en version mini : [{ day: 0..6, top: <% position>,
+           tone: 'gold'|'teal', title: '...', place: '...' }]). -- #}
+        <div class="card">
+            <div class="dash-card-head">
+                <h3>Calendrier <span class="dim">— Aperçu de la semaine</span></h3>
+                <a href="{{ path('app_calendar') }}" class="dash-link">Voir le calendrier</a>
             </div>
 
-            <div style="text-align:center; padding:1rem; background:#d1fae5; border-radius:8px;">
-                <div style="font-size:1.75rem; font-weight:bold; color:#059669;">{{ validatedRequests }}</div>
-                <div style="font-size:0.875rem; color:#065f46; margin-top:0.25rem;">✅ Validées</div>
+            <div class="dash-cal-days">
+                <div></div>
+                {% for j in jours|default([
+                    { code: 'LUN', num: 19 }, { code: 'MAR', num: 20, active: true },
+                    { code: 'MER', num: 21 }, { code: 'JEU', num: 22 },
+                    { code: 'VEN', num: 23 }, { code: 'SAM', num: 24 },
+                    { code: 'DIM', num: 25 }
+                ]) %}
+                    <div class="dash-cal-day{% if j.active|default(false) %} active{% endif %}">
+                        <div class="dn">{{ j.code }}</div>
+                        <div class="num">{{ j.num }}</div>
+                    </div>
+                {% endfor %}
             </div>
 
-            <div style="text-align:center; padding:1rem; background:#dbeafe; border-radius:8px;">
-                <div style="font-size:1.75rem; font-weight:bold; color:#2563eb;">{{ completedRequests }}</div>
-                <div style="font-size:0.875rem; color:#1e40af; margin-top:0.25rem;">🏁 Terminées</div>
+            <div class="dash-cal-grid">
+                {% for h in ['09:00', '12:00', '15:00', '18:00'] %}
+                    <div class="dash-hour-line" style="top:{{ (loop.index0 + 0.5) * 25 }}%">
+                        <div class="h">{{ h }}</div><div class="l"></div>
+                    </div>
+                {% endfor %}
+                <div class="dash-cal-cols">
+                    {% set evenementsList = evenements|default([]) %}
+                    {% for col in 0..6 %}
+                        <div class="dash-cal-col">
+                            {% for e in evenementsList %}
+                                {% if e.day == col %}
+                                    <div class="dash-event {{ e.tone }}" style="top:{{ e.top }}%">
+                                        <div class="t">{{ e.title }}</div>
+                                        <div class="p">{{ e.place }}</div>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                </div>
             </div>
-
-            <div style="text-align:center; padding:1rem; background:#fee2e2; border-radius:8px;">
-                <div style="font-size:1.75rem; font-weight:bold; color:#dc2626;">{{ cancelledRequests }}</div>
-                <div style="font-size:0.875rem; color:#991b1b; margin-top:0.25rem;">❌ Annulées</div>
-            </div>
-
         </div>
+
+        {# -- Demandes à valider -- #}
+        <div class="card">
+            <div class="dash-card-head">
+                <h3>Demandes à valider</h3>
+                <a href="{{ path('app_requests') }}" class="dash-link">Tout voir ({{ pendingRequests }})</a>
+            </div>
+            <ul class="dash-list">
+                {% for d in demandesAValider %}
+                    <li class="dash-list-item">
+                        <div class="dash-li-icon"><i class="fa-solid fa-clipboard-list"></i></div>
+                        <div class="dash-li-body">
+                            <div class="dash-li-title">{{ d.property.name }}</div>
+                            <div class="dash-li-sub"><i class="fa-solid fa-location-dot"></i> {{ d.service.name }}</div>
+                        </div>
+                        <div class="dash-li-time">{{ d.scheduledDate|date('d/m') }}, {{ d.scheduledTime|date('H:i') }}</div>
+                        <a href="{{ path('app_request_validate', { id: d.id }) }}" class="dash-btn-validate">Valider</a>
+                    </li>
+                {% else %}
+                    <li class="dash-li-sub" style="padding:12px 0;">Aucune demande en attente.</li>
+                {% endfor %}
+            </ul>
+        </div>
+
     </div>
 
-    {# ── Accès rapides ── #}
-    <div style="background:white; padding:1.5rem; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
-        <h2 style="margin-bottom:1rem; color:#1e293b; font-size:1rem; text-transform:uppercase; letter-spacing:1px;">Accès rapides</h2>
-        <div style="display:flex; gap:1rem; flex-wrap:wrap;">
-            <a href="{{ path('app_user_new') }}" style="padding:0.75rem 1.5rem; background:#2563eb; color:white; border-radius:6px; text-decoration:none;">+ Utilisateur</a>
-            <a href="{{ path('app_property_new') }}" style="padding:0.75rem 1.5rem; background:#059669; color:white; border-radius:6px; text-decoration:none;">+ Logement</a>
-            <a href="{{ path('app_service_new') }}" style="padding:0.75rem 1.5rem; background:#d97706; color:white; border-radius:6px; text-decoration:none;">+ Prestation</a>
-            <a href="{{ path('app_request_new') }}" style="padding:0.75rem 1.5rem; background:#7c3aed; color:white; border-radius:6px; text-decoration:none;">+ Demande</a>
+    {# ════════════════════════════════════════════════════════════════
+       MISSIONS ASSIGNÉES + MESSAGES + HISTORIQUE
+       ════════════════════════════════════════════════════════════════ #}
+    <div class="dash-row dash-row--3">
+
+        {# -- Missions assignées aujourd'hui -- #}
+        <div class="card">
+            <div class="dash-card-head">
+                <h3>Missions assignées</h3>
+                <a href="{{ path('app_calendar') }}" class="dash-link">Voir tout ({{ missionsAujourdhuiCount }})</a>
+            </div>
+            <ul class="dash-list">
+                {% for m in missionsAssigneesToday %}
+                    <li class="dash-row-item">
+                        <div class="dash-ri-avatar">
+                            {% if m.assignedCleaner %}
+                                {{ m.assignedCleaner.firstname|first }}{{ m.assignedCleaner.lastname|first }}
+                            {% else %}
+                                <i class="fa-solid fa-user-slash" style="font-size:11px"></i>
+                            {% endif %}
+                        </div>
+                        <div class="dash-ri-body">
+                            <div class="dash-ri-name">
+                                {% if m.assignedCleaner %}
+                                    {{ m.assignedCleaner.firstname }} {{ m.assignedCleaner.lastname }}
+                                {% else %}
+                                    Non assigné
+                                {% endif %}
+                            </div>
+                            <div class="dash-ri-sub">{{ m.property.name }} — {{ m.service.name }}</div>
+                        </div>
+                        <div class="dash-ri-time"><i class="fa-regular fa-clock" style="font-size:10px"></i> {{ m.scheduledTime|date('H:i') }}</div>
+                        {% if m.status == 'VALIDATED' %}
+                            <span class="dash-pill gold">Confirmée</span>
+                        {% elseif m.status == 'COMPLETED' %}
+                            <span class="dash-pill muted">Terminée</span>
+                        {% else %}
+                            <span class="dash-pill muted">{{ m.status }}</span>
+                        {% endif %}
+                    </li>
+                {% else %}
+                    <li class="dash-li-sub" style="padding:12px 0;">Aucune mission assignée aujourd'hui.</li>
+                {% endfor %}
+            </ul>
         </div>
+
+        {# -- Messages récents --
+           ⚠️ CONTROLLER : nécessite une entité Message/Conversation si
+           elle n'existe pas encore dans ton projet. Si la messagerie
+           n'est pas encore développée, ce bloc peut être retiré ou
+           laissé vide (la boucle ci-dessous gère déjà le cas "aucun
+           message" via {% else %}). Champs attendus par entrée :
+           initiales, nom, temps, apercu (texte tronqué), non_lus (int). -- #}
+        <div class="card">
+            <div class="dash-card-head">
+                <h3>Messages</h3>
+                <a href="#" class="dash-link">Voir tout</a>
+            </div>
+            <ul class="dash-list">
+                {% for msg in messagesRecents|default([]) %}
+                    <li class="dash-row-item">
+                        <div class="dash-ri-avatar">{{ msg.initiales }}</div>
+                        <div class="dash-ri-body">
+                            <div class="dash-ri-line1">
+                                <div class="dash-ri-name">{{ msg.nom }}</div>
+                                <div class="dash-ri-time">{{ msg.temps }}</div>
+                            </div>
+                            <div class="dash-ri-sub">{{ msg.apercu }}</div>
+                        </div>
+                        {% if msg.non_lus|default(0) > 0 %}
+                            <span class="dash-unread">{{ msg.non_lus }}</span>
+                        {% endif %}
+                    </li>
+                {% else %}
+                    <li class="dash-li-sub" style="padding:12px 0;">Aucun message récent.</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        {# -- Historique récent -- #}
+        <div class="card">
+            <div class="dash-card-head">
+                <h3>Historique</h3>
+                <a href="{{ path('app_logs') }}" class="dash-link">Voir tout</a>
+            </div>
+            <ul class="dash-timeline">
+                {% for h in logsRecents %}
+                    <li class="dash-tl-item">
+                        <div class="dash-tl-title">{{ h.action }}</div>
+                        <div class="dash-tl-desc">{{ h.description }}</div>
+                        <div class="dash-tl-time">{{ h.createdAt|date('d/m/Y H:i') }}</div>
+                    </li>
+                {% else %}
+                    <li class="dash-li-sub" style="padding:4px 0;">Aucun événement récent.</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+    </div>
+
+    {# ════════════════════════════════════════════════════════════════
+       BLOCS EXISTANTS (conservés, réorganisés en bas sur 2 colonnes
+       pour s'intégrer au reste du dashboard sans prendre toute la
+       largeur — données et logique 100% identiques à l'original)
+       ════════════════════════════════════════════════════════════════ #}
+    <div class="dash-row--legacy">
+
+        <div class="card">
+            <h2 class="section-title">Statuts des demandes</h2>
+            <div class="grid-auto">
+
+                <div class="status-pill status-pill--pending">
+                    <div class="status-pill__value">{{ pendingRequests }}</div>
+                    <div class="status-pill__label">⏳ En attente</div>
+                </div>
+
+                <div class="status-pill status-pill--validated">
+                    <div class="status-pill__value">{{ validatedRequests }}</div>
+                    <div class="status-pill__label">✅ Validées</div>
+                </div>
+
+                <div class="status-pill status-pill--completed">
+                    <div class="status-pill__value">{{ completedRequests }}</div>
+                    <div class="status-pill__label">🏁 Terminées</div>
+                </div>
+
+                <div class="status-pill status-pill--cancelled">
+                    <div class="status-pill__value">{{ cancelledRequests }}</div>
+                    <div class="status-pill__label">❌ Annulées</div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 class="section-title">Accès rapides</h2>
+            <div class="quick-links">
+                <a href="{{ path('app_user_new') }}" class="btn-quick btn-quick--blue">+ Utilisateur</a>
+                <a href="{{ path('app_property_new') }}" class="btn-quick btn-quick--green">+ Logement</a>
+                <a href="{{ path('app_service_new') }}" class="btn-quick btn-quick--orange">+ Prestation</a>
+                <a href="{{ path('app_request_new') }}" class="btn-quick btn-quick--purple">+ Demande</a>
+            </div>
+            {# ⚠️ Les 4 KPI d'origine (Propriétaires/Femmes de ménage/
+               Logements/Total demandes) ont été retirés de l'affichage
+               principal car redondants avec les nouveaux KPI riches en
+               haut de page. Si tu veux les garder visibles quelque part
+               (ex: dans ce même bloc, en mini-liste), décommente et
+               adapte ci-dessous : #}
+            {#
+            <div class="grid-auto" style="margin-top: 1rem;">
+                <div class="kpi-border kpi-border--blue">
+                    <div class="kpi-border__label">Propriétaires</div>
+                    <div class="kpi-border__value">{{ totalOwners }}</div>
+                </div>
+                <div class="kpi-border kpi-border--green">
+                    <div class="kpi-border__label">Femmes de ménage</div>
+                    <div class="kpi-border__value">{{ totalCleaners }}</div>
+                </div>
+                <div class="kpi-border kpi-border--orange">
+                    <div class="kpi-border__label">Logements</div>
+                    <div class="kpi-border__value">{{ totalProperties }}</div>
+                </div>
+                <div class="kpi-border kpi-border--purple">
+                    <div class="kpi-border__label">Total demandes</div>
+                    <div class="kpi-border__value">{{ totalRequests }}</div>
+                </div>
+            </div>
+            #}
+        </div>
+
     </div>
 
 {% endblock %}

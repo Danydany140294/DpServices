@@ -1,0 +1,106 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard Acquisition — DP Services{% endblock %}
+{% block page_title %}📊 Dashboard Acquisition{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/dashboard_acquisition.css') }}">
+{% endblock %}
+
+{% block body %}
+
+    {# ── KPIs principaux ── #}
+    <div class="kpi-grid">
+
+        <div class="kpi-card">
+            <p class="kpi-card__label">Total prospects</p>
+            <p class="kpi-card__value kpi-card__value--total">{{ total }}</p>
+        </div>
+
+        <div class="kpi-card">
+            <p class="kpi-card__label">Qualifiés (score ≥ 50)</p>
+            <p class="kpi-card__value kpi-card__value--qualified">{{ qualified }}</p>
+        </div>
+
+        <div class="kpi-card">
+            <p class="kpi-card__label">Clients</p>
+            <p class="kpi-card__value kpi-card__value--clients">{{ clients }}</p>
+        </div>
+
+        <div class="kpi-card">
+            <p class="kpi-card__label">Taux de conversion</p>
+            <p class="kpi-card__value kpi-card__value--conversion">{{ conversionRate }}%</p>
+        </div>
+
+    </div>
+
+    {# ── CA potentiel ── #}
+    <div class="revenue-banner">
+        <div>
+            <p class="revenue-banner__title">💰 CA potentiel mensuel estimé</p>
+            <p class="revenue-banner__subtitle">{{ potentialLeads }} prospect(s) qualifié(s) non-clients × 45€ tarif moyen</p>
+        </div>
+        <p class="revenue-banner__amount">{{ potentialRevenue|number_format(0, ',', ' ') }} €</p>
+    </div>
+
+    {# ── Stats campagnes (J65) ── #}
+    <div class="kpi-grid">
+
+        <div class="kpi-card">
+            <p class="kpi-card__label">📧 Emails envoyés</p>
+            <p class="kpi-card__value kpi-card__value--emails">{{ emailsSent }}</p>
+        </div>
+
+        <div class="kpi-card">
+            <p class="kpi-card__label">📱 SMS envoyés</p>
+            <p class="kpi-card__value kpi-card__value--sms">{{ smsSent }}</p>
+        </div>
+
+        <div class="kpi-card">
+            <p class="kpi-card__label">Taux de réponse positive</p>
+            <p class="kpi-card__value kpi-card__value--response">{{ responseRate }}%</p>
+        </div>
+
+    </div>
+
+    <div class="split-grid">
+
+        {# ── Répartition par statut ── #}
+        <div class="breakdown-card">
+            <h3 class="breakdown-card__title">Répartition par statut</h3>
+            {% set statusLabels = {
+                'NEW': '🔵 Nouveau',
+                'CONTACTED': '🟡 Contacté',
+                'DISCUSSION': '🟠 En discussion',
+                'QUOTE_SENT': '🟣 Devis envoyé',
+                'CLIENT': '🟢 Client',
+                'LOST': '🔴 Perdu',
+                'TO_FOLLOW_UP': '⚪ À relancer'
+            } %}
+            {% for status, count in byStatus %}
+                <div class="breakdown-row">
+                    <span class="breakdown-row__label">{{ statusLabels[status] ?? status }}</span>
+                    <span class="breakdown-row__value">{{ count }}</span>
+                </div>
+            {% endfor %}
+        </div>
+
+        {# ── Répartition par catégorie ── #}
+        <div class="breakdown-card">
+            <h3 class="breakdown-card__title">Répartition par catégorie</h3>
+            {% for category, count in byCategory %}
+                <div class="breakdown-row">
+                    <span class="breakdown-row__label">{{ category }}</span>
+                    <span class="breakdown-row__value">{{ count }}</span>
+                </div>
+            {% endfor %}
+        </div>
+
+    </div>
+
+    <div>
+        <a href="{{ path('app_leads') }}" class="back-link">← Retour aux prospects</a>
+    </div>
+
+{% endblock %}

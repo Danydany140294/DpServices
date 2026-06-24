@@ -4,19 +4,19 @@
 {% block page_title %}Devis N°{{ devis.id }} — {{ devis.lead.companyName }}{% endblock %}
 
 {% block body %}
-<div class="max-w-3xl mx-auto space-y-6">
+<div class="page-container--narrow stack">
 
     {# Statut + actions #}
-    <div class="bg-white rounded-xl shadow p-5 flex items-center justify-between">
+    <div class="card-lg devis-header">
     <div>
-        <span class="text-sm text-gray-500">Créé le {{ devis.createdAt|date('d/m/Y') }}</span>
-        {% set colors = {
-            'brouillon': 'bg-yellow-100 text-yellow-800',
-            'envoye': 'bg-blue-100 text-blue-800',
-            'accepte': 'bg-green-100 text-green-700',
-            'refuse': 'bg-red-100 text-red-700'
+        <span class="devis-header__date">Créé le {{ devis.createdAt|date('d/m/Y') }}</span>
+        {% set statusClasses = {
+            'brouillon': 'status-pill-sm--brouillon',
+            'envoye': 'status-pill-sm--envoye',
+            'accepte': 'status-pill-sm--accepte',
+            'refuse': 'status-pill-sm--refuse'
         } %}
-        <span class="ml-3 px-3 py-1 rounded-full text-xs font-semibold {{ colors[devis.status] ?? 'bg-gray-100 text-gray-600' }}">
+        <span class="status-pill-sm {{ statusClasses[devis.status] ?? 'status-pill-sm--default' }}">
             {{ devis.status|upper }}
         </span>
 
@@ -24,47 +24,47 @@
         {% if devis.status == 'envoye' and devis.sentAt %}
             {% set jours = date().diff(devis.sentAt).days %}
             {% if jours >= 5 %}
-                <span class="ml-3 px-3 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-700">
+                <span class="alert-pill">
                     ⚠️ Envoyé il y a {{ jours }}j — Pensez à relancer !
                 </span>
             {% endif %}
         {% endif %}
     </div>
 
-    <div class="flex gap-3 items-center">
+    <div class="devis-header__actions">
         <a href="{{ path('devis_pdf', {id: devis.id}) }}" target="_blank"
-           class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition">
+           class="btn-action btn-action--neutral">
             📄 Voir PDF
         </a>
 
         {% if devis.status == 'brouillon' %}
             <form method="post" action="{{ path('devis_envoyer', {id: devis.id}) }}"
-                  onsubmit="return confirm('Envoyer le devis à {{ devis.lead.email }} ?')">
+                  onsubmit="return confirm('Envoyer le devis à {{ devis.lead.email }} ?')" class="inline-form">
                 <input type="hidden" name="_token" value="{{ csrf_token('envoyer' ~ devis.id) }}">
                 <button type="submit"
-                        class="bg-green-700 hover:bg-green-800 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
+                        class="btn-action btn-action--confirm">
                     ✉️ Envoyer par email
                 </button>
             </form>
         {% elseif devis.status == 'envoye' %}
             <form method="post" action="{{ path('devis_accepter', {id: devis.id}) }}"
-                  onsubmit="return confirm('Marquer ce devis comme accepté ?')">
+                  onsubmit="return confirm('Marquer ce devis comme accepté ?')" class="inline-form">
                 <input type="hidden" name="_token" value="{{ csrf_token('accepter' ~ devis.id) }}">
                 <button type="submit"
-                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
+                        class="btn-action btn-action--success">
                     ✅ Accepté
                 </button>
             </form>
             <form method="post" action="{{ path('devis_refuser', {id: devis.id}) }}"
-                  onsubmit="return confirm('Marquer ce devis comme refusé ?')">
+                  onsubmit="return confirm('Marquer ce devis comme refusé ?')" class="inline-form">
                 <input type="hidden" name="_token" value="{{ csrf_token('refuser' ~ devis.id) }}">
                 <button type="submit"
-                        class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
+                        class="btn-action btn-action--danger">
                     ❌ Refusé
                 </button>
             </form>
         {% else %}
-            <span class="bg-gray-100 text-gray-500 px-4 py-2 rounded-lg text-sm font-medium">
+            <span class="btn-action btn-action--disabled">
                 {{ devis.status == 'accepte' ? '✅ Accepté' : '❌ Refusé' }}
             </span>
         {% endif %}
@@ -72,45 +72,45 @@
 </div>
 
     {# Lignes #}
-    <div class="bg-white rounded-xl shadow overflow-hidden">
-        <table class="w-full text-sm">
-            <thead class="bg-green-700 text-white">
+    <div class="devis-table-wrapper">
+        <table class="devis-table">
+            <thead>
                 <tr>
-                    <th class="text-left px-4 py-3">Prestation</th>
-                    <th class="text-center px-4 py-3">Qté</th>
-                    <th class="text-right px-4 py-3">Prix unit.</th>
-                    <th class="text-right px-4 py-3">Total</th>
+                    <th>Prestation</th>
+                    <th class="th--center">Qté</th>
+                    <th class="th--right">Prix unit.</th>
+                    <th class="th--right">Total</th>
                 </tr>
             </thead>
             <tbody>
             {% for ligne in devis.devisLignes %}
-            <tr class="border-b border-gray-100 hover:bg-gray-50">
-                <td class="px-4 py-3">
-                    <div class="font-medium">{{ ligne.tarifPrestation.nom }}</div>
+            <tr>
+                <td>
+                    <div class="devis-line__title">{{ ligne.tarifPrestation.nom }}</div>
                     {% if ligne.description %}
-                        <div class="text-xs text-gray-400">{{ ligne.description }}</div>
+                        <div class="devis-line__desc">{{ ligne.description }}</div>
                     {% endif %}
                 </td>
-                <td class="px-4 py-3 text-center">{{ ligne.quantite }}</td>
-                <td class="px-4 py-3 text-right">{{ ligne.prixUnitaire|number_format(2, ',', ' ') }} €</td>
-                <td class="px-4 py-3 text-right font-medium">{{ (ligne.prixUnitaire * ligne.quantite)|number_format(2, ',', ' ') }} €</td>
+                <td class="td--center">{{ ligne.quantite }}</td>
+                <td class="td--right">{{ ligne.prixUnitaire|number_format(2, ',', ' ') }} €</td>
+                <td class="td--right td--bold">{{ (ligne.prixUnitaire * ligne.quantite)|number_format(2, ',', ' ') }} €</td>
             </tr>
             {% endfor %}
             </tbody>
-            <tfoot class="bg-gray-50">
+            <tfoot>
                 {% if devis.discount %}
                 <tr>
-                    <td colspan="3" class="px-4 py-2 text-right text-gray-500">Sous-total</td>
-                    <td class="px-4 py-2 text-right">{{ devis.total|number_format(2, ',', ' ') }} €</td>
+                    <td colspan="3" class="devis-total-label">Sous-total</td>
+                    <td class="td--right">{{ devis.total|number_format(2, ',', ' ') }} €</td>
                 </tr>
                 <tr>
-                    <td colspan="3" class="px-4 py-2 text-right text-red-500">Remise</td>
-                    <td class="px-4 py-2 text-right text-red-500">-{{ devis.discount|number_format(2, ',', ' ') }} €</td>
+                    <td colspan="3" class="devis-total-label--discount">Remise</td>
+                    <td class="devis-total-value--discount">-{{ devis.discount|number_format(2, ',', ' ') }} €</td>
                 </tr>
                 {% endif %}
                 <tr>
-                    <td colspan="3" class="px-4 py-3 text-right font-bold text-gray-800">TOTAL</td>
-                    <td class="px-4 py-3 text-right font-bold text-green-700 text-lg">
+                    <td colspan="3" class="devis-grand-total-label">TOTAL</td>
+                    <td class="devis-grand-total-value">
                         {{ (devis.total - (devis.discount ?? 0))|number_format(2, ',', ' ') }} €
                     </td>
                 </tr>
@@ -119,9 +119,9 @@
     </div>
 
     {% if devis.notes %}
-    <div class="bg-white rounded-xl shadow p-5">
-        <div class="text-sm font-medium text-gray-700 mb-1">Notes</div>
-        <div class="text-gray-600 text-sm">{{ devis.notes }}</div>
+    <div class="card-lg">
+        <div class="notes-block__title">Notes</div>
+        <div class="notes-block__text">{{ devis.notes }}</div>
     </div>
     {% endif %}
 

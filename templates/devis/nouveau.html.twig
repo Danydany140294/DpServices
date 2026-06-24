@@ -4,23 +4,23 @@
 {% block page_title %}Nouveau devis — {{ lead.companyName }}{% endblock %}
 
 {% block body %}
-<div class="max-w-4xl mx-auto">
+<div class="page-container">
 
     {# Infos prospect #}
-    <div class="bg-white rounded-xl shadow p-5 mb-6 flex items-center gap-4">
-        <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-bold text-lg">
+    <div class="lead-banner">
+        <div class="lead-banner__avatar">
             {{ lead.companyName|first|upper }}
         </div>
         <div>
-            <div class="font-semibold text-gray-800">{{ lead.companyName }}</div>
-            <div class="text-sm text-gray-500">{{ lead.city }} · {{ lead.email }}</div>
+            <div class="lead-banner__name">{{ lead.companyName }}</div>
+            <div class="lead-banner__meta">{{ lead.city }} · {{ lead.email }}</div>
         </div>
     </div>
 
     {# Bouton Suggestions IA #}
-    <div style="margin-bottom:1rem; text-align:right;">
+    <div class="ai-suggest-bar">
         <form method="post" action="{{ path('app_lead_ai_suggest', {id: lead.id}) }}">
-            <button type="submit" style="padding:0.75rem 1.5rem; background:#7c3aed; color:white; border:none; border-radius:8px; cursor:pointer;">
+            <button type="submit" class="btn-ai">
                 🤖 Suggestions IA
             </button>
         </form>
@@ -28,17 +28,17 @@
 
     {# Bandeau explication IA #}
     {% if aiSummary is defined and aiSummary %}
-    <div style="margin-bottom:1rem; padding:1rem 1.25rem; background:#ede9fe; border-left:4px solid #7c3aed; border-radius:8px; color:#4c1d95; font-size:0.9rem;">
+    <div class="ai-banner">
         🤖 <strong>Suggestions IA :</strong> {{ aiSummary }}
     </div>
     {% endif %}
 
     <form method="POST" id="devis-form">
-    <div class="grid grid-cols-1 gap-6">
+    <div class="form-stack">
 
         {# Sélection prestations #}
-        <div class="bg-white rounded-xl shadow p-6">
-            <h2 class="text-lg font-semibold text-gray-800 mb-4">Prestations</h2>
+        <div class="form-section">
+            <h2 class="form-section__title">Prestations</h2>
 
             {% set categories = {
                 'menage_standard': 'Ménage Standard',
@@ -48,38 +48,38 @@
             } %}
 
             {% for catKey, catLabel in categories %}
-            <div class="mb-6">
-                <h3 class="text-sm font-semibold text-green-700 uppercase tracking-wide mb-3 border-b border-green-100 pb-1">
+            <div class="tarif-category">
+                <h3 class="tarif-category__title">
                     {{ catLabel }}
                 </h3>
-                <div class="space-y-2">
+                <div class="tarif-list">
                 {% for tarif in tarifs %}
                 {% if tarif.categorie == catKey %}
-                <div class="flex items-center gap-3 p-3 rounded-lg border border-gray-100 hover:border-green-200 hover:bg-green-50 transition">
+                <div class="tarif-row">
                     <input type="checkbox" name="tarif_id[]" value="{{ tarif.id }}"
                            id="tarif_{{ tarif.id }}"
-                           class="tarif-checkbox w-4 h-4 text-green-600 rounded"
+                           class="tarif-checkbox tarif-row__checkbox"
                            data-prix="{{ tarif.prix }}"
                            data-nom="{{ tarif.nom }}"
                            {% if tarif.surDevis %}disabled{% endif %}
                            {% if aiSuggestions is defined and tarif.nom in aiSuggestions %}checked{% endif %}>
-                    <label for="tarif_{{ tarif.id }}" class="flex-1 cursor-pointer">
-                        <span class="font-medium text-gray-800">{{ tarif.nom }}</span>
+                    <label for="tarif_{{ tarif.id }}" class="tarif-row__label">
+                        <span class="tarif-row__name">{{ tarif.nom }}</span>
                         {% if tarif.description %}
-                            <span class="text-xs text-gray-400 block">{{ tarif.description }}</span>
+                            <span class="tarif-row__desc">{{ tarif.description }}</span>
                         {% endif %}
                     </label>
                     {% if aiSuggestions is defined and tarif.nom in aiSuggestions %}
-                        <span style="font-size:0.7rem; background:#7c3aed; color:white; padding:2px 7px; border-radius:99px;">✨ IA</span>
+                        <span class="tarif-row__ai-badge">✨ IA</span>
                     {% endif %}
                     {% if tarif.surDevis %}
-                        <span class="text-xs text-orange-500 font-medium">Sur devis</span>
+                        <span class="tarif-row__on-quote">Sur devis</span>
                     {% else %}
-                        <span class="text-green-700 font-semibold">{{ tarif.prix }}€</span>
-                        <span class="text-xs text-gray-400">{{ tarif.unite }}</span>
+                        <span class="tarif-row__price">{{ tarif.prix }}€</span>
+                        <span class="tarif-row__unit">{{ tarif.unite }}</span>
                     {% endif %}
                     <input type="number" name="quantite[]" value="1" min="1" max="99"
-                           class="w-14 text-center border border-gray-200 rounded px-1 py-1 text-sm quantite-input"
+                           class="quantite-input tarif-row__qty-input"
                            {% if tarif.surDevis %}disabled{% endif %}>
                 </div>
                 {% endif %}
@@ -90,32 +90,32 @@
         </div>
 
         {# Remise + Notes #}
-        <div class="bg-white rounded-xl shadow p-6">
-            <h2 class="text-lg font-semibold text-gray-800 mb-4">Options</h2>
-            <div class="grid grid-cols-2 gap-4">
+        <div class="form-section">
+            <h2 class="form-section__title">Options</h2>
+            <div class="form-grid-2">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Remise (€)</label>
+                    <label class="form-field__label">Remise (€)</label>
                     <input type="number" name="discount" min="0" step="0.5"
-                           class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                           class="form-field__input"
                            placeholder="0">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                    <label class="form-field__label">Notes</label>
                     <textarea name="notes" rows="2"
-                              class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+                              class="form-field__input"
                               placeholder="Remarques éventuelles..."></textarea>
                 </div>
             </div>
         </div>
 
         {# Aperçu total #}
-        <div class="bg-green-700 text-white rounded-xl shadow p-5 flex items-center justify-between">
+        <div class="total-banner">
             <div>
-                <div class="text-sm opacity-80">Total estimé</div>
-                <div class="text-3xl font-bold" id="total-display">0,00 €</div>
+                <div class="total-banner__label">Total estimé</div>
+                <div class="total-banner__value" id="total-display">0,00 €</div>
             </div>
             <button type="submit"
-                    class="bg-white text-green-700 font-semibold px-6 py-3 rounded-lg hover:bg-green-50 transition">
+                    class="btn-create-devis">
                 Créer le devis →
             </button>
         </div>
@@ -129,7 +129,7 @@ function updateTotal() {
     let total = 0;
     document.querySelectorAll('.tarif-checkbox:checked').forEach(cb => {
         const prix = parseFloat(cb.dataset.prix) || 0;
-        const row = cb.closest('div.flex');
+        const row = cb.closest('.tarif-row');
         const qte = parseInt(row.querySelector('.quantite-input').value) || 1;
         total += prix * qte;
     });

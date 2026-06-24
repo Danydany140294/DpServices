@@ -5,215 +5,214 @@
 
 {% block body %}
 
-
-
-    <div style="display:grid; grid-template-columns: 2fr 1fr; gap:1.5rem;">
+    <div class="lead-detail__grid">
 
         {# ── Fiche principale ── #}
         <div>
-            <div style="background:white; border-radius:8px; padding:1.5rem; box-shadow:0 1px 3px rgba(0,0,0,0.1); margin-bottom:1.5rem;">
-                <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:1rem;">
+            <div class="card">
+                <div class="card-header card-header--align-start">
                     <div>
-                        <h2 style="color:#1e293b;">{{ lead.companyName }}</h2>
-                        {% if lead.contactName %}<p style="color:#64748b;">👤 {{ lead.contactName }}</p>{% endif %}
+                        <h2 class="card-title">{{ lead.companyName }}</h2>
+                        {% if lead.contactName %}<p class="text-secondary">👤 {{ lead.contactName }}</p>{% endif %}
                     </div>
-                    <div style="text-align:right;">
+                    <div class="lead-detail__score">
                         {% set score = lead.score %}
                         {% if score >= 80 %}
-                            <span style="background:#fee2e2; color:#dc2626; padding:0.5rem 1rem; border-radius:6px; font-size:1.1rem; font-weight:bold;">🔴 {{ score }}/100</span>
+                            {% set scoreTier = 'danger' %}{% set scoreIcon = '🔴' %}
                         {% elseif score >= 50 %}
-                            <span style="background:#ffedd5; color:#ea580c; padding:0.5rem 1rem; border-radius:6px; font-size:1.1rem; font-weight:bold;">🟠 {{ score }}/100</span>
+                            {% set scoreTier = 'warning' %}{% set scoreIcon = '🟠' %}
                         {% elseif score >= 20 %}
-                            <span style="background:#fef3c7; color:#d97706; padding:0.5rem 1rem; border-radius:6px; font-size:1.1rem; font-weight:bold;">🟡 {{ score }}/100</span>
+                            {% set scoreTier = 'caution' %}{% set scoreIcon = '🟡' %}
                         {% else %}
-                            <span style="background:#f1f5f9; color:#64748b; padding:0.5rem 1rem; border-radius:6px; font-size:1.1rem; font-weight:bold;">⚪ {{ score }}/100</span>
+                            {% set scoreTier = 'neutral' %}{% set scoreIcon = '⚪' %}
                         {% endif %}
-                        {# Barre de progression #}
-{% set barColor = score >= 80 ? '#dc2626' : (score >= 50 ? '#ea580c' : (score >= 20 ? '#d97706' : '#94a3b8')) %}
-<div style="margin-top:0.5rem; background:#e2e8f0; border-radius:4px; height:6px; width:120px; margin-left:auto;">
-    <div style="width:{{ score }}%; background:{{ barColor }}; height:6px; border-radius:4px;"></div>
-</div>
+                        <span class="status-badge status-badge--lg status-badge--{{ scoreTier }}">{{ scoreIcon }} {{ score }}/100</span>
+                        <div class="progress-bar">
+                            <div class="progress-bar__fill progress-bar__fill--{{ scoreTier }}" style="width:{{ score }}%"></div>
+                        </div>
                     </div>
                 </div>
 
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
+                <div class="info-grid">
                     <div>
-                        <p style="font-size:0.8rem; color:#94a3b8; text-transform:uppercase;">Ville</p>
+                        <p class="field-label">Ville</p>
                         <p>📍 {{ lead.city }}</p>
                     </div>
                     <div>
-                        <p style="font-size:0.8rem; color:#94a3b8; text-transform:uppercase;">Catégorie</p>
+                        <p class="field-label">Catégorie</p>
                         <p>{{ lead.category ? lead.category.name : '—' }}</p>
                     </div>
                     {% if lead.phone %}
                     <div>
-                        <p style="font-size:0.8rem; color:#94a3b8; text-transform:uppercase;">Téléphone</p>
+                        <p class="field-label">Téléphone</p>
                         <p>📞 {{ lead.phone }}</p>
                     </div>
                     {% endif %}
                     {% if lead.email %}
                     <div>
-                        <p style="font-size:0.8rem; color:#94a3b8; text-transform:uppercase;">Email</p>
+                        <p class="field-label">Email</p>
                         <p>✉️ {{ lead.email }}</p>
                     </div>
                     {% endif %}
                     {% if lead.website %}
                     <div>
-                        <p style="font-size:0.8rem; color:#94a3b8; text-transform:uppercase;">Site web</p>
-                        <p>🌐 <a href="{{ lead.website }}" target="_blank" style="color:#2563eb;">{{ lead.website }}</a></p>
+                        <p class="field-label">Site web</p>
+                        <p>🌐 <a href="{{ lead.website }}" target="_blank" class="text-link">{{ lead.website }}</a></p>
                     </div>
                     {% endif %}
                     {% if lead.googleRating %}
                     <div>
-                        <p style="font-size:0.8rem; color:#94a3b8; text-transform:uppercase;">Google</p>
+                        <p class="field-label">Google</p>
                         <p>⭐ {{ lead.googleRating }}/5 ({{ lead.googleReviews }} avis)</p>
                     </div>
                     {% endif %}
                     <div>
-                        <p style="font-size:0.8rem; color:#94a3b8; text-transform:uppercase;">Airbnb</p>
+                        <p class="field-label">Airbnb</p>
                         <p>{{ lead.hasAirbnb ? '✅ Présent sur Airbnb' : '❌ Pas sur Airbnb' }}</p>
                     </div>
                     <div>
-                        <p style="font-size:0.8rem; color:#94a3b8; text-transform:uppercase;">Créé le</p>
+                        <p class="field-label">Créé le</p>
                         <p>{{ lead.createdAt|date('d/m/Y') }}</p>
                     </div>
                 </div>
 
-                <div style="margin-top:1rem; padding-top:1rem; border-top:1px solid #e2e8f0;">
-    <p style="font-size:0.8rem; color:#94a3b8; text-transform:uppercase; margin-bottom:0.5rem;">Notes</p>
-    <form method="post" action="{{ path('app_lead_notes', {id: lead.id}) }}">
-        <textarea name="notes" rows="4" style="width:100%; padding:0.75rem; border:1px solid #e2e8f0; border-radius:6px; font-size:0.875rem; color:#475569; resize:vertical;">{{ lead.notes }}</textarea>
-        <button type="submit" style="margin-top:0.5rem; padding:0.5rem 1rem; background:#2563eb; color:white; border:none; border-radius:4px; cursor:pointer; font-size:0.875rem;">
-            💾 Sauvegarder les notes
-        </button>
-    </form>
-</div>
+                <div class="card-section--divider">
+                    <p class="field-label">Notes</p>
+                    <form method="post" action="{{ path('app_lead_notes', {id: lead.id}) }}">
+                        <textarea name="notes" rows="4" class="form-textarea">{{ lead.notes }}</textarea>
+                        <button type="submit" class="btn btn--primary">
+                            💾 Sauvegarder les notes
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
 
         {# ── Panneau latéral ── #}
-        <div>
+        <div class="lead-detail__sidebar">
             {# Statut #}
-            <div style="background:white; border-radius:8px; padding:1.5rem; box-shadow:0 1px 3px rgba(0,0,0,0.1); margin-bottom:1rem;">
-                <h3 style="margin-bottom:1rem; color:#1e293b;">Statut actuel</h3>
-                {% if lead.status == 'NEW' %}<span style="background:#dbeafe; color:#2563eb; padding:0.5rem 1rem; border-radius:6px;">🔵 Nouveau</span>
-                {% elseif lead.status == 'CONTACTED' %}<span style="background:#fef3c7; color:#d97706; padding:0.5rem 1rem; border-radius:6px;">🟡 Contacté</span>
-                {% elseif lead.status == 'DISCUSSION' %}<span style="background:#ffedd5; color:#ea580c; padding:0.5rem 1rem; border-radius:6px;">🟠 En discussion</span>
-                {% elseif lead.status == 'QUOTE_SENT' %}<span style="background:#f3e8ff; color:#7c3aed; padding:0.5rem 1rem; border-radius:6px;">🟣 Devis envoyé</span>
-                {% elseif lead.status == 'CLIENT' %}<span style="background:#d1fae5; color:#059669; padding:0.5rem 1rem; border-radius:6px;">🟢 Client</span>
-                {% elseif lead.status == 'LOST' %}<span style="background:#fee2e2; color:#dc2626; padding:0.5rem 1rem; border-radius:6px;">🔴 Perdu</span>
-                {% elseif lead.status == 'TO_FOLLOW_UP' %}<span style="background:#f1f5f9; color:#64748b; padding:0.5rem 1rem; border-radius:6px;">⚪ À relancer</span>
+            <div class="card">
+                <h3 class="card-title card-title--spaced">Statut actuel</h3>
+                {% if lead.status == 'NEW' %}<span class="status-badge status-badge--info">🔵 Nouveau</span>
+                {% elseif lead.status == 'CONTACTED' %}<span class="status-badge status-badge--caution">🟡 Contacté</span>
+                {% elseif lead.status == 'DISCUSSION' %}<span class="status-badge status-badge--warning">🟠 En discussion</span>
+                {% elseif lead.status == 'QUOTE_SENT' %}<span class="status-badge status-badge--purple">🟣 Devis envoyé</span>
+                {% elseif lead.status == 'CLIENT' %}<span class="status-badge status-badge--success">🟢 Client</span>
+                {% elseif lead.status == 'LOST' %}<span class="status-badge status-badge--danger">🔴 Perdu</span>
+                {% elseif lead.status == 'TO_FOLLOW_UP' %}<span class="status-badge status-badge--neutral">⚪ À relancer</span>
                 {% endif %}
 
                 {% if lead.nextFollowUp %}
-                <p style="margin-top:1rem; font-size:0.875rem; color:{{ lead.nextFollowUp <= date() ? '#dc2626' : '#64748b' }};">
+                <p class="follow-up-notice{{ lead.nextFollowUp <= date() ? ' follow-up-notice--overdue' : '' }}">
                     🔔 Relance : {{ lead.nextFollowUp|date('d/m/Y') }}
                 </p>
                 {% endif %}
             </div>
 
             {# Actions #}
-            <div style="background:white; border-radius:8px; padding:1.5rem; box-shadow:0 1px 3px rgba(0,0,0,0.1); margin-bottom:1rem;">
-                <h3 style="margin-bottom:1rem; color:#1e293b;">Actions</h3>
-                <div style="display:flex; flex-direction:column; gap:0.5rem;">
-                    <a href="{{ path('app_lead_edit', {id: lead.id}) }}" style="padding:0.75rem; background:#2563eb; color:white; border-radius:6px; text-decoration:none; text-align:center;">✏️ Modifier</a>
-                    <a href="{{ path('app_leads') }}" style="padding:0.75rem; background:#f1f5f9; color:#475569; border-radius:6px; text-decoration:none; text-align:center;">← Retour liste</a>
-                    <a href="{{ path('app_lead_email', {id: lead.id}) }}" style="padding:0.75rem; background:#059669; color:white; border-radius:6px; text-decoration:none; text-align:center;">📧 Envoyer un email</a>
-                    <a href="{{ path('app_lead_sms', {id: lead.id}) }}" style="padding:0.75rem; background:#7c3aed; color:white; border-radius:6px; text-decoration:none; text-align:center;">📱 Envoyer un SMS</a>
-                    <a href="{{ path('devis_nouveau', {leadId: lead.id}) }}" style="padding:0.75rem; background:#d97706; color:white; border-radius:6px; text-decoration:none; text-align:center;">📄 Nouveau devis</a>
-                    <a href="{{ path('devis_liste', {leadId: lead.id}) }}" style="padding:0.75rem; background:#f1f5f9; color:#475569; border-radius:6px; text-decoration:none; text-align:center;">📋 Voir les devis</a>
+            <div class="card">
+                <h3 class="card-title card-title--spaced">Actions</h3>
+                <div class="action-list">
+                    <a href="{{ path('app_lead_edit', {id: lead.id}) }}" class="btn btn--block btn--primary">✏️ Modifier</a>
+                    <a href="{{ path('app_leads') }}" class="btn btn--block btn--secondary">← Retour liste</a>
+                    <a href="{{ path('app_lead_email', {id: lead.id}) }}" class="btn btn--block btn--success">📧 Envoyer un email</a>
+                    <a href="{{ path('app_lead_sms', {id: lead.id}) }}" class="btn btn--block btn--accent">📱 Envoyer un SMS</a>
+                    <a href="{{ path('devis_nouveau', {leadId: lead.id}) }}" class="btn btn--block btn--warning">📄 Nouveau devis</a>
+                    <a href="{{ path('devis_liste', {leadId: lead.id}) }}" class="btn btn--block btn--secondary">📋 Voir les devis</a>
                     {% if lead.status != 'CLIENT' %}
-<form method="post" action="{{ path('app_lead_convert', {id: lead.id}) }}" onsubmit="return confirm('Convertir ce prospect en client ? Un compte ROLE_OWNER sera créé.')">
-    <button type="submit" style="width:100%; padding:0.75rem; background:#16a34a; color:white; border:none; border-radius:6px; cursor:pointer; text-align:center;">
-        ✅ Convertir en client
-    </button>
-</form>
-{% endif %}
+                    <form method="post" action="{{ path('app_lead_convert', {id: lead.id}) }}" onsubmit="return confirm('Convertir ce prospect en client ? Un compte ROLE_OWNER sera créé.')">
+                        <button type="submit" class="btn btn--block btn--confirm">
+                            ✅ Convertir en client
+                        </button>
+                    </form>
+                    {% endif %}
                     <form method="post" action="{{ path('app_lead_summarize', {id: lead.id}) }}">
-    <button type="submit" style="width:100%; padding:0.75rem; background:#0ea5e9; color:white; border:none; border-radius:6px; cursor:pointer; text-align:center;">
-        🤖 Résumer avec l'IA
-    </button>
-</form>
+                        <button type="submit" class="btn btn--block btn--info">
+                            🤖 Résumer avec l'IA
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
+
         {# ── Timeline des actions ── #}
-<div style="grid-column: 1 / -1;">
-    <div style="background:white; border-radius:8px; padding:1.5rem; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
-            <h3 style="color:#1e293b;">📋 Historique des actions</h3>
-            <a href="{{ path('app_lead_activity_new', {id: lead.id}) }}"
-               style="padding:0.5rem 1rem; background:#2563eb; color:white; border-radius:4px; text-decoration:none; font-size:0.875rem;">
-                + Nouvelle action
-            </a>
-        </div>
+        <div class="lead-detail__timeline">
+            <div class="card">
+                <div class="card-header card-header--spaced">
+                    <h3 class="card-title">📋 Historique des actions</h3>
+                    <a href="{{ path('app_lead_activity_new', {id: lead.id}) }}" class="btn btn--primary">
+                        + Nouvelle action
+                    </a>
+                </div>
 
-        {% set activities = lead.leadActivities|sort((a, b) => b.activityDate <=> a.activityDate) %}
+                {% set activities = lead.leadActivities|sort((a, b) => b.activityDate <=> a.activityDate) %}
 
-        {% if activities|length == 0 %}
-            <p style="color:#94a3b8; text-align:center; padding:2rem;">Aucune action enregistrée.</p>
-        {% else %}
-            <div style="position:relative; padding-left:2rem;">
-                <div style="position:absolute; left:0.75rem; top:0; bottom:0; width:2px; background:#e2e8f0;"></div>
+                {% if activities|length == 0 %}
+                    <p class="empty-state">Aucune action enregistrée.</p>
+                {% else %}
+                    <div class="timeline">
+                        <div class="timeline__line"></div>
 
-                {% for activity in activities %}
-                    {% if activity.type == 'CALL' %}{% set icon = '📞' %}{% set color = '#2563eb' %}{% set bg = '#dbeafe' %}
-                    {% elseif activity.type == 'EMAIL' %}{% set icon = '✉️' %}{% set color = '#059669' %}{% set bg = '#d1fae5' %}
-                    {% elseif activity.type == 'SMS' %}{% set icon = '💬' %}{% set color = '#7c3aed' %}{% set bg = '#f3e8ff' %}
-                    {% elseif activity.type == 'QUOTE' %}{% set icon = '📄' %}{% set color = '#d97706' %}{% set bg = '#fef3c7' %}
-                    {% elseif activity.type == 'MEETING' %}{% set icon = '🤝' %}{% set color = '#dc2626' %}{% set bg = '#fee2e2' %}
-                    {% else %}{% set icon = '📌' %}{% set color = '#64748b' %}{% set bg = '#f1f5f9' %}{% endif %}
+                        {% for activity in activities %}
+                            {% if activity.type == 'CALL' %}
+                                {% set typeSlug = 'call' %}{% set icon = '📞' %}{% set typeLabel = 'Appel' %}
+                            {% elseif activity.type == 'EMAIL' %}
+                                {% set typeSlug = 'email' %}{% set icon = '✉️' %}{% set typeLabel = 'Email' %}
+                            {% elseif activity.type == 'SMS' %}
+                                {% set typeSlug = 'sms' %}{% set icon = '💬' %}{% set typeLabel = 'SMS' %}
+                            {% elseif activity.type == 'QUOTE' %}
+                                {% set typeSlug = 'quote' %}{% set icon = '📄' %}{% set typeLabel = 'Devis' %}
+                            {% elseif activity.type == 'MEETING' %}
+                                {% set typeSlug = 'meeting' %}{% set icon = '🤝' %}{% set typeLabel = 'Réunion' %}
+                            {% else %}
+                                {% set typeSlug = 'other' %}{% set icon = '📌' %}{% set typeLabel = '' %}
+                            {% endif %}
 
-                    <div style="position:relative; margin-bottom:1.5rem; padding-left:1.5rem;">
-                        <div style="position:absolute; left:-0.35rem; top:0.25rem; width:1rem; height:1rem; border-radius:50%; background:{{ bg }}; border:2px solid {{ color }};"></div>
+                            <div class="timeline__item timeline__item--{{ typeSlug }}">
+                                <div class="timeline__dot"></div>
 
-                        <div style="background:#f8fafc; border-radius:6px; padding:1rem; border-left:3px solid {{ color }};">
-                            <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:0.5rem;">
-                                <div>
-                                    <span style="font-weight:600; color:{{ color }};">{{ icon }}
-                                        {% if activity.type == 'CALL' %}Appel
-                                        {% elseif activity.type == 'EMAIL' %}Email
-                                        {% elseif activity.type == 'SMS' %}SMS
-                                        {% elseif activity.type == 'QUOTE' %}Devis
-                                        {% elseif activity.type == 'MEETING' %}Réunion
-                                        {% endif %}
-                                    </span>
-                                    {% if activity.result %}
-                                        <span style="margin-left:0.5rem; font-size:0.8rem; padding:0.2rem 0.5rem; border-radius:4px; background:{{ bg }}; color:{{ color }};">
-                                            {% if activity.result == 'POSITIVE' %}✅ Positif
-                                            {% elseif activity.result == 'NEGATIVE' %}❌ Négatif
-                                            {% elseif activity.result == 'NO_ANSWER' %}📵 Sans réponse
-                                            {% elseif activity.result == 'CALLBACK' %}🔄 À rappeler
+                                <div class="timeline__content">
+                                    <div class="timeline__header">
+                                        <div>
+                                            <span class="timeline__label">{{ icon }} {{ typeLabel }}</span>
+                                            {% if activity.result %}
+                                                {% if activity.result == 'POSITIVE' %}
+                                                    <span class="status-badge status-badge--sm status-badge--success">✅ Positif</span>
+                                                {% elseif activity.result == 'NEGATIVE' %}
+                                                    <span class="status-badge status-badge--sm status-badge--danger">❌ Négatif</span>
+                                                {% elseif activity.result == 'NO_ANSWER' %}
+                                                    <span class="status-badge status-badge--sm status-badge--neutral">📵 Sans réponse</span>
+                                                {% elseif activity.result == 'CALLBACK' %}
+                                                    <span class="status-badge status-badge--sm status-badge--info">🔄 À rappeler</span>
+                                                {% endif %}
                                             {% endif %}
-                                        </span>
+                                        </div>
+                                        <div class="timeline__meta">
+                                            <span class="timeline__date">{{ activity.activityDate|date('d/m/Y à H:i') }}</span>
+                                            <form method="post" action="{{ path('app_lead_activity_delete', {id: lead.id, activityId: activity.id}) }}"
+                                                  onsubmit="return confirm('Supprimer cette action ?')">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('delete_activity_' ~ activity.id) }}">
+                                                <button type="submit" class="icon-btn icon-btn--danger">✖</button>
+                                            </form>
+                                        </div>
+                                    </div>
+
+                                    {% if activity.note %}
+                                        <p class="timeline__note">{{ activity.note }}</p>
+                                    {% endif %}
+
+                                    {% if activity.followUpDate %}
+                                        <p class="timeline__followup">
+                                            🔔 Relance prévue : {{ activity.followUpDate|date('d/m/Y') }}
+                                        </p>
                                     {% endif %}
                                 </div>
-                                <div style="display:flex; align-items:center; gap:1rem;">
-                                    <span style="font-size:0.8rem; color:#94a3b8;">{{ activity.activityDate|date('d/m/Y à H:i') }}</span>
-                                    <form method="post" action="{{ path('app_lead_activity_delete', {id: lead.id, activityId: activity.id}) }}"
-                                          onsubmit="return confirm('Supprimer cette action ?')">
-                                        <input type="hidden" name="_token" value="{{ csrf_token('delete_activity_' ~ activity.id) }}">
-                                        <button type="submit" style="background:none; border:none; color:#dc2626; cursor:pointer; font-size:0.8rem;">✖</button>
-                                    </form>
-                                </div>
                             </div>
-
-                            {% if activity.note %}
-                                <p style="color:#475569; font-size:0.875rem; margin:0;">{{ activity.note }}</p>
-                            {% endif %}
-
-                            {% if activity.followUpDate %}
-                                <p style="margin-top:0.5rem; font-size:0.8rem; color:#d97706;">
-                                    🔔 Relance prévue : {{ activity.followUpDate|date('d/m/Y') }}
-                                </p>
-                            {% endif %}
-                        </div>
+                        {% endfor %}
                     </div>
-                {% endfor %}
+                {% endif %}
             </div>
-        {% endif %}
-    </div>
-</div>
+        </div>
 
     </div>
 

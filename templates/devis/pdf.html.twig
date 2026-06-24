@@ -9,18 +9,29 @@
     .header-right { display: table-cell; width: 40%; text-align: right; color: #2d6a4f; }
     h1 { color: #2d6a4f; font-size: 28px; margin: 0 0 5px 0; }
     .company-name { font-size: 18px; font-weight: bold; color: #2d6a4f; }
+    .company-contact { color: #888; font-size: 11px; margin-top: 4px; }
     .badge { background: #2d6a4f; color: white; padding: 4px 12px; border-radius: 4px; font-size: 11px; display: inline-block; margin-bottom: 10px; }
+    .header-status { margin-top: 8px; }
     .info-block { margin-bottom: 25px; }
     .info-block table { width: 100%; }
     .info-block td { padding: 3px 0; }
     .label { color: #888; width: 120px; }
     table.prestations { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
     table.prestations th { background: #2d6a4f; color: white; padding: 8px 10px; text-align: left; }
+    table.prestations th.col-unite { width: 20%; }
+    table.prestations th.col-qte { width: 10%; text-align: center; }
+    table.prestations th.col-prix { width: 20%; text-align: right; }
+    table.prestations th.col-prestation { width: 50%; }
     table.prestations td { padding: 8px 10px; border-bottom: 1px solid #eee; }
+    table.prestations td.col-qte { text-align: center; }
+    table.prestations td.col-prix { text-align: right; }
     table.prestations tr:nth-child(even) td { background: #f9f9f9; }
+    .ligne-desc { color: #888; font-size: 10px; }
     .total-block { text-align: right; margin-top: 10px; }
     .total-line { font-size: 14px; margin-bottom: 5px; }
+    .total-line--discount { color: #e74c3c; }
     .total-final { font-size: 18px; font-weight: bold; color: #2d6a4f; border-top: 2px solid #2d6a4f; padding-top: 8px; margin-top: 8px; }
+    .tva-mention { color: #888; font-size: 10px; margin-top: 5px; }
     .statut { display: inline-block; padding: 4px 12px; border-radius: 4px; font-size: 11px; font-weight: bold; }
     .statut-brouillon { background: #fef3c7; color: #92400e; }
     .statut-envoye { background: #dbeafe; color: #1e40af; }
@@ -35,7 +46,7 @@
 <div class="header">
     <div class="header-left">
         <div class="company-name">DP Services Sud</div>
-        <div style="color:#888; font-size:11px; margin-top:4px;">
+        <div class="company-contact">
             06 08 12 81 03<br>
             Dpservicesud@gmail.com<br>
             Disponible 7j/7 — Intervention rapide
@@ -45,7 +56,7 @@
         <h1>DEVIS</h1>
         <div>N° {{ devis.id }}</div>
         <div>{{ devis.createdAt|date('d/m/Y') }}</div>
-        <div style="margin-top:8px;">
+        <div class="header-status">
             <span class="statut statut-{{ devis.status }}">{{ devis.status|upper }}</span>
         </div>
     </div>
@@ -80,10 +91,10 @@
 <table class="prestations">
     <thead>
         <tr>
-            <th style="width:50%">Prestation</th>
-            <th style="width:20%">Unité</th>
-            <th style="width:10%; text-align:center">Qté</th>
-            <th style="width:20%; text-align:right">Prix HT</th>
+            <th class="col-prestation">Prestation</th>
+            <th class="col-unite">Unité</th>
+            <th class="col-qte">Qté</th>
+            <th class="col-prix">Prix HT</th>
         </tr>
     </thead>
     <tbody>
@@ -92,12 +103,12 @@
             <td>
                 {{ ligne.tarifPrestation.nom }}
                 {% if ligne.description %}
-                    <br><span style="color:#888; font-size:10px;">{{ ligne.description }}</span>
+                    <br><span class="ligne-desc">{{ ligne.description }}</span>
                 {% endif %}
             </td>
             <td>{{ ligne.tarifPrestation.unite }}</td>
-            <td style="text-align:center">{{ ligne.quantite }}</td>
-            <td style="text-align:right">{{ (ligne.prixUnitaire * ligne.quantite)|number_format(2, ',', ' ') }} €</td>
+            <td class="col-qte">{{ ligne.quantite }}</td>
+            <td class="col-prix">{{ (ligne.prixUnitaire * ligne.quantite)|number_format(2, ',', ' ') }} €</td>
         </tr>
         {% endfor %}
     </tbody>
@@ -107,12 +118,12 @@
     {% set subtotal = devis.total %}
     {% if devis.discount %}
         <div class="total-line">Sous-total : {{ subtotal|number_format(2, ',', ' ') }} €</div>
-        <div class="total-line" style="color:#e74c3c;">Remise : -{{ devis.discount|number_format(2, ',', ' ') }} €</div>
+        <div class="total-line total-line--discount">Remise : -{{ devis.discount|number_format(2, ',', ' ') }} €</div>
         <div class="total-final">TOTAL : {{ (subtotal - devis.discount)|number_format(2, ',', ' ') }} €</div>
     {% else %}
         <div class="total-final">TOTAL : {{ subtotal|number_format(2, ',', ' ') }} €</div>
     {% endif %}
-    <div style="color:#888; font-size:10px; margin-top:5px;">TVA non applicable — Art. 293 B du CGI</div>
+    <div class="tva-mention">TVA non applicable — Art. 293 B du CGI</div>
 </div>
 
 {% if devis.notes %}

@@ -4,33 +4,33 @@
 
 {% block body %}
 <div class="welcome">
-    <p style="color:#64748b; margin-bottom:1.5rem;">
+    <p class="text-secondary mb-lg">
         Destinataire : <strong>{{ lead.email ?? 'Aucun email renseigné' }}</strong>
     </p>
 
     {% if not lead.email %}
-        <div style="background:#fee2e2; color:#dc2626; padding:1rem; border-radius:6px;">
+        <div class="alert alert--danger">
             ❌ Ce prospect n'a pas d'adresse email. <a href="{{ path('app_lead_edit', {id: lead.id}) }}">Ajouter un email</a>
         </div>
     {% else %}
 
         {% if aiBody is defined %}
-        <div style="background:#d1fae5; border:1px solid #6ee7b7; padding:1rem; border-radius:6px; margin-bottom:1rem;">
+        <div class="alert alert--success alert--mb-sm">
             ✅ Email généré par l'IA — relisez et modifiez si besoin avant d'envoyer.
         </div>
         {% endif %}
 
         <form method="post">
-            <div style="margin-bottom:1rem;">
-                <label style="display:block; margin-bottom:0.5rem; font-weight:500;">Objet</label>
+            <div class="form-group">
+                <label class="form-label">Objet</label>
                 <input type="text" name="subject" required
                     value="{{ aiSubject is defined ? aiSubject : 'Nos services de ménage Airbnb — ' ~ lead.city }}"
-                    style="width:100%; padding:0.625rem; border:1px solid #ddd; border-radius:6px;">
+                    class="form-control">
             </div>
-            <div style="margin-bottom:1rem;">
-                <label style="display:block; margin-bottom:0.5rem; font-weight:500;">Message</label>
+            <div class="form-group">
+                <label class="form-label">Message</label>
                 <textarea name="body" id="emailBody" rows="10" required
-                    style="width:100%; padding:0.625rem; border:1px solid #ddd; border-radius:6px;">{{ aiBody is defined ? aiBody : 'Bonjour,
+                    class="form-control">{{ aiBody is defined ? aiBody : 'Bonjour,
 
 Nous sommes DP Services, spécialistes du ménage Airbnb à ' ~ lead.city ~ '.
 
@@ -42,16 +42,14 @@ Cordialement,
 L\'équipe DP Services' }}</textarea>
             </div>
 
-            <div style="display:flex; gap:1rem; flex-wrap:wrap; align-items:center;">
-                <button type="submit" name="preview" value="1"
-                    style="padding:0.75rem 2rem; background:#2563eb; color:white; border:none; border-radius:4px; cursor:pointer;">
+            <div class="form-actions">
+                <button type="submit" name="preview" value="1" class="btn btn--primary btn--lg">
                     👁️ Aperçu avant envoi
                 </button>
-                <button type="submit" name="generate_ai" value="1"
-                    style="padding:0.75rem 2rem; background:#7c3aed; color:white; border:none; border-radius:4px; cursor:pointer;">
+                <button type="submit" name="generate_ai" value="1" class="btn btn--accent btn--lg">
                     🤖 Générer avec l'IA
                 </button>
-                <a href="{{ path('app_lead_show', {id: lead.id}) }}" style="color:#64748b;">Annuler</a>
+                <a href="{{ path('app_lead_show', {id: lead.id}) }}" class="text-secondary">Annuler</a>
             </div>
         </form>
     {% endif %}

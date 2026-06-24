@@ -4,14 +4,14 @@
 {% block page_title %}Créer une prestation{% endblock %}
 
 {% block body %}
-    <div class="welcome">
+    <div class="card">
         {{ form_start(form) }}
             {{ form_row(form.name) }}
             {{ form_row(form.duration) }}
-            <button type="submit" style="margin-top:1rem; padding:0.75rem 2rem; background:#2563eb; color:white; border:none; border-radius:4px; cursor:pointer;">
+            <button type="submit" class="btn-submit">
                 Créer
             </button>
-            <a href="{{ path('app_services') }}" style="margin-left:1rem; color:#64748b;">Annuler</a>
+            <a href="{{ path('app_services') }}" class="btn-cancel-link">Annuler</a>
         {{ form_end(form) }}
     </div>
 {% endblock %}

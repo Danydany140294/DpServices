@@ -4,21 +4,21 @@
 
 {% block body %}
 <div class="welcome">
-    <div style="background:#fef3c7; border:1px solid #fcd34d; padding:1rem; border-radius:6px; margin-bottom:1.5rem;">
+    <div class="alert alert--warning">
         ⚠️ Vous allez envoyer un email à <strong>{{ leads|length }} prospect(s)</strong>. Cette action est irréversible.
     </div>
 
-    <div style="background:#f8fafc; padding:1rem; border-radius:6px; margin-bottom:1rem;">
+    <div class="preview-box preview-box--mb-sm">
         <p><strong>Objet :</strong> {{ subject }}</p>
-        <hr style="margin:0.75rem 0; border-color:#e2e8f0;">
-        <p style="white-space:pre-line; font-size:0.875rem;">{{ body }}</p>
+        <hr>
+        <p class="preview-box__body preview-box__body--sm">{{ body }}</p>
     </div>
 
-    <div style="margin-bottom:1.5rem;">
+    <div class="mb-lg">
         <strong>Destinataires ({{ leads|length }}) :</strong>
-        <ul style="margin-top:0.5rem; padding-left:1.5rem;">
+        <ul class="recipient-list">
             {% for lead in leads %}
-                <li style="font-size:0.875rem; color:#475569;">{{ lead.companyName }} — {{ lead.email }}</li>
+                <li class="recipient-list__item">{{ lead.companyName }} — {{ lead.email }}</li>
             {% endfor %}
         </ul>
     </div>
@@ -30,10 +30,10 @@
         {% for id in leadIds %}
             <input type="hidden" name="lead_ids[]" value="{{ id }}">
         {% endfor %}
-        <button type="submit" style="padding:0.75rem 2rem; background:#059669; color:white; border:none; border-radius:4px; cursor:pointer;">
+        <button type="submit" class="btn btn--success btn--lg">
             ✅ Confirmer l'envoi groupé
         </button>
-        <a href="{{ path('app_lead_group_email') }}" style="margin-left:1rem; color:#64748b;">← Modifier</a>
+        <a href="{{ path('app_lead_group_email') }}" class="text-secondary text-secondary--spaced">← Modifier</a>
     </form>
 </div>
 {% endblock %}

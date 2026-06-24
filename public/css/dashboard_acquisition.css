@@ -1,0 +1,127 @@
+/* ==========================================================================
+   Dashboard Acquisition — DP Services
+   ========================================================================== */
+
+/* ── Grilles de KPIs ── */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+/* ── Carte KPI générique ── */
+.kpi-card {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.kpi-card__label {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+}
+
+.kpi-card__value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #1e293b;
+}
+
+/* Variantes de couleur pour les valeurs */
+.kpi-card__value--total      { color: #1e293b; }
+.kpi-card__value--qualified  { color: #d97706; }
+.kpi-card__value--clients    { color: #059669; }
+.kpi-card__value--conversion { color: #2563eb; }
+.kpi-card__value--emails     { color: #059669; }
+.kpi-card__value--sms        { color: #7c3aed; }
+.kpi-card__value--response   { color: #2563eb; }
+
+/* ── Bandeau CA potentiel ── */
+.revenue-banner {
+    background: #059669;
+    color: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.revenue-banner__title {
+    font-size: 0.875rem;
+    opacity: 0.9;
+}
+
+.revenue-banner__subtitle {
+    font-size: 0.75rem;
+    opacity: 0.75;
+    margin-top: 0.25rem;
+}
+
+.revenue-banner__amount {
+    font-size: 2.5rem;
+    font-weight: bold;
+}
+
+/* ── Section deux colonnes (répartitions) ── */
+.split-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .split-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ── Carte de répartition (statut / catégorie) ── */
+.breakdown-card {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.breakdown-card__title {
+    margin-bottom: 1rem;
+    color: #1e293b;
+}
+
+.breakdown-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.breakdown-row__label {
+    color: #475569;
+}
+
+.breakdown-row__value {
+    font-weight: 600;
+    color: #1e293b;
+}
+
+/* ── Bouton retour ── */
+.back-link {
+    display: inline-block;
+    margin-top: 1.5rem;
+    padding: 0.75rem 1.5rem;
+    background: #2563eb;
+    color: white;
+    border-radius: 4px;
+    text-decoration: none;
+}
+
+.back-link:hover {
+    background: #1d4ed8;
+}

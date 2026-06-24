@@ -5,12 +5,12 @@
 
 {% block body %}
 
-    <div style="background:white; border-radius:8px; padding:1.5rem; box-shadow:0 1px 3px rgba(0,0,0,0.1); margin-bottom:1.5rem;">
-        <form method="get" id="search-form" style="display:flex; gap:1rem; align-items:flex-end; flex-wrap:wrap;">
+    <div class="filters">
+        <form method="get" id="search-form" class="filters__form">
 
-            <div>
-                <label style="display:block; font-size:0.875rem; color:#64748b; margin-bottom:0.25rem;">Type de recherche</label>
-                <select name="query" style="padding:0.5rem; border:1px solid #ddd; border-radius:4px; min-width:220px;">
+            <div class="filters__group">
+                <label class="filters__label">Type de recherche</label>
+                <select name="query" class="filters__input--lg">
                     <optgroup label="🏠 Immobilier">
                         <option value="conciergerie airbnb" {{ query == 'conciergerie airbnb' ? 'selected' : '' }}>🏠 Conciergerie Airbnb</option>
                         <option value="gestion locative" {{ query == 'gestion locative' ? 'selected' : '' }}>🏢 Gestion locative</option>
@@ -26,10 +26,9 @@
                 </select>
             </div>
 
-            <div>
-                <label style="display:block; font-size:0.875rem; color:#64748b; margin-bottom:0.25rem;">Ville</label>
-                <input type="text" name="city" value="{{ city }}" placeholder="Ex: Montpellier"
-                    style="padding:0.5rem; border:1px solid #ddd; border-radius:4px; min-width:180px;">
+            <div class="filters__group">
+                <label class="filters__label">Ville</label>
+                <input type="text" name="city" value="{{ city }}" placeholder="Ex: Montpellier" class="filters__input--md">
             </div>
 
             {# <div>
@@ -42,28 +41,28 @@
                 </select>
             </div> #}
 
-            <button type="submit" style="padding:0.5rem 1.5rem; background:#2563eb; color:white; border:none; border-radius:4px; cursor:pointer;">
+            <button type="submit">
                 🔍 Rechercher
             </button>
-            <a href="{{ path('app_lead_search') }}" style="padding:0.5rem 1rem; background:#f1f5f9; color:#475569; border-radius:4px; text-decoration:none;">
+            <a href="{{ path('app_lead_search') }}" class="filters__link">
                 Réinitialiser
             </a>
-            <a href="{{ path('app_leads') }}" style="padding:0.5rem 1rem; background:#f1f5f9; color:#475569; border-radius:4px; text-decoration:none;">
+            <a href="{{ path('app_leads') }}" class="filters__link">
                 ← Retour liste
             </a>
 
             {# ── Filtres J25 — dans le même form ── #}
-            <div style="width:100%; margin-top:1rem; padding-top:1rem; border-top:1px solid #e2e8f0; display:flex; gap:1.5rem; flex-wrap:wrap;">
-                <label style="display:flex; align-items:center; gap:0.5rem; font-size:0.875rem; cursor:pointer;">
-                    <input type="checkbox" name="ignore_known" value="1" {{ ignoreKnown ? 'checked' : '' }} style="width:1rem; height:1rem;">
+            <div class="filters__extra">
+                <label class="filters__checkbox-label">
+                    <input type="checkbox" name="ignore_known" value="1" {{ ignoreKnown ? 'checked' : '' }} class="filters__checkbox">
                     Ignorer les prospects déjà connus
                 </label>
-                <label style="display:flex; align-items:center; gap:0.5rem; font-size:0.875rem; cursor:pointer;">
-                    <input type="checkbox" name="ignore_clients" value="1" {{ ignoreClients ? 'checked' : '' }} style="width:1rem; height:1rem;">
+                <label class="filters__checkbox-label">
+                    <input type="checkbox" name="ignore_clients" value="1" {{ ignoreClients ? 'checked' : '' }} class="filters__checkbox">
                     Ignorer les clients existants
                 </label>
-                <label style="display:flex; align-items:center; gap:0.5rem; font-size:0.875rem; cursor:pointer;">
-                    <input type="checkbox" name="ignore_lost" value="1" {{ ignoreLost ? 'checked' : '' }} style="width:1rem; height:1rem;">
+                <label class="filters__checkbox-label">
+                    <input type="checkbox" name="ignore_lost" value="1" {{ ignoreLost ? 'checked' : '' }} class="filters__checkbox">
                     Ignorer les prospects perdus
                 </label>
             </div>
@@ -73,34 +72,34 @@
 
     {% if results is defined %}
         {% if results|length == 0 %}
-            <div style="background:white; border-radius:8px; padding:2rem; text-align:center; color:#94a3b8;">
+            <div class="search-empty">
                 Aucun résultat pour "{{ query }}" à {{ city }}.
             </div>
         {% else %}
-            <div style="margin-bottom:1rem; display:flex; justify-content:space-between; align-items:center;">
-                <span style="color:#64748b;">{{ results|length }} résultat(s) trouvé(s) pour "{{ query }}" à {{ city }}</span>
+            <div class="search-summary">
+                <span class="search-summary__count">{{ results|length }} résultat(s) trouvé(s) pour "{{ query }}" à {{ city }}</span>
                 {% if skipped > 0 %}
-                    <span style="background:#fef3c7; color:#d97706; padding:0.25rem 0.75rem; border-radius:4px; font-size:0.875rem;">
+                    <span class="search-summary__skipped">
                         ⚠️ {{ skipped }} déjà connu(s) ignoré(s)
                     </span>
                 {% endif %}
             </div>
 
-            <div style="display:grid; gap:1rem;">
+            <div class="search-results">
                 {% for place in results %}
-                <div style="background:white; border-radius:8px; padding:1.5rem; box-shadow:0 1px 3px rgba(0,0,0,0.1); display:flex; justify-content:space-between; align-items:center;">
+                <div class="result-card">
                     <div>
-                        <h3 style="color:#1e293b; margin-bottom:0.25rem;">{{ place.name }}</h3>
-                        <p style="color:#64748b; font-size:0.875rem;">📍 {{ place.address }}</p>
-                        <p style="font-size:0.75rem; color:#94a3b8; margin-top:0.25rem;">🔎 Trouvé via : {{ place.keyword }}</p>
+                        <h3 class="result-card__title">{{ place.name }}</h3>
+                        <p class="result-card__address">📍 {{ place.address }}</p>
+                        <p class="result-card__source">🔎 Trouvé via : {{ place.keyword }}</p>
                         {% if place.rating %}
-                            <p style="font-size:0.875rem; margin-top:0.25rem;">
+                            <p class="result-card__rating">
                                 ⭐ {{ place.rating }}/5
                                 {% if place.reviews %}({{ place.reviews }} avis){% endif %}
                             </p>
                         {% endif %}
                         {% if place.duplicate %}
-                            <span style="background:#fef3c7; color:#d97706; padding:0.2rem 0.5rem; border-radius:4px; font-size:0.75rem;">
+                            <span class="result-card__duplicate-badge">
                                 ⚠️ Déjà dans la base
                             </span>
                         {% endif %}
@@ -114,12 +113,12 @@
                         <input type="hidden" name="place_id" value="{{ place.place_id }}">
                         <input type="hidden" name="city" value="{{ city }}">
                         <input type="hidden" name="query" value="{{ query }}">
-                        <button type="submit" style="padding:0.5rem 1rem; background:#059669; color:white; border:none; border-radius:4px; cursor:pointer;">
+                        <button type="submit" class="btn-action btn-action--import">
                             + Importer
                         </button>
                     </form>
                     {% else %}
-                    <span style="padding:0.5rem 1rem; background:#f1f5f9; color:#94a3b8; border-radius:4px; font-size:0.875rem;">
+                    <span class="result-card__imported-tag">
                         Déjà importé
                     </span>
                     {% endif %}

@@ -4,21 +4,21 @@
 
 {% block body %}
 <div class="welcome">
-    <div style="background:#fef3c7; border:1px solid #fcd34d; padding:1rem; border-radius:6px; margin-bottom:1.5rem;">
+    <div class="alert alert--warning">
         ⚠️ Vous allez envoyer un SMS à <strong>{{ lead.companyName }}</strong> ({{ lead.phone }})
     </div>
 
-    <div style="background:#f8fafc; padding:1rem; border-radius:6px; margin-bottom:1.5rem;">
-        <p style="white-space:pre-line;">{{ message }}</p>
+    <div class="preview-box">
+        <p class="preview-box__body">{{ message }}</p>
     </div>
 
     <form method="post">
         <input type="hidden" name="message" value="{{ message }}">
         <input type="hidden" name="confirmed" value="1">
-        <button type="submit" style="padding:0.75rem 2rem; background:#059669; color:white; border:none; border-radius:4px; cursor:pointer;">
+        <button type="submit" class="btn btn--success btn--lg">
             ✅ Confirmer l'envoi
         </button>
-        <a href="{{ path('app_lead_sms', {id: lead.id}) }}" style="margin-left:1rem; color:#64748b;">← Modifier</a>
+        <a href="{{ path('app_lead_sms', {id: lead.id}) }}" class="text-secondary text-secondary--spaced">← Modifier</a>
     </form>
 </div>
 {% endblock %}

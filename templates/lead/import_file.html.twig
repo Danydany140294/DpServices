@@ -4,13 +4,13 @@
 {% block page_title %}📂 Importer des prospects depuis un fichier{% endblock %}
 
 {% block body %}
-<div style="background:white; border-radius:8px; padding:2rem; box-shadow:0 1px 3px rgba(0,0,0,0.1); max-width:600px;">
+<div class="card import-panel">
 
-    <p style="color:#64748b; margin-bottom:1.5rem;">
+    <p class="import-panel__intro">
         Importez une liste de prospects depuis un fichier CSV ou Excel (.xlsx).
     </p>
 
-    <div style="background:#f8fafc; border-radius:6px; padding:1rem; margin-bottom:1.5rem; font-size:0.875rem; color:#475569;">
+    <div class="info-box">
         <strong>Colonnes attendues (première ligne) :</strong><br>
         Entreprise, Ville, Email, Téléphone, Catégorie
         <br><br>
@@ -20,16 +20,15 @@
     </div>
 
     <form method="post" enctype="multipart/form-data">
-        <div style="margin-bottom:1.5rem;">
-            <label style="display:block; margin-bottom:0.5rem; font-weight:500;">Fichier (.csv, .xlsx)</label>
-            <input type="file" name="file" accept=".csv,.xlsx,.xls" required
-                style="width:100%; padding:0.625rem; border:1px solid #ddd; border-radius:6px;">
+        <div class="form-field">
+            <label class="form-field__label">Fichier (.csv, .xlsx)</label>
+            <input type="file" name="file" accept=".csv,.xlsx,.xls" required class="form-field__input">
         </div>
 
-        <button type="submit" style="padding:0.75rem 2rem; background:#2563eb; color:white; border:none; border-radius:4px; cursor:pointer;">
+        <button type="submit" class="btn-submit">
             📂 Importer
         </button>
-        <a href="{{ path('app_leads') }}" style="margin-left:1rem; color:#64748b;">Annuler</a>
+        <a href="{{ path('app_leads') }}" class="btn-cancel-link">Annuler</a>
     </form>
 
 </div>
