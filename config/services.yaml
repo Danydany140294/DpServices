@@ -34,4 +34,11 @@ services:
         arguments:
             $mistralApiKey: '%env(MISTRAL_API_KEY)%'
     
+    App\Service\GoogleCalendarService:
+        arguments:
+            $googleClientId: '%env(GOOGLE_CALENDAR_CLIENT_ID)%'
+            $googleClientSecret: '%env(GOOGLE_CALENDAR_CLIENT_SECRET)%'
+            $googleRedirectUri: '%env(GOOGLE_CALENDAR_REDIRECT_URI)%'
+            $googleCalendarId: '%env(GOOGLE_CALENDAR_ID)%'
+            $googleRefreshToken: '%env(default::GOOGLE_CALENDAR_REFRESH_TOKEN)%'
 
