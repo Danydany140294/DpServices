@@ -110,7 +110,9 @@ class GoogleSyncService
         $googleEventId = $event->getId();
 
         $existing = $this->cleaningRequestRepository->findOneBy(['googleEventId' => $googleEventId]);
+
         if ($existing !== null) {
+            $this->detectExternalModification($existing, $event);
             return null;
         }
 
@@ -135,6 +137,73 @@ class GoogleSyncService
         ));
 
         return $cleaningRequest;
+    }
+
+    /**
+     * Détecte si un event Google déjà connu a été modifié hors admin (J22).
+     * Si oui, stocke les valeurs proposées dans les champs "pending" et
+     * passe la mission en attente de confirmation (J23), sans jamais
+     * écraser les valeurs actuelles.
+     */
+    private function detectExternalModification(CleaningRequest $cleaningRequest, GoogleEvent $event): void
+    {
+        // Anti-boucle (J27) : si une synchro app -> Google est en cours sur
+        // cette mission, on ignore (c'est notre propre modification qu'on revoit).
+        if ($cleaningRequest->isSyncInProgress()) {
+            return;
+        }
+
+        $googleUpdated = $event->getUpdated();
+        $lastSyncAt = $cleaningRequest->getLastSyncAt();
+
+        // Si Google n'a pas changé depuis notre dernière synchro, rien à faire.
+        if ($googleUpdated !== null && $lastSyncAt !== null) {
+            $googleUpdatedAt = new \DateTime($googleUpdated);
+            if ($googleUpdatedAt <= $lastSyncAt) {
+                return;
+            }
+        }
+
+        // Déjà en attente : on ne ré-écrase pas une proposition déjà en attente
+        // avec une nouvelle lecture du même event tant que l'admin n'a pas tranché.
+        if ($cleaningRequest->isNeedsConfirmation()) {
+            return;
+        }
+
+        $start = $event->getStart();
+        $startDateTime = $start->getDateTime() ?? $start->getDate();
+
+        if ($startDateTime === null) {
+            return;
+        }
+
+        $newDateTime = new \DateTime($startDateTime);
+
+        // Si rien n'a réellement changé (même date/heure/description), pas de conflit.
+        $sameDate = $cleaningRequest->getScheduledDate()?->format('Y-m-d') === $newDateTime->format('Y-m-d');
+        $sameTime = $cleaningRequest->getScheduledTime()?->format('H:i') === $newDateTime->format('H:i');
+        $sameComment = ($cleaningRequest->getComment() ?? '') === ($event->getDescription() ?? '');
+
+        if ($sameDate && $sameTime && $sameComment) {
+            return;
+        }
+
+        $cleaningRequest->setPendingScheduledDate(clone $newDateTime);
+        $cleaningRequest->setPendingScheduledTime(clone $newDateTime);
+        $cleaningRequest->setPendingComment($event->getDescription());
+        $cleaningRequest->setNeedsConfirmation(true);
+        $cleaningRequest->setStatus('pending_modification');
+
+        $this->logSyncAction(
+            $cleaningRequest,
+            SyncLog::ACTION_UPDATE,
+            SyncLog::SOURCE_GOOGLE,
+            sprintf(
+                'Modification détectée hors admin pour la mission #%d (event "%s") : en attente de confirmation',
+                $cleaningRequest->getId(),
+                $event->getSummary()
+            )
+        );
     }
 
     /**
