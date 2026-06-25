@@ -54,6 +54,20 @@ class CleaningRequest
     #[ORM\Column(options: ['default' => false])]
     private bool $needsConfirmation = false;
 
+    // ---- Champs de gestion des conflits (V3 - Semaine 4) ----
+
+    #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
+    private ?\DateTime $pendingScheduledDate = null;
+
+    #[ORM\Column(type: Types::TIME_MUTABLE, nullable: true)]
+    private ?\DateTime $pendingScheduledTime = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $pendingComment = null;
+
+    #[ORM\Column(options: ['default' => false])]
+    private bool $syncInProgress = false;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -65,11 +79,11 @@ class CleaningRequest
     }
 
     public function setScheduledDate(?\DateTime $scheduledDate): static
-{
-    $this->scheduledDate = $scheduledDate;
+    {
+        $this->scheduledDate = $scheduledDate;
 
-    return $this;
-}
+        return $this;
+    }
 
     public function getScheduledTime(): ?\DateTime
     {
@@ -77,11 +91,11 @@ class CleaningRequest
     }
 
     public function setScheduledTime(?\DateTime $scheduledTime): static
-{
-    $this->scheduledTime = $scheduledTime;
+    {
+        $this->scheduledTime = $scheduledTime;
 
-    return $this;
-}
+        return $this;
+    }
 
     public function getComment(): ?string
     {
@@ -199,6 +213,54 @@ class CleaningRequest
     public function setNeedsConfirmation(bool $needsConfirmation): static
     {
         $this->needsConfirmation = $needsConfirmation;
+
+        return $this;
+    }
+
+    public function getPendingScheduledDate(): ?\DateTime
+    {
+        return $this->pendingScheduledDate;
+    }
+
+    public function setPendingScheduledDate(?\DateTime $pendingScheduledDate): static
+    {
+        $this->pendingScheduledDate = $pendingScheduledDate;
+
+        return $this;
+    }
+
+    public function getPendingScheduledTime(): ?\DateTime
+    {
+        return $this->pendingScheduledTime;
+    }
+
+    public function setPendingScheduledTime(?\DateTime $pendingScheduledTime): static
+    {
+        $this->pendingScheduledTime = $pendingScheduledTime;
+
+        return $this;
+    }
+
+    public function getPendingComment(): ?string
+    {
+        return $this->pendingComment;
+    }
+
+    public function setPendingComment(?string $pendingComment): static
+    {
+        $this->pendingComment = $pendingComment;
+
+        return $this;
+    }
+
+    public function isSyncInProgress(): bool
+    {
+        return $this->syncInProgress;
+    }
+
+    public function setSyncInProgress(bool $syncInProgress): static
+    {
+        $this->syncInProgress = $syncInProgress;
 
         return $this;
     }
