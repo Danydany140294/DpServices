@@ -4,13 +4,14 @@ namespace App\Service;
 
 use Google\Client as GoogleClient;
 use Google\Service\Calendar as GoogleCalendar;
+use Google\Service\Calendar\Event as GoogleEvent;
 use Psr\Log\LoggerInterface;
 
 /**
  * Service de connexion et de synchronisation avec Google Calendar.
  *
  * Utilise un compte Google unique (admin/entreprise) via OAuth2.
- * Le refresh token est généré une seule fois (commande app:google-auth, créée en J2)
+ * Le refresh token est généré une seule fois (commande app:google-auth)
  * puis stocké dans .env.local pour permettre un accès automatique sans
  * ré-authentification manuelle.
  */
@@ -106,24 +107,52 @@ class GoogleCalendarService
     }
 
     /**
+     * Retourne l'identifiant du calendrier configuré (généralement "primary").
+     */
+    public function getCalendarId(): string
+    {
+        return $this->googleCalendarId;
+    }
+
+    /**
+     * Liste les événements Google bruts (objets GoogleEvent) sur une période donnée.
+     * Méthode réutilisable pour la synchronisation (contrairement à testConnection()
+     * qui retourne un format simplifié pour l'affichage console).
+     *
+     * @return GoogleEvent[]
+     */
+    public function listEvents(?\DateTimeInterface $timeMin = null, ?\DateTimeInterface $timeMax = null, int $maxResults = 250): array
+    {
+        $calendar = $this->getCalendarService();
+
+        $params = [
+            'maxResults' => $maxResults,
+            'orderBy' => 'startTime',
+            'singleEvents' => true,
+            'timeMin' => ($timeMin ?? new \DateTime('-1 day'))->format(\DateTime::RFC3339),
+        ];
+
+        if ($timeMax !== null) {
+            $params['timeMax'] = $timeMax->format(\DateTime::RFC3339);
+        }
+
+        $events = $calendar->events->listEvents($this->googleCalendarId, $params);
+
+        return $events->getItems();
+    }
+
+    /**
      * Test de connexion simple : liste les prochains événements du calendrier configuré.
-     * Utilisé en J2 pour valider que la connexion OAuth fonctionne.
+     * Format simplifié pour affichage console (commande app:google-test).
      *
      * @return array<int, array{id: string, summary: string, start: string|null}>
      */
     public function testConnection(int $maxResults = 5): array
     {
-        $calendar = $this->getCalendarService();
-
-        $events = $calendar->events->listEvents($this->googleCalendarId, [
-            'maxResults' => $maxResults,
-            'orderBy' => 'startTime',
-            'singleEvents' => true,
-            'timeMin' => (new \DateTime())->format(\DateTime::RFC3339),
-        ]);
+        $events = $this->listEvents(new \DateTime(), null, $maxResults);
 
         $result = [];
-        foreach ($events->getItems() as $event) {
+        foreach ($events as $event) {
             $start = $event->getStart();
             $result[] = [
                 'id' => $event->getId(),

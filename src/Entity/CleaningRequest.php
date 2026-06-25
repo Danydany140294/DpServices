@@ -23,7 +23,7 @@ class CleaningRequest
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $comment = null;
 
-    #[ORM\Column(length: 20)]
+    #[ORM\Column(length: 40)]
     private ?string $status = null;
 
     #[ORM\ManyToOne(inversedBy: 'cleaningRequests')]
@@ -36,6 +36,23 @@ class CleaningRequest
 
     #[ORM\ManyToOne(inversedBy: 'cleaningRequests')]
     private ?User $assignedCleaner = null;
+
+    // ---- Champs de synchronisation Google Calendar (V3) ----
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $googleEventId = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTime $lastSyncAt = null;
+
+    #[ORM\Column(length: 20, nullable: true)]
+    private ?string $syncSource = null;
+
+    #[ORM\Column(length: 30, nullable: true)]
+    private ?string $syncStatus = null;
+
+    #[ORM\Column(options: ['default' => false])]
+    private bool $needsConfirmation = false;
 
     public function getId(): ?int
     {
@@ -122,6 +139,66 @@ class CleaningRequest
     public function setAssignedCleaner(?User $assignedCleaner): static
     {
         $this->assignedCleaner = $assignedCleaner;
+
+        return $this;
+    }
+
+    public function getGoogleEventId(): ?string
+    {
+        return $this->googleEventId;
+    }
+
+    public function setGoogleEventId(?string $googleEventId): static
+    {
+        $this->googleEventId = $googleEventId;
+
+        return $this;
+    }
+
+    public function getLastSyncAt(): ?\DateTime
+    {
+        return $this->lastSyncAt;
+    }
+
+    public function setLastSyncAt(?\DateTime $lastSyncAt): static
+    {
+        $this->lastSyncAt = $lastSyncAt;
+
+        return $this;
+    }
+
+    public function getSyncSource(): ?string
+    {
+        return $this->syncSource;
+    }
+
+    public function setSyncSource(?string $syncSource): static
+    {
+        $this->syncSource = $syncSource;
+
+        return $this;
+    }
+
+    public function getSyncStatus(): ?string
+    {
+        return $this->syncStatus;
+    }
+
+    public function setSyncStatus(?string $syncStatus): static
+    {
+        $this->syncStatus = $syncStatus;
+
+        return $this;
+    }
+
+    public function isNeedsConfirmation(): bool
+    {
+        return $this->needsConfirmation;
+    }
+
+    public function setNeedsConfirmation(bool $needsConfirmation): static
+    {
+        $this->needsConfirmation = $needsConfirmation;
 
         return $this;
     }
