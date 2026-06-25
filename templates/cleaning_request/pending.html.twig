@@ -1,0 +1,57 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifications en attente — DP Services{% endblock %}
+{% block page_title %}Modifications en attente{% endblock %}
+
+{% block body %}
+
+    <div class="u-mb-1">
+        <a href="{{ path('app_requests') }}" class="btn-link">
+            ← Retour aux demandes
+        </a>
+    </div>
+
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Logement</th>
+                <th>Date actuelle</th>
+                <th>Heure actuelle</th>
+                <th>Date proposée (Google)</th>
+                <th>Heure proposée (Google)</th>
+                <th>Commentaire proposé</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for req in requests %}
+            <tr>
+                <td>
+                    <span class="property-dot property-dot--square" style="background:{{ req.property.color }};"></span>
+                    {{ req.property.name }}
+                </td>
+                <td>{{ req.scheduledDate ? req.scheduledDate|date('d/m/Y') : '—' }}</td>
+                <td>{{ req.scheduledTime ? req.scheduledTime|date('H:i') : '—' }}</td>
+                <td><strong>{{ req.pendingScheduledDate ? req.pendingScheduledDate|date('d/m/Y') : '—' }}</strong></td>
+                <td><strong>{{ req.pendingScheduledTime ? req.pendingScheduledTime|date('H:i') : '—' }}</strong></td>
+                <td>{{ req.pendingComment ?: '—' }}</td>
+                <td>
+                    <form method="post" action="{{ path('app_request_accept_modification', {id: req.id}) }}" class="inline-form">
+                        <input type="hidden" name="_token" value="{{ csrf_token('accept' ~ req.id) }}">
+                        <button type="submit" class="table-action-btn table-action-btn--success">Accepter</button>
+                    </form>
+                    <form method="post" action="{{ path('app_request_reject_modification', {id: req.id}) }}" class="inline-form" onsubmit="return confirm('Refuser cette modification ?')">
+                        <input type="hidden" name="_token" value="{{ csrf_token('reject' ~ req.id) }}">
+                        <button type="submit" class="table-action-btn table-action-btn--danger">Refuser</button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="7" class="table-empty-cell">Aucune modification en attente</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}

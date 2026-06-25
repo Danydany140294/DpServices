@@ -40,6 +40,88 @@ class CleaningRequestController extends AbstractController
         ]);
     }
 
+    #[Route('/pending', name: 'app_requests_pending')]
+    public function pending(CleaningRequestRepository $repo): Response
+    {
+        $pendingRequests = $repo->findBy(['needsConfirmation' => true]);
+
+        return $this->render('cleaning_request/pending.html.twig', [
+            'requests' => $pendingRequests,
+        ]);
+    }
+
+    #[Route('/{id}/accept-modification', name: 'app_request_accept_modification', methods: ['POST'])]
+    public function acceptModification(
+        CleaningRequest $cleaningRequest,
+        Request $request,
+        EntityManagerInterface $em
+    ): Response {
+        if (!$this->isCsrfTokenValid('accept' . $cleaningRequest->getId(), $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token de sécurité invalide.');
+            return $this->redirectToRoute('app_requests_pending');
+        }
+
+        if ($cleaningRequest->getPendingScheduledDate() !== null) {
+            $cleaningRequest->setScheduledDate($cleaningRequest->getPendingScheduledDate());
+        }
+        if ($cleaningRequest->getPendingScheduledTime() !== null) {
+            $cleaningRequest->setScheduledTime($cleaningRequest->getPendingScheduledTime());
+        }
+        if ($cleaningRequest->getPendingComment() !== null) {
+            $cleaningRequest->setComment($cleaningRequest->getPendingComment());
+        }
+
+        $cleaningRequest->setPendingScheduledDate(null);
+        $cleaningRequest->setPendingScheduledTime(null);
+        $cleaningRequest->setPendingComment(null);
+        $cleaningRequest->setNeedsConfirmation(false);
+        $cleaningRequest->setStatus('VALIDATED');
+        $cleaningRequest->setSyncStatus('synced');
+        $cleaningRequest->setLastSyncAt(new \DateTime());
+
+        $em->flush();
+
+        $this->logger->log('Modification Google acceptée', $cleaningRequest->getProperty()->getName() . ' — ' . $cleaningRequest->getScheduledDate()->format('d/m/Y'));
+        $this->addFlash('success', 'Modification acceptée.');
+
+        return $this->redirectToRoute('app_requests_pending');
+    }
+
+    #[Route('/{id}/reject-modification', name: 'app_request_reject_modification', methods: ['POST'])]
+    public function rejectModification(
+        CleaningRequest $cleaningRequest,
+        Request $request,
+        EntityManagerInterface $em
+    ): Response {
+        if (!$this->isCsrfTokenValid('reject' . $cleaningRequest->getId(), $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token de sécurité invalide.');
+            return $this->redirectToRoute('app_requests_pending');
+        }
+
+        $cleaningRequest->setPendingScheduledDate(null);
+        $cleaningRequest->setPendingScheduledTime(null);
+        $cleaningRequest->setPendingComment(null);
+        $cleaningRequest->setNeedsConfirmation(false);
+        $cleaningRequest->setStatus('VALIDATED');
+
+        // Remet l'event Google à l'état actuel de la mission (J26)
+        $cleaningRequest->setSyncInProgress(true);
+        $em->flush();
+
+        try {
+            $this->googleSyncService->revertGoogleEvent($cleaningRequest);
+        } finally {
+            $cleaningRequest->setSyncInProgress(false);
+            $cleaningRequest->setLastSyncAt(new \DateTime());
+            $em->flush();
+        }
+
+        $this->logger->log('Modification Google refusée', $cleaningRequest->getProperty()->getName() . ' — ' . $cleaningRequest->getScheduledDate()->format('d/m/Y'));
+        $this->addFlash('success', 'Modification refusée, Google Agenda remis à jour.');
+
+        return $this->redirectToRoute('app_requests_pending');
+    }
+
     #[Route('/new', name: 'app_request_new')]
     public function new(Request $request, EntityManagerInterface $em, UserRepository $userRepository): Response
     {

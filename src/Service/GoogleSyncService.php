@@ -318,6 +318,12 @@ class GoogleSyncService
         }
     }
 
+
+     public function revertGoogleEvent(CleaningRequest $cleaningRequest): void
+    {
+        $this->pushUpdate($cleaningRequest);
+    }
+
     /**
      * Pousse une suppression vers Google Calendar (utile pour cancel/delete, J17/J20).
      */
