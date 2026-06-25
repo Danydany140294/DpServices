@@ -2,9 +2,11 @@
 
 namespace App\Service;
 
+use App\Entity\CleaningRequest;
 use Google\Client as GoogleClient;
 use Google\Service\Calendar as GoogleCalendar;
 use Google\Service\Calendar\Event as GoogleEvent;
+use Google\Service\Calendar\EventDateTime;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -116,8 +118,6 @@ class GoogleCalendarService
 
     /**
      * Liste les événements Google bruts (objets GoogleEvent) sur une période donnée.
-     * Méthode réutilisable pour la synchronisation (contrairement à testConnection()
-     * qui retourne un format simplifié pour l'affichage console).
      *
      * @return GoogleEvent[]
      */
@@ -166,5 +166,121 @@ class GoogleCalendarService
         ]);
 
         return $result;
+    }
+
+    /**
+     * Construit le titre et la description d'un événement Google à partir
+     * d'une mission. Centralisé ici pour que create/update restent cohérents.
+     */
+    private function buildEventTitle(CleaningRequest $cleaningRequest): string
+    {
+        $property = $cleaningRequest->getProperty();
+        $propertyName = $property?->getName() ?? 'Bien inconnu';
+
+        return sprintf('Ménage %s', $propertyName);
+    }
+
+    /**
+     * Construit un objet GoogleEvent (titre, description, horaires) à partir
+     * d'une mission Symfony. Durée déduite du CleaningService associé.
+     */
+    private function buildGoogleEvent(CleaningRequest $cleaningRequest): GoogleEvent
+    {
+        $scheduledDate = $cleaningRequest->getScheduledDate();
+        $scheduledTime = $cleaningRequest->getScheduledTime();
+
+        $start = (clone $scheduledDate);
+        $start->setTime((int) $scheduledTime->format('H'), (int) $scheduledTime->format('i'));
+
+        $durationMinutes = $cleaningRequest->getService()?->getDuration() ?? 60;
+        $end = (clone $start)->modify(sprintf('+%d minutes', $durationMinutes));
+
+        $event = new GoogleEvent();
+        $event->setSummary($this->buildEventTitle($cleaningRequest));
+        $event->setDescription($cleaningRequest->getComment() ?? '');
+
+        $eventStart = new EventDateTime();
+        $eventStart->setDateTime($start->format(\DateTime::RFC3339));
+        $eventStart->setTimeZone('Europe/Paris');
+        $event->setStart($eventStart);
+
+        $eventEnd = new EventDateTime();
+        $eventEnd->setDateTime($end->format(\DateTime::RFC3339));
+        $eventEnd->setTimeZone('Europe/Paris');
+        $event->setEnd($eventEnd);
+
+        return $event;
+    }
+
+    /**
+     * Crée un nouvel événement Google Agenda à partir d'une mission Symfony.
+     * Retourne l'ID de l'événement Google créé (à stocker dans CleaningRequest.googleEventId).
+     */
+    public function createGoogleEvent(CleaningRequest $cleaningRequest): string
+    {
+        $calendar = $this->getCalendarService();
+        $event = $this->buildGoogleEvent($cleaningRequest);
+
+        $createdEvent = $calendar->events->insert($this->googleCalendarId, $event);
+
+        $this->logger->info('GoogleCalendarService: événement créé', [
+            'cleaning_request_id' => $cleaningRequest->getId(),
+            'google_event_id' => $createdEvent->getId(),
+        ]);
+
+        return $createdEvent->getId();
+    }
+
+    /**
+     * Met à jour un événement Google existant à partir des données actuelles
+     * de la mission Symfony. La mission doit déjà avoir un googleEventId.
+     */
+    public function updateGoogleEvent(CleaningRequest $cleaningRequest): void
+    {
+        $googleEventId = $cleaningRequest->getGoogleEventId();
+
+        if (empty($googleEventId)) {
+            throw new \InvalidArgumentException(
+                'Impossible de mettre à jour : cette mission n\'a pas de googleEventId. Utilisez createGoogleEvent() à la place.'
+            );
+        }
+
+        $calendar = $this->getCalendarService();
+        $event = $this->buildGoogleEvent($cleaningRequest);
+
+        $calendar->events->update($this->googleCalendarId, $googleEventId, $event);
+
+        $this->logger->info('GoogleCalendarService: événement mis à jour', [
+            'cleaning_request_id' => $cleaningRequest->getId(),
+            'google_event_id' => $googleEventId,
+        ]);
+    }
+
+    /**
+     * Supprime un événement Google Agenda à partir de son ID.
+     * Ne lève pas d'exception si l'événement est déjà absent côté Google
+     * (cas où il aurait été supprimé manuellement par l'admin).
+     */
+    public function deleteGoogleEvent(string $googleEventId): void
+    {
+        $calendar = $this->getCalendarService();
+
+        try {
+            $calendar->events->delete($this->googleCalendarId, $googleEventId);
+            $this->logger->info('GoogleCalendarService: événement supprimé', [
+                'google_event_id' => $googleEventId,
+            ]);
+        } catch (\Google\Service\Exception $e) {
+            if ($e->getCode() === 410 || $e->getCode() === 404) {
+                // Déjà supprimé côté Google : on considère que l'objectif est atteint.
+                $this->logger->info('GoogleCalendarService: événement déjà absent côté Google (ignoré)', [
+                    'google_event_id' => $googleEventId,
+                ]);
+
+                return;
+            }
+
+            throw $e;
+        }
     }
 }

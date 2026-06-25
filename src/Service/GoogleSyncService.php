@@ -178,6 +178,110 @@ class GoogleSyncService
         return $cleaningRequest;
     }
 
+
+    /**
+     * Pousse une nouvelle mission créée côté app vers Google Calendar (J18).
+     */
+    public function pushCreate(CleaningRequest $cleaningRequest): void
+    {
+        try {
+            $googleEventId = $this->googleCalendarService->createGoogleEvent($cleaningRequest);
+
+            $cleaningRequest->setGoogleEventId($googleEventId);
+            $cleaningRequest->setSyncSource(SyncLog::SOURCE_APP);
+            $cleaningRequest->setSyncStatus('synced');
+            $cleaningRequest->setLastSyncAt(new \DateTime());
+
+            $this->logSyncAction(
+                $cleaningRequest,
+                SyncLog::ACTION_CREATE,
+                SyncLog::SOURCE_APP,
+                sprintf('Event Google créé depuis l\'admin pour la mission #%d', $cleaningRequest->getId())
+            );
+        } catch (\Throwable $e) {
+            $cleaningRequest->setSyncStatus('error');
+            $this->logSyncAction(
+                $cleaningRequest,
+                SyncLog::ACTION_ERROR,
+                SyncLog::SOURCE_APP,
+                sprintf('Échec création event Google pour mission #%d : %s', $cleaningRequest->getId(), $e->getMessage())
+            );
+            $this->logger->error('GoogleSyncService::pushCreate a échoué', ['exception' => $e->getMessage()]);
+        }
+
+        $this->entityManager->flush();
+    }
+
+    /**
+     * Pousse une modification (ex: drag & drop) vers Google Calendar (J19).
+     */
+    public function pushUpdate(CleaningRequest $cleaningRequest): void
+    {
+        if (empty($cleaningRequest->getGoogleEventId())) {
+            $this->pushCreate($cleaningRequest);
+            return;
+        }
+
+        try {
+            $this->googleCalendarService->updateGoogleEvent($cleaningRequest);
+
+            $cleaningRequest->setSyncStatus('synced');
+            $cleaningRequest->setLastSyncAt(new \DateTime());
+
+            $this->logSyncAction(
+                $cleaningRequest,
+                SyncLog::ACTION_UPDATE,
+                SyncLog::SOURCE_APP,
+                sprintf('Event Google mis à jour depuis l\'admin pour la mission #%d', $cleaningRequest->getId())
+            );
+        } catch (\Throwable $e) {
+            $cleaningRequest->setSyncStatus('error');
+            $this->logSyncAction(
+                $cleaningRequest,
+                SyncLog::ACTION_ERROR,
+                SyncLog::SOURCE_APP,
+                sprintf('Échec mise à jour event Google pour mission #%d : %s', $cleaningRequest->getId(), $e->getMessage())
+            );
+            $this->logger->error('GoogleSyncService::pushUpdate a échoué', ['exception' => $e->getMessage()]);
+            throw $e;
+        } finally {
+            $this->entityManager->flush();
+        }
+    }
+
+    /**
+     * Pousse une suppression vers Google Calendar (utile pour cancel/delete, J17/J20).
+     */
+    public function pushDelete(CleaningRequest $cleaningRequest): void
+    {
+        $googleEventId = $cleaningRequest->getGoogleEventId();
+
+        if (empty($googleEventId)) {
+            return;
+        }
+
+        try {
+            $this->googleCalendarService->deleteGoogleEvent($googleEventId);
+
+            $this->logSyncAction(
+                $cleaningRequest,
+                SyncLog::ACTION_DELETE,
+                SyncLog::SOURCE_APP,
+                sprintf('Event Google supprimé depuis l\'admin pour la mission #%d', $cleaningRequest->getId())
+            );
+        } catch (\Throwable $e) {
+            $this->logSyncAction(
+                $cleaningRequest,
+                SyncLog::ACTION_ERROR,
+                SyncLog::SOURCE_APP,
+                sprintf('Échec suppression event Google pour mission #%d : %s', $cleaningRequest->getId(), $e->getMessage())
+            );
+            $this->logger->error('GoogleSyncService::pushDelete a échoué', ['exception' => $e->getMessage()]);
+        }
+
+        $this->entityManager->flush();
+    }
+
     private function matchProperty(GoogleEvent $event): ?Property
     {
         $summary = $event->getSummary() ?? '';
