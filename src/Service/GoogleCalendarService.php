@@ -189,8 +189,12 @@ class GoogleCalendarService
         $scheduledDate = $cleaningRequest->getScheduledDate();
         $scheduledTime = $cleaningRequest->getScheduledTime();
 
-        $start = (clone $scheduledDate);
-        $start->setTime((int) $scheduledTime->format('H'), (int) $scheduledTime->format('i'));
+        $parisTimezone = new \DateTimeZone('Europe/Paris');
+
+        $start = new \DateTime(
+            $scheduledDate->format('Y-m-d') . ' ' . $scheduledTime->format('H:i:s'),
+            $parisTimezone
+        );
 
         $durationMinutes = $cleaningRequest->getService()?->getDuration() ?? 60;
         $end = (clone $start)->modify(sprintf('+%d minutes', $durationMinutes));
