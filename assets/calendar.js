@@ -14,7 +14,6 @@ document.addEventListener('DOMContentLoaded', function () {
     if (filters) {
         const cleanerSelect = document.getElementById('filter-cleaner');
         const ownerSelect = document.getElementById('filter-owner');
-
         if (cleanerSelect) {
             filters.cleaners.forEach(c => {
                 const opt = document.createElement('option');
@@ -23,7 +22,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 cleanerSelect.appendChild(opt);
             });
         }
-
         if (ownerSelect) {
             filters.owners.forEach(o => {
                 const opt = document.createElement('option');
@@ -43,6 +41,7 @@ document.addEventListener('DOMContentLoaded', function () {
             center: 'title',
             right: 'dayGridMonth,timeGridWeek,timeGridDay'
         },
+        editable: true,
         events: '/api/calendar/events',
         eventClick: function(info) {
             alert(
@@ -51,6 +50,35 @@ document.addEventListener('DOMContentLoaded', function () {
                 'Statut : ' + info.event.extendedProps.status + '\n' +
                 'FdM : ' + info.event.extendedProps.cleaner
             );
+        },
+        eventDrop: function(info) {
+            const eventId = info.event.id;
+
+            if (!eventId.startsWith('cr_')) {
+                info.revert();
+                return;
+            }
+
+            const realId = eventId.replace('cr_', '');
+
+            fetch('/api/calendar/events/' + realId + '/move', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ start: info.event.start.toISOString() })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) {
+                    alert('Erreur lors du déplacement : ' + (data.error || 'inconnue'));
+                    info.revert();
+                } else if (data.warning) {
+                    alert(data.warning);
+                }
+            })
+            .catch(() => {
+                alert('Erreur réseau lors du déplacement.');
+                info.revert();
+            });
         }
     });
 
@@ -60,7 +88,6 @@ document.addEventListener('DOMContentLoaded', function () {
 window.applyFilters = function() {
     const cleaner = document.getElementById('filter-cleaner')?.value || '';
     const owner = document.getElementById('filter-owner')?.value || '';
-
     calendar.removeAllEventSources();
     calendar.addEventSource('/api/calendar/events?cleaner=' + cleaner + '&owner=' + owner);
 };

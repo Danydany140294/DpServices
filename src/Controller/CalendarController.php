@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Doctrine\ORM\EntityManagerInterface;
 
 class CalendarController extends AbstractController
 {
@@ -101,5 +102,47 @@ public function events(CleaningRequestRepository $repo, \App\Repository\LeadRepo
     }
 
     return $this->json($events);
+}
+
+#[Route('/api/calendar/events/{id}/move', name: 'app_calendar_event_move', methods: ['POST'])]
+#[IsGranted('ROLE_ADMIN')]
+public function moveEvent(
+    int $id,
+    Request $request,
+    CleaningRequestRepository $repo,
+    EntityManagerInterface $em,
+    \App\Service\GoogleSyncService $googleSyncService
+): JsonResponse {
+    $cleaningRequest = $repo->find($id);
+
+    if ($cleaningRequest === null) {
+        return $this->json(['success' => false, 'error' => 'Mission introuvable'], 404);
+    }
+
+    $data = json_decode($request->getContent(), true);
+    $newStart = $data['start'] ?? null;
+
+    if ($newStart === null) {
+        return $this->json(['success' => false, 'error' => 'Date manquante'], 400);
+    }
+
+    try {
+        $dateTime = new \DateTime($newStart);
+    } catch (\Exception $e) {
+        return $this->json(['success' => false, 'error' => 'Date invalide'], 400);
+    }
+
+    $cleaningRequest->setScheduledDate(clone $dateTime);
+    $cleaningRequest->setScheduledTime(clone $dateTime);
+    $em->flush();
+
+    try {
+        $googleSyncService->pushUpdate($cleaningRequest);
+    } catch (\Throwable $e) {
+        // pushUpdate a déjà loggé l'erreur dans SyncLog ; on informe juste le front
+        return $this->json(['success' => true, 'warning' => 'Mission déplacée, mais la synchro Google a échoué']);
+    }
+
+    return $this->json(['success' => true]);
 }
 }
