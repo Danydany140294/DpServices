@@ -1,0 +1,77 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}État de la synchronisation Google{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h1>État de la synchronisation Google Agenda</h1>
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Dernière synchronisation réussie</h5>
+                    {% if lastSuccessful %}
+                        <p class="card-text">
+                            {{ lastSuccessful.createdAt|date('d/m/Y H:i:s') }}<br>
+                            <small class="text-muted">{{ lastSuccessful.message }}</small>
+                        </p>
+                    {% else %}
+                        <p class="card-text text-muted">Aucune synchronisation réussie enregistrée.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Erreurs (dernières 24h)</h5>
+                    <p class="card-text">
+                        {% if errorsLast24h > 0 %}
+                            <span class="badge bg-danger">{{ errorsLast24h }} erreur(s)</span>
+                        {% else %}
+                            <span class="badge bg-success">Aucune erreur</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h2>Journal de synchronisation (50 derniers événements)</h2>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Action</th>
+                <th>Source</th>
+                <th>Mission</th>
+                <th>Message</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in recentLogs %}
+                <tr class="{{ log.action == 'error' ? 'table-danger' : '' }}">
+                    <td>{{ log.createdAt|date('d/m/Y H:i:s') }}</td>
+                    <td>{{ log.action }}</td>
+                    <td>{{ log.source }}</td>
+                    <td>
+                        {% if log.cleaningRequest %}
+                            #{{ log.cleaningRequest.id }}
+                        {% else %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ log.message }}</td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="5" class="text-center text-muted">Aucun log enregistré.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
