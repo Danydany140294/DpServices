@@ -2,9 +2,11 @@
 
 namespace App\Service;
 
+use App\Entity\CleaningRequest;
 use App\Entity\Notification;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 
 /**
  * Service central de création des notifications in-app (J37-J39, J41).
@@ -14,6 +16,8 @@ class NotificationService
 {
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
+        private readonly CleanerSmsService $cleanerSmsService,
+        private readonly LoggerInterface $logger,
     ) {
     }
 
@@ -29,5 +33,36 @@ class NotificationService
         $this->entityManager->flush();
 
         return $notification;
+    }
+
+    /**
+     * J37 : notifie un salarié qu'une mission lui a été assignée, à la fois
+     * en notification in-app ET par SMS, peu importe l'origine de la mission
+     * (création manuelle admin OU synchronisation automatique Google).
+     *
+     * Le SMS est volontairement non-bloquant : si l'envoi échoue (pas de
+     * téléphone, API Brevo indisponible...), la notification in-app reste
+     * créée normalement et l'erreur est seulement loguée.
+     */
+    public function notifyMissionAssigned(User $cleaner, CleaningRequest $cleaningRequest, string $calendarUrl): void
+    {
+        $message = sprintf(
+            'Nouvelle mission : %s le %s à %s',
+            $cleaningRequest->getProperty()->getName(),
+            $cleaningRequest->getScheduledDate()->format('d/m/Y'),
+            $cleaningRequest->getScheduledTime()->format('H:i')
+        );
+
+        $this->notify($cleaner, Notification::TYPE_MISSION_ASSIGNED, $message, $calendarUrl);
+
+        try {
+            $this->cleanerSmsService->sendSms($cleaner, $message);
+        } catch (\Throwable $e) {
+            $this->logger->warning('NotificationService: échec envoi SMS mission assignée (notification in-app envoyée malgré tout)', [
+                'cleaner_id' => $cleaner->getId(),
+                'cleaning_request_id' => $cleaningRequest->getId(),
+                'exception' => $e->getMessage(),
+            ]);
+        }
     }
 }

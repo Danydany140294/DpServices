@@ -22,7 +22,8 @@ class CleaningRequestController extends AbstractController
     public function __construct(
         private ActivityLogService $logger,
         private EmailService $emailService,
-        private \App\Service\GoogleSyncService $googleSyncService
+        private \App\Service\GoogleSyncService $googleSyncService,
+        private \App\Service\NotificationService $notificationService
     ) {}
 
     #[Route('', name: 'app_requests')]
@@ -136,6 +137,14 @@ class CleaningRequestController extends AbstractController
             $em->flush();
 
             $this->googleSyncService->pushCreate($cleaningRequest);
+
+            if ($cleaningRequest->getAssignedCleaner()) {
+                $this->notificationService->notifyMissionAssigned(
+                    $cleaningRequest->getAssignedCleaner(),
+                    $cleaningRequest,
+                    $this->generateUrl('app_calendar')
+                );
+            }
 
             $this->logger->log('Demande créée', $cleaningRequest->getProperty()->getName() . ' — ' . $cleaningRequest->getScheduledDate()->format('d/m/Y'));
             $this->addFlash('success', 'Demande créée.');

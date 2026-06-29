@@ -12,6 +12,7 @@ use App\Repository\PropertyRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Google\Service\Calendar\Event as GoogleEvent;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 /**
  * Service de synchronisation Google Calendar -> Symfony (sens "pull").
@@ -22,19 +23,9 @@ use Psr\Log\LoggerInterface;
  *
  * Règle V3 : Google Agenda n'est jamais la source de vérité. Cette méthode
  * ne fait que CRÉER de nouvelles missions à partir de nouveaux événements.
- * La gestion des modifications/conflits (event Google déjà connu qui change)
- * sera traitée en J22-J28 (semaine 4 de la roadmap V3).
  *
- * Stratégie de correspondance bien <-> événement :
- * Les titres d'événements Google de Dany sont basés sur la VILLE/ZONE
- * (ex: "Ménage Nîmes", "Ménage immeuble Nîmes (appartement 1 et 3)"),
- * pas sur le nom exact du bien. On fait donc correspondre sur le secteur
- * déduit du titre, pas sur Property.name.
- *
- * Type de prestation par défaut : Google ne précise jamais le type de
- * prestation (CleaningService). On utilise donc un service par défaut
- * ("Ménage simple", id=3 en base) ; à corriger manuellement après coup
- * dans l'app si une mission nécessite en réalité un "Ménage approfondi".
+ * J37 : si un salarié est affecté automatiquement, il est notifié (in-app +
+ * SMS) exactement comme pour une création manuelle côté admin.
  */
 class GoogleSyncService
 {
@@ -48,15 +39,11 @@ class GoogleSyncService
         private readonly CleaningServiceRepository $cleaningServiceRepository,
         private readonly EntityManagerInterface $entityManager,
         private readonly LoggerInterface $logger,
+        private readonly NotificationService $notificationService,
+        private readonly UrlGeneratorInterface $urlGenerator,
     ) {
     }
 
-    /**
-     * Lance la synchronisation "pull" : lit les événements Google sur la période
-     * donnée, crée les missions correspondantes pour les événements inconnus.
-     *
-     * @return array{created: int, skipped: int, errors: int}
-     */
     public function pullFromGoogle(?\DateTimeInterface $timeMin = null, ?\DateTimeInterface $timeMax = null): array
     {
         $stats = ['created' => 0, 'skipped' => 0, 'errors' => 0, 'deleted' => 0];
@@ -99,10 +86,6 @@ class GoogleSyncService
             }
         }
 
-        // J34 : suppression croisée Google -> App. On ne fait cette vérification
-        // que si une période (timeMin/timeMax) est explicitement fournie, pour
-        // éviter de considérer comme "supprimées" des missions simplement hors
-        // de la fenêtre de lecture par défaut (qui ne couvre qu'à partir d'hier).
         if ($timeMin !== null && $timeMax !== null) {
             $stats['deleted'] = $this->detectAndDeleteRemovedEvents($timeMin, $timeMax, $seenGoogleEventIds);
         }
@@ -112,52 +95,6 @@ class GoogleSyncService
         return $stats;
     }
 
-    /**
-     * Détecte les missions synchronisées dont l'event Google a disparu sur la
-     * période donnée (supprimé manuellement dans Google Agenda), et supprime
-     * ces missions côté app (règle confirmée : suppression symétrique).
-     */
-    private function detectAndDeleteRemovedEvents(\DateTimeInterface $timeMin, \DateTimeInterface $timeMax, array $seenGoogleEventIds): int
-    {
-        $knownRequests = $this->cleaningRequestRepository->createQueryBuilder('cr')
-            ->where('cr.googleEventId IS NOT NULL')
-            ->andWhere('cr.scheduledDate >= :timeMin')
-            ->andWhere('cr.scheduledDate <= :timeMax')
-            ->setParameter('timeMin', $timeMin)
-            ->setParameter('timeMax', $timeMax)
-            ->getQuery()
-            ->getResult();
-
-        $deletedCount = 0;
-
-        foreach ($knownRequests as $cleaningRequest) {
-            if (in_array($cleaningRequest->getGoogleEventId(), $seenGoogleEventIds, true)) {
-                continue;
-            }
-
-            $this->logSyncAction(
-                null,
-                SyncLog::ACTION_DELETE,
-                SyncLog::SOURCE_GOOGLE,
-                sprintf(
-                    'Mission #%d supprimée : event Google %s introuvable (supprimé dans Google Agenda)',
-                    $cleaningRequest->getId(),
-                    $cleaningRequest->getGoogleEventId()
-                )
-            );
-
-            $this->entityManager->remove($cleaningRequest);
-            ++$deletedCount;
-        }
-
-        return $deletedCount;
-    }
-
-    /**
-     * Traite un événement Google unique : crée une mission si l'event est inconnu.
-     * Retourne la CleaningRequest créée, ou null si l'event était déjà connu (skip)
-     * ou non convertible.
-     */
     private function processEvent(GoogleEvent $event, CleaningService $defaultService): ?CleaningRequest
     {
         $googleEventId = $event->getId();
@@ -189,19 +126,20 @@ class GoogleSyncService
             $googleEventId
         ));
 
+        // J37 : notifier le salarié (in-app + SMS) si une affectation automatique a eu lieu.
+        if ($cleaningRequest->getAssignedCleaner() !== null) {
+            $this->notificationService->notifyMissionAssigned(
+                $cleaningRequest->getAssignedCleaner(),
+                $cleaningRequest,
+                $this->urlGenerator->generate('app_calendar')
+            );
+        }
+
         return $cleaningRequest;
     }
 
-    /**
-     * Détecte si un event Google déjà connu a été modifié hors admin (J22).
-     * Si oui, stocke les valeurs proposées dans les champs "pending" et
-     * passe la mission en attente de confirmation (J23), sans jamais
-     * écraser les valeurs actuelles.
-     */
     private function detectExternalModification(CleaningRequest $cleaningRequest, GoogleEvent $event): void
     {
-        // Anti-boucle (J27) : si une synchro app -> Google est en cours sur
-        // cette mission, on ignore (c'est notre propre modification qu'on revoit).
         if ($cleaningRequest->isSyncInProgress()) {
             return;
         }
@@ -209,7 +147,6 @@ class GoogleSyncService
         $googleUpdated = $event->getUpdated();
         $lastSyncAt = $cleaningRequest->getLastSyncAt();
 
-        // Si Google n'a pas changé depuis notre dernière synchro, rien à faire.
         if ($googleUpdated !== null && $lastSyncAt !== null) {
             $googleUpdatedAt = new \DateTime($googleUpdated);
             if ($googleUpdatedAt <= $lastSyncAt) {
@@ -217,8 +154,6 @@ class GoogleSyncService
             }
         }
 
-        // Déjà en attente : on ne ré-écrase pas une proposition déjà en attente
-        // avec une nouvelle lecture du même event tant que l'admin n'a pas tranché.
         if ($cleaningRequest->isNeedsConfirmation()) {
             return;
         }
@@ -232,7 +167,6 @@ class GoogleSyncService
 
         $newDateTime = new \DateTime($startDateTime);
 
-        // Si rien n'a réellement changé (même date/heure/description), pas de conflit.
         $sameDate = $cleaningRequest->getScheduledDate()?->format('Y-m-d') === $newDateTime->format('Y-m-d');
         $sameTime = $cleaningRequest->getScheduledTime()?->format('H:i') === $newDateTime->format('H:i');
         $sameComment = ($cleaningRequest->getComment() ?? '') === ($event->getDescription() ?? '');
@@ -259,10 +193,6 @@ class GoogleSyncService
         );
     }
 
-    /**
-     * Transforme un événement Google en une nouvelle CleaningRequest.
-     * Retourne null si aucun bien correspondant n'est trouvé.
-     */
     public function googleEventToMission(GoogleEvent $event, CleaningService $defaultService): ?CleaningRequest
     {
         $property = $this->matchProperty($event);
@@ -300,10 +230,6 @@ class GoogleSyncService
         return $cleaningRequest;
     }
 
-
-    /**
-     * Pousse une nouvelle mission créée côté app vers Google Calendar (J18).
-     */
     public function pushCreate(CleaningRequest $cleaningRequest): void
     {
         try {
@@ -334,9 +260,6 @@ class GoogleSyncService
         $this->entityManager->flush();
     }
 
-    /**
-     * Pousse une modification (ex: drag & drop) vers Google Calendar (J19).
-     */
     public function pushUpdate(CleaningRequest $cleaningRequest): void
     {
         if (empty($cleaningRequest->getGoogleEventId())) {
@@ -371,15 +294,11 @@ class GoogleSyncService
         }
     }
 
-
-     public function revertGoogleEvent(CleaningRequest $cleaningRequest): void
+    public function revertGoogleEvent(CleaningRequest $cleaningRequest): void
     {
         $this->pushUpdate($cleaningRequest);
     }
 
-    /**
-     * Pousse une suppression vers Google Calendar (utile pour cancel/delete, J17/J20).
-     */
     public function pushDelete(CleaningRequest $cleaningRequest): void
     {
         $googleEventId = $cleaningRequest->getGoogleEventId();
@@ -408,6 +327,42 @@ class GoogleSyncService
         }
 
         $this->entityManager->flush();
+    }
+
+    private function detectAndDeleteRemovedEvents(\DateTimeInterface $timeMin, \DateTimeInterface $timeMax, array $seenGoogleEventIds): int
+    {
+        $knownRequests = $this->cleaningRequestRepository->createQueryBuilder('cr')
+            ->where('cr.googleEventId IS NOT NULL')
+            ->andWhere('cr.scheduledDate >= :timeMin')
+            ->andWhere('cr.scheduledDate <= :timeMax')
+            ->setParameter('timeMin', $timeMin)
+            ->setParameter('timeMax', $timeMax)
+            ->getQuery()
+            ->getResult();
+
+        $deletedCount = 0;
+
+        foreach ($knownRequests as $cleaningRequest) {
+            if (in_array($cleaningRequest->getGoogleEventId(), $seenGoogleEventIds, true)) {
+                continue;
+            }
+
+            $this->logSyncAction(
+                null,
+                SyncLog::ACTION_DELETE,
+                SyncLog::SOURCE_GOOGLE,
+                sprintf(
+                    'Mission #%d supprimée : event Google %s introuvable (supprimé dans Google Agenda)',
+                    $cleaningRequest->getId(),
+                    $cleaningRequest->getGoogleEventId()
+                )
+            );
+
+            $this->entityManager->remove($cleaningRequest);
+            ++$deletedCount;
+        }
+
+        return $deletedCount;
     }
 
     private function matchProperty(GoogleEvent $event): ?Property

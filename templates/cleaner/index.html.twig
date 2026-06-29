@@ -4,13 +4,41 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mes missions — DP Services</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
 </head>
 <body class="has-bottom-nav">
 
     <header class="mobile-header">
-        <h1>🧹 Mes missions</h1>
-        <span class="user-name">{{ app.user.firstname }}</span>
+        <div class="mobile-header__title">
+            <h1>🧹 Mes missions</h1>
+            <span class="user-name">{{ app.user.firstname }}</span>
+        </div>
+
+        {# -- Cloche de notifications (réutilise les mêmes fonctions Twig
+              que base.html.twig : unread_notifications_count / recent_notifications) -- #}
+        <div class="mobile-notif-wrapper">
+            <button class="mobile-notif-btn" type="button" aria-label="Notifications" onclick="document.getElementById('mobile-notif-dropdown').classList.toggle('is-open')">
+                <i class="fa-solid fa-bell"></i>
+                {% set unreadCount = unread_notifications_count(app.user) %}
+                {% if unreadCount > 0 %}
+                    <span class="mobile-notif-badge">{{ unreadCount }}</span>
+                {% endif %}
+            </button>
+            <div id="mobile-notif-dropdown" class="mobile-notif-dropdown">
+                {% set recentNotifs = recent_notifications(app.user, 8) %}
+                {% if recentNotifs is empty %}
+                    <div class="mobile-notif-empty">Aucune notification</div>
+                {% else %}
+                    {% for notif in recentNotifs %}
+                        <a href="{{ notif.link ?: '#' }}" class="mobile-notif-item {{ notif.isRead ? '' : 'mobile-notif-item--unread' }}">
+                            <span class="mobile-notif-message">{{ notif.message }}</span>
+                            <span class="mobile-notif-date">{{ notif.createdAt|date('d/m H:i') }}</span>
+                        </a>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
     </header>
 
     <div class="mobile-content">

@@ -30,6 +30,10 @@ services:
         arguments:
             $brevoApiKey: '%env(BREVO_API_KEY)%'
 
+    App\Service\CleanerSmsService:
+        arguments:
+            $brevoApiKey: '%env(BREVO_API_KEY)%'
+
     App\Service\MistralService:
         arguments:
             $mistralApiKey: '%env(MISTRAL_API_KEY)%'

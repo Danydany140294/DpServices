@@ -405,6 +405,78 @@ a {
     filter: brightness(1.08);
 }
 
+/* -- Dropdown de notifications (cloche topbar) --
+      Cache par défaut, affiché uniquement au clic via la classe .is-open
+      ajoutée en JS (onclick déjà présent dans base.html.twig). -- */
+
+.topbar-notif-wrapper {
+    position: relative;
+}
+
+.topbar-notif-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: 320px;
+    max-height: 400px;
+    overflow-y: auto;
+    background: var(--card);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-soft);
+    z-index: 100;
+}
+
+.topbar-notif-dropdown.is-open {
+    display: block;
+}
+
+.topbar-notif-empty {
+    padding: 20px 16px;
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 13px;
+}
+
+.topbar-notif-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-soft);
+    text-decoration: none;
+    color: var(--text);
+    transition: background 0.15s;
+}
+
+.topbar-notif-item:last-child {
+    border-bottom: none;
+}
+
+.topbar-notif-item:hover {
+    background: var(--card-2);
+}
+
+.topbar-notif-item--unread {
+    background: var(--gold-soft);
+}
+
+.topbar-notif-item--unread:hover {
+    background: var(--gold-soft);
+    filter: brightness(1.1);
+}
+
+.topbar-notif-message {
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.topbar-notif-date {
+    font-size: 11px;
+    color: var(--text-dim);
+}
+
 @media (max-width: 1024px) {
     .topbar-search { display: none; }
     .topbar-cta span { display: none; }
@@ -1068,6 +1140,105 @@ a {
     text-align: center;
     color: #d97706;
     font-size: 0.875rem;
+}
+
+
+/* -- Ajustement du header mobile pour accueillir la cloche (titre à
+      gauche, cloche à droite) -- */
+.mobile-header__title {
+    display: flex;
+    flex-direction: column;
+}
+
+/* -- Cloche de notifications (mobile Cleaner) — mêmes couleurs/variables
+      que la cloche topbar admin (.topbar-icon-btn, .topbar-notif-dropdown),
+      adaptée au header mobile sombre. -- */
+.mobile-notif-wrapper {
+    position: relative;
+}
+
+.mobile-notif-btn {
+    position: relative;
+    height: 36px;
+    width: 36px;
+    display: grid;
+    place-items: center;
+    background: var(--card-2);
+    border: 1px solid var(--border-soft);
+    border-radius: 999px;
+    color: white;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.mobile-notif-badge {
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    height: 16px;
+    min-width: 16px;
+    padding: 0 4px;
+    border-radius: 999px;
+    background: var(--gold);
+    color: var(--bg);
+    font-size: 9px;
+    font-weight: 700;
+    display: grid;
+    place-items: center;
+}
+
+.mobile-notif-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    background: var(--card);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-soft);
+    z-index: 200;
+}
+
+.mobile-notif-dropdown.is-open {
+    display: block;
+}
+
+.mobile-notif-empty {
+    padding: 18px 14px;
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 13px;
+}
+
+.mobile-notif-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--border-soft);
+    text-decoration: none;
+    color: var(--text);
+}
+
+.mobile-notif-item:last-child {
+    border-bottom: none;
+}
+
+.mobile-notif-item--unread {
+    background: var(--gold-soft);
+}
+
+.mobile-notif-message {
+    font-size: 12.5px;
+    line-height: 1.4;
+}
+
+.mobile-notif-date {
+    font-size: 10.5px;
+    color: var(--text-dim);
 }
 
 
