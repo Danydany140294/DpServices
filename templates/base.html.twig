@@ -60,18 +60,29 @@
             </div>
 
             <div class="topbar-actions">
-                {# -- Cloche de notifications --
-                   ⚠️ CONTROLLER : remplacer `notificationsCount` par le nombre
-                   réel de notifications non lues de app.user (ex: via une
-                   méthode du repository Notification, injectée dans le
-                   controller qui rend ce template, ou un service global
-                   exposé en variable globale Twig). -- #}
-                <button class="topbar-icon-btn" type="button" aria-label="Notifications">
-                    <i class="fa-solid fa-bell"></i>
-                    {% if notificationsCount|default(0) > 0 %}
-                        <span class="topbar-badge">{{ notificationsCount }}</span>
-                    {% endif %}
-                </button>
+                {# -- Cloche de notifications (J37-J41) -- #}
+                <div class="topbar-notif-wrapper">
+                    <button class="topbar-icon-btn" type="button" aria-label="Notifications" onclick="document.getElementById('notif-dropdown').classList.toggle('is-open')">
+                        <i class="fa-solid fa-bell"></i>
+                        {% set unreadCount = unread_notifications_count(app.user) %}
+                        {% if unreadCount > 0 %}
+                            <span class="topbar-badge">{{ unreadCount }}</span>
+                        {% endif %}
+                    </button>
+                    <div id="notif-dropdown" class="topbar-notif-dropdown">
+                        {% set recentNotifs = recent_notifications(app.user, 8) %}
+                        {% if recentNotifs is empty %}
+                            <div class="topbar-notif-empty">Aucune notification</div>
+                        {% else %}
+                            {% for notif in recentNotifs %}
+                                <a href="{{ notif.link ?: '#' }}" class="topbar-notif-item {{ notif.isRead ? '' : 'topbar-notif-item--unread' }}">
+                                    <span class="topbar-notif-message">{{ notif.message }}</span>
+                                    <span class="topbar-notif-date">{{ notif.createdAt|date('d/m H:i') }}</span>
+                                </a>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
 
                 {% if app.user %}
                     <div class="topbar-user">
