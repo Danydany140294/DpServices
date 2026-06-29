@@ -193,12 +193,16 @@ class CleaningRequestController extends AbstractController
         return $this->redirectToRoute('app_requests');
     }
 
-    #[Route('/{id}/cancel', name: 'app_request_cancel', methods: ['POST'])]
+   #[Route('/{id}/cancel', name: 'app_request_cancel', methods: ['POST'])]
     public function cancel(CleaningRequest $cleaningRequest, EntityManagerInterface $em, Request $request): Response
     {
         if ($this->isCsrfTokenValid('cancel' . $cleaningRequest->getId(), $request->request->get('_token'))) {
             $cleaningRequest->setStatus('CANCELLED');
             $em->flush();
+
+            // J34 : suppression croisée -> l'annulation côté app supprime l'event Google.
+            $this->googleSyncService->pushDelete($cleaningRequest);
+
             $this->logger->log('Demande annulée', $cleaningRequest->getProperty()->getName() . ' — ' . $cleaningRequest->getScheduledDate()->format('d/m/Y'));
             $this->addFlash('success', 'Demande annulée.');
         }

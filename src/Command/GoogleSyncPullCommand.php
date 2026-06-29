@@ -9,6 +9,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
@@ -26,31 +27,27 @@ class GoogleSyncPullCommand extends Command
         parent::__construct();
     }
 
-    /**
-     * J30 : robustesse face aux erreurs.
-     *
-     * Cette commande est destinée à tourner via cron (J29), sans supervision
-     * humaine directe. Deux niveaux d'erreur sont distingués :
-     *
-     *   1. Erreur PONCTUELLE (un event Google problématique) : déjà gérée par
-     *      GoogleSyncService::pullFromGoogle(), qui continue sur les autres
-     *      events et remonte un compteur d'erreurs dans $stats['errors'].
-     *
-     *   2. Erreur SYSTÈME (connexion Google impossible, token invalide, panne
-     *      réseau) : capturée ici. La commande retourne un code d'échec clair
-     *      pour le système (utile pour une supervision externe basée sur le
-     *      code de sortie), logue l'erreur dans les logs Symfony ET dans
-     *      SyncLog (pour garder une trace consultable depuis l'admin, même
-     *      si personne ne regarde les logs serveur ce jour-là).
-     */
+    protected function configure(): void
+    {
+        $this
+            ->addOption('from', null, InputOption::VALUE_REQUIRED, 'Date de début (Y-m-d), active la détection de suppression (J34)')
+            ->addOption('to', null, InputOption::VALUE_REQUIRED, 'Date de fin (Y-m-d), active la détection de suppression (J34)');
+    }
+
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
 
         $io->title('Synchronisation Google Agenda -> Missions');
 
+        $from = $input->getOption('from');
+        $to = $input->getOption('to');
+
+        $timeMin = $from !== null ? new \DateTime($from) : null;
+        $timeMax = $to !== null ? new \DateTime($to . ' 23:59:59') : null;
+
         try {
-            $stats = $this->googleSyncService->pullFromGoogle();
+            $stats = $this->googleSyncService->pullFromGoogle($timeMin, $timeMax);
         } catch (\Throwable $e) {
             $this->logger->error('GoogleSyncPullCommand: échec système de la synchronisation', [
                 'exception' => $e->getMessage(),
@@ -75,22 +72,13 @@ class GoogleSyncPullCommand extends Command
         }
 
         $io->table(
-            ['Missions créées', 'Événements ignorés (déjà connus)', 'Erreurs'],
-            [[$stats['created'], $stats['skipped'], $stats['errors']]]
+            ['Missions créées', 'Événements ignorés (déjà connus)', 'Missions supprimées', 'Erreurs'],
+            [[$stats['created'], $stats['skipped'], $stats['deleted'] ?? 0, $stats['errors']]]
         );
 
-        // Code de sortie : SUCCESS même s'il y a eu des erreurs ponctuelles,
-        // car celles-ci sont déjà tracées individuellement et ne remettent pas
-        // en cause le bon déroulement global du cron. Seule une erreur SYSTÈME
-        // (catch ci-dessus) doit faire échouer la commande pour une supervision
-        // externe éventuelle (ex: alerte si le cron échoue plusieurs fois de suite).
         return Command::SUCCESS;
     }
 
-    /**
-     * Enregistre une erreur système (non liée à un event précis) dans SyncLog,
-     * pour qu'elle soit visible depuis l'admin même sans accès aux logs serveur.
-     */
     private function logSystemFailure(\Throwable $e): void
     {
         $log = new SyncLog();

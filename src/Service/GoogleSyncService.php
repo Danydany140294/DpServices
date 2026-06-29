@@ -59,7 +59,7 @@ class GoogleSyncService
      */
     public function pullFromGoogle(?\DateTimeInterface $timeMin = null, ?\DateTimeInterface $timeMax = null): array
     {
-        $stats = ['created' => 0, 'skipped' => 0, 'errors' => 0];
+        $stats = ['created' => 0, 'skipped' => 0, 'errors' => 0, 'deleted' => 0];
 
         $defaultService = $this->cleaningServiceRepository->find(self::DEFAULT_SERVICE_ID);
         if ($defaultService === null) {
@@ -71,7 +71,11 @@ class GoogleSyncService
 
         $events = $this->googleCalendarService->listEvents($timeMin, $timeMax);
 
+        $seenGoogleEventIds = [];
+
         foreach ($events as $event) {
+            $seenGoogleEventIds[] = $event->getId();
+
             try {
                 $result = $this->processEvent($event, $defaultService);
 
@@ -95,9 +99,58 @@ class GoogleSyncService
             }
         }
 
+        // J34 : suppression croisée Google -> App. On ne fait cette vérification
+        // que si une période (timeMin/timeMax) est explicitement fournie, pour
+        // éviter de considérer comme "supprimées" des missions simplement hors
+        // de la fenêtre de lecture par défaut (qui ne couvre qu'à partir d'hier).
+        if ($timeMin !== null && $timeMax !== null) {
+            $stats['deleted'] = $this->detectAndDeleteRemovedEvents($timeMin, $timeMax, $seenGoogleEventIds);
+        }
+
         $this->entityManager->flush();
 
         return $stats;
+    }
+
+    /**
+     * Détecte les missions synchronisées dont l'event Google a disparu sur la
+     * période donnée (supprimé manuellement dans Google Agenda), et supprime
+     * ces missions côté app (règle confirmée : suppression symétrique).
+     */
+    private function detectAndDeleteRemovedEvents(\DateTimeInterface $timeMin, \DateTimeInterface $timeMax, array $seenGoogleEventIds): int
+    {
+        $knownRequests = $this->cleaningRequestRepository->createQueryBuilder('cr')
+            ->where('cr.googleEventId IS NOT NULL')
+            ->andWhere('cr.scheduledDate >= :timeMin')
+            ->andWhere('cr.scheduledDate <= :timeMax')
+            ->setParameter('timeMin', $timeMin)
+            ->setParameter('timeMax', $timeMax)
+            ->getQuery()
+            ->getResult();
+
+        $deletedCount = 0;
+
+        foreach ($knownRequests as $cleaningRequest) {
+            if (in_array($cleaningRequest->getGoogleEventId(), $seenGoogleEventIds, true)) {
+                continue;
+            }
+
+            $this->logSyncAction(
+                null,
+                SyncLog::ACTION_DELETE,
+                SyncLog::SOURCE_GOOGLE,
+                sprintf(
+                    'Mission #%d supprimée : event Google %s introuvable (supprimé dans Google Agenda)',
+                    $cleaningRequest->getId(),
+                    $cleaningRequest->getGoogleEventId()
+                )
+            );
+
+            $this->entityManager->remove($cleaningRequest);
+            ++$deletedCount;
+        }
+
+        return $deletedCount;
     }
 
     /**

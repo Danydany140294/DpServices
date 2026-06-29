@@ -22,6 +22,7 @@ class SyncLog
     private ?int $id = null;
 
     #[ORM\ManyToOne]
+    #[ORM\JoinColumn(onDelete: 'CASCADE')]
     private ?CleaningRequest $cleaningRequest = null;
 
     #[ORM\Column(length: 20)]
