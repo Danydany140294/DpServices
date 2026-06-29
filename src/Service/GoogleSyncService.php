@@ -40,10 +40,10 @@ class GoogleSyncService
         private readonly EntityManagerInterface $entityManager,
         private readonly LoggerInterface $logger,
         private readonly NotificationService $notificationService,
-        private readonly UrlGeneratorInterface $urlGenerator,
+        private readonly \Symfony\Component\Routing\Generator\UrlGeneratorInterface $urlGenerator,
+        private readonly \App\Repository\UserRepository $userRepository,
     ) {
     }
-
     public function pullFromGoogle(?\DateTimeInterface $timeMin = null, ?\DateTimeInterface $timeMax = null): array
     {
         $stats = ['created' => 0, 'skipped' => 0, 'errors' => 0, 'deleted' => 0];
@@ -191,6 +191,30 @@ class GoogleSyncService
                 $event->getSummary()
             )
         );
+
+        $this->notifyAdmins($cleaningRequest);
+    }
+
+    /**
+     * Notifie tous les administrateurs qu'une modification Google attend
+     * leur confirmation (J38).
+     */
+    private function notifyAdmins(CleaningRequest $cleaningRequest): void
+    {
+        $admins = $this->userRepository->findByRole('ROLE_ADMIN');
+
+        foreach ($admins as $admin) {
+            $this->notificationService->notify(
+                $admin,
+                \App\Entity\Notification::TYPE_MODIFICATION_PENDING,
+                sprintf(
+                    'Modification Google en attente : %s (mission #%d)',
+                    $cleaningRequest->getProperty()->getName(),
+                    $cleaningRequest->getId()
+                ),
+                $this->urlGenerator->generate('app_requests_pending')
+            );
+        }
     }
 
     public function googleEventToMission(GoogleEvent $event, CleaningService $defaultService): ?CleaningRequest
