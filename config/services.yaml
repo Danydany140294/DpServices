@@ -42,3 +42,8 @@ services:
             $googleCalendarId: '%env(GOOGLE_CALENDAR_ID)%'
             $googleRefreshToken: '%env(default::GOOGLE_CALENDAR_REFRESH_TOKEN)%'
 
+
+    App\Controller\GoogleWebhookController:
+        arguments:
+            $googleWebhookChannelToken: '%env(default::GOOGLE_WEBHOOK_CHANNEL_TOKEN)%'
+

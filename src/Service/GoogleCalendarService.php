@@ -287,4 +287,49 @@ class GoogleCalendarService
             throw $e;
         }
     }
+
+    /**
+     * TODO PROD — Enregistre un canal de notification "watch" auprès de Google
+     * Calendar, pour recevoir les changements en temps réel via webhook (J33).
+     *
+     * NE PEUT PAS FONCTIONNER EN LOCAL : Google exige une URL de callback en
+     * HTTPS public, jamais http:// ni localhost. Cette méthode n'est appelée
+     * par aucun code actif tant que le domaine de production n'est pas connu.
+     *
+     * Usage prévu une fois déployé (à intégrer dans une commande dédiée,
+     * ex: app:google-webhook-register, exécutée manuellement après déploiement
+     * puis renouvelée automatiquement avant l'expiration à 7 jours) :
+     *
+     *   $channelId = bin2hex(random_bytes(16));
+     *   $channelToken = bin2hex(random_bytes(32)); // à stocker dans .env.local
+     *   $googleCalendarService->watch(
+     *       $channelId,
+     *       $channelToken,
+     *       'https://votre-domaine.fr/webhook/google-calendar'
+     *   );
+     *
+     * @return array{id: string, expiration: string} Infos du canal créé par Google
+     */
+    public function watch(string $channelId, string $channelToken, string $callbackUrl): array
+    {
+        $calendar = $this->getCalendarService();
+
+        $channel = new \Google\Service\Calendar\Channel();
+        $channel->setId($channelId);
+        $channel->setType('web_hook');
+        $channel->setAddress($callbackUrl);
+        $channel->setToken($channelToken);
+
+        $result = $calendar->events->watch($this->googleCalendarId, $channel);
+
+        $this->logger->info('GoogleCalendarService: canal de notification enregistré', [
+            'channel_id' => $result->getId(),
+            'expiration' => $result->getExpiration(),
+        ]);
+
+        return [
+            'id' => $result->getId(),
+            'expiration' => $result->getExpiration(),
+        ];
+    }
 }
