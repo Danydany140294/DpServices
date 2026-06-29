@@ -209,8 +209,9 @@ class CleaningRequestController extends AbstractController
             $cleaningRequest->setStatus('CANCELLED');
             $em->flush();
 
-            // J34 : suppression croisée -> l'annulation côté app supprime l'event Google.
-            $this->googleSyncService->pushDelete($cleaningRequest);
+            if ($cleaningRequest->getAssignedCleaner()) {
+                $this->notificationService->notifyMissionCancelled($cleaningRequest->getAssignedCleaner(), $cleaningRequest);
+            }
 
             $this->logger->log('Demande annulée', $cleaningRequest->getProperty()->getName() . ' — ' . $cleaningRequest->getScheduledDate()->format('d/m/Y'));
             $this->addFlash('success', 'Demande annulée.');

@@ -65,4 +65,30 @@ class NotificationService
             ]);
         }
     }
+
+    /**
+     * J39/J40 : notifie le salarié assigné qu'une mission est annulée,
+     * en notification in-app ET par SMS (même logique que J37).
+     */
+    public function notifyMissionCancelled(User $cleaner, CleaningRequest $cleaningRequest): void
+    {
+        $message = sprintf(
+            'Mission annulée : %s le %s à %s',
+            $cleaningRequest->getProperty()->getName(),
+            $cleaningRequest->getScheduledDate()->format('d/m/Y'),
+            $cleaningRequest->getScheduledTime()->format('H:i')
+        );
+
+        $this->notify($cleaner, Notification::TYPE_MISSION_CANCELLED, $message);
+
+        try {
+            $this->cleanerSmsService->sendSms($cleaner, $message);
+        } catch (\Throwable $e) {
+            $this->logger->warning('NotificationService: échec envoi SMS mission annulée (notification in-app envoyée malgré tout)', [
+                'cleaner_id' => $cleaner->getId(),
+                'cleaning_request_id' => $cleaningRequest->getId(),
+                'exception' => $e->getMessage(),
+            ]);
+        }
+    }
 }
