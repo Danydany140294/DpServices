@@ -12,6 +12,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Doctrine\ORM\EntityManagerInterface;
 
+
 class CalendarController extends AbstractController
 {
     #[Route('/calendar', name: 'app_calendar')]
@@ -145,4 +146,27 @@ public function moveEvent(
 
     return $this->json(['success' => true]);
 }
+
+#[Route('/api/calendar/events/{id}/open', name: 'app_calendar_event_open', methods: ['POST'])]
+    #[IsGranted('ROLE_USER')]
+    public function markOpened(int $id, CleaningRequestRepository $repo, EntityManagerInterface $em): JsonResponse
+    {
+        $cleaningRequest = $repo->find($id);
+
+        if ($cleaningRequest === null) {
+            return $this->json(['success' => false], 404);
+        }
+
+        // Ne marque "ouvert" que si c'est bien le salarié assigné qui consulte.
+        if (!$this->isGranted('ROLE_CLEANER') || $cleaningRequest->getAssignedCleaner()?->getId() !== $this->getUser()->getId()) {
+            return $this->json(['success' => true, 'skipped' => true]);
+        }
+
+        if ($cleaningRequest->getOpenedAt() === null) {
+            $cleaningRequest->setOpenedAt(new \DateTime());
+            $em->flush();
+        }
+
+        return $this->json(['success' => true]);
+    }
 }

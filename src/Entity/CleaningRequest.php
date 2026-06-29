@@ -68,6 +68,9 @@ class CleaningRequest
     #[ORM\Column(options: ['default' => false])]
     private bool $syncInProgress = false;
 
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTime $openedAt = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -261,6 +264,18 @@ class CleaningRequest
     public function setSyncInProgress(bool $syncInProgress): static
     {
         $this->syncInProgress = $syncInProgress;
+
+        return $this;
+    }
+
+    public function getOpenedAt(): ?\DateTime
+    {
+        return $this->openedAt;
+    }
+
+    public function setOpenedAt(?\DateTime $openedAt): static
+    {
+        $this->openedAt = $openedAt;
 
         return $this;
     }
