@@ -45,6 +45,10 @@
             <a href="{{ path('app_cleaner') }}" {% if app.request.get('_route') == 'app_cleaner' %}class="active"{% endif %}><i class="fa-solid fa-broom"></i> Mes missions</a>
             <a href="{{ path('app_calendar') }}" {% if app.request.get('_route') == 'app_calendar' %}class="active"{% endif %}><i class="fa-solid fa-calendar-days"></i> Calendrier</a>
         {% endif %}
+
+        <button id="pwa-install-btn" type="button" style="display:none; margin-top:auto; background:none; border:none; cursor:pointer; width:100%; text-align:left; padding:12px 16px; color:inherit; font:inherit; display:flex; align-items:center; gap:10px;">
+            <i class="fa-solid fa-download"></i> Installer l'app
+        </button>
     </aside>
 
     <div class="main">
@@ -61,6 +65,8 @@
             </div>
 
             <div class="topbar-actions">
+               
+
                 {# -- Cloche de notifications (J37-J41) -- #}
                 <div class="topbar-notif-wrapper">
                     <button class="topbar-icon-btn" type="button" aria-label="Notifications" onclick="document.getElementById('notif-dropdown').classList.toggle('is-open')">
@@ -143,7 +149,37 @@
                 });
             });
         }
+
+        let deferredPrompt;
+        const installBtn = document.getElementById('pwa-install-btn');
+
+        window.addEventListener('beforeinstallprompt', function (event) {
+            event.preventDefault();
+            deferredPrompt = event;
+            if (installBtn) {
+                installBtn.style.display = 'flex';
+            }
+        });
+
+        if (installBtn) {
+            installBtn.addEventListener('click', function () {
+                if (!deferredPrompt) return;
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then(function () {
+                    deferredPrompt = null;
+                    installBtn.style.display = 'none';
+                });
+            });
+        }
+
+        window.addEventListener('appinstalled', function () {
+            if (installBtn) {
+                installBtn.style.display = 'none';
+            }
+        });
     </script>
 
 </body>
+
+
 </html>
