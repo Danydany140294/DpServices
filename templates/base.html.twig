@@ -135,5 +135,15 @@
     {% block javascripts %}{% endblock %}
     {{ encore_entry_script_tags('app') }}
 
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function () {
+                navigator.serviceWorker.register('/sw.js').catch(function (error) {
+                    console.error('Service Worker registration failed:', error);
+                });
+            });
+        }
+    </script>
+
 </body>
 </html>
