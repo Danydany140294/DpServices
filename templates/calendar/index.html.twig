@@ -38,4 +38,20 @@
 
     <div id="calendar"></div>
 
+
+    <div id="mission-modal" class="mission-modal-overlay" style="display:none;">
+        <div class="mission-modal">
+            <button type="button" class="mission-modal-close" onclick="closeMissionModal()">&times;</button>
+            <h2 id="mission-modal-property"></h2>
+            <div class="mission-modal-row"><strong>Prestation :</strong> <span id="mission-modal-service"></span></div>
+            <div class="mission-modal-row"><strong>Date :</strong> <span id="mission-modal-date"></span></div>
+            <div class="mission-modal-row"><strong>Heure :</strong> <span id="mission-modal-time"></span></div>
+            <div class="mission-modal-row"><strong>Statut :</strong> <span id="mission-modal-status"></span></div>
+            <div class="mission-modal-row"><strong>FdM :</strong> <span id="mission-modal-cleaner"></span></div>
+            <div class="mission-modal-row" id="mission-modal-comment-row" style="display:none;">
+                <strong>Commentaire :</strong> <span id="mission-modal-comment"></span>
+            </div>
+        </div>
+    </div>
+
 {% endblock %}

@@ -169,4 +169,40 @@ public function moveEvent(
 
         return $this->json(['success' => true]);
     }
+
+    #[Route('/api/calendar/events/{id}/details', name: 'app_calendar_event_details', methods: ['GET'])]
+    #[IsGranted('ROLE_USER')]
+    public function eventDetails(int $id, CleaningRequestRepository $repo): JsonResponse
+    {
+        $cleaningRequest = $repo->find($id);
+
+        if ($cleaningRequest === null) {
+            return $this->json(['error' => 'Mission introuvable'], 404);
+        }
+
+        // Sécurité : un cleaner ne voit que ses missions, un owner que les siennes.
+        if ($this->isGranted('ROLE_CLEANER') && !$this->isGranted('ROLE_ADMIN')) {
+            if (!$cleaningRequest->getAssignedCleaner() || $cleaningRequest->getAssignedCleaner()->getId() !== $this->getUser()->getId()) {
+                return $this->json(['error' => 'Accès refusé'], 403);
+            }
+        }
+        if ($this->isGranted('ROLE_OWNER') && !$this->isGranted('ROLE_ADMIN')) {
+            if ($cleaningRequest->getProperty()->getOwner()->getId() !== $this->getUser()->getId()) {
+                return $this->json(['error' => 'Accès refusé'], 403);
+            }
+        }
+
+        return $this->json([
+            'id' => $cleaningRequest->getId(),
+            'property' => $cleaningRequest->getProperty()->getName(),
+            'service' => $cleaningRequest->getService()->getName(),
+            'date' => $cleaningRequest->getScheduledDate()->format('d/m/Y'),
+            'time' => $cleaningRequest->getScheduledTime()->format('H:i'),
+            'status' => $cleaningRequest->getStatus(),
+            'cleaner' => $cleaningRequest->getAssignedCleaner()
+                ? $cleaningRequest->getAssignedCleaner()->getFirstname() . ' ' . $cleaningRequest->getAssignedCleaner()->getLastname()
+                : null,
+            'comment' => $cleaningRequest->getComment(),
+        ]);
+    }
 }

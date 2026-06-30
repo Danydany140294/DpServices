@@ -45,17 +45,13 @@ document.addEventListener('DOMContentLoaded', function () {
         eventClick: function(info) {
             const eventId = info.event.id;
 
-            if (eventId.startsWith('cr_')) {
-                const realId = eventId.replace('cr_', '');
-                fetch('/api/calendar/events/' + realId + '/open', { method: 'POST' }).catch(() => {});
+            if (!eventId.startsWith('cr_')) {
+                return;
             }
 
-            alert(
-                'Logement : ' + info.event.title + '\n' +
-                'Prestation : ' + info.event.extendedProps.service + '\n' +
-                'Statut : ' + info.event.extendedProps.status + '\n' +
-                'FdM : ' + info.event.extendedProps.cleaner
-            );
+            const realId = eventId.replace('cr_', '');
+            fetch('/api/calendar/events/' + realId + '/open', { method: 'POST' }).catch(() => {});
+            openMissionModal(realId);
         },
         eventDrop: function(info) {
             const eventId = info.event.id;
@@ -101,3 +97,43 @@ window.resetFilters = function() {
     calendar.removeAllEventSources();
     calendar.addEventSource('/api/calendar/events');
 };
+
+window.openMissionModal = function(id) {
+    fetch('/api/calendar/events/' + id + '/details')
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert(data.error);
+                return;
+            }
+            document.getElementById('mission-modal-property').textContent = data.property;
+            document.getElementById('mission-modal-service').textContent = data.service;
+            document.getElementById('mission-modal-date').textContent = data.date;
+            document.getElementById('mission-modal-time').textContent = data.time;
+            document.getElementById('mission-modal-status').textContent = data.status;
+            document.getElementById('mission-modal-cleaner').textContent = data.cleaner || 'Non assigné';
+
+            const commentRow = document.getElementById('mission-modal-comment-row');
+            if (data.comment) {
+                document.getElementById('mission-modal-comment').textContent = data.comment;
+                commentRow.style.display = 'block';
+            } else {
+                commentRow.style.display = 'none';
+            }
+
+            document.getElementById('mission-modal').style.display = 'flex';
+        })
+        .catch(() => alert('Impossible de charger les détails de la mission.'));
+};
+
+window.closeMissionModal = function() {
+    document.getElementById('mission-modal').style.display = 'none';
+};
+
+document.addEventListener('DOMContentLoaded', function () {
+    const params = new URLSearchParams(window.location.search);
+    const missionId = params.get('mission');
+    if (missionId) {
+        openMissionModal(missionId);
+    }
+});

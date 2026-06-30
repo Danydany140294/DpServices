@@ -3232,3 +3232,18 @@ form .invalid-feedback {
     padding: 0.6rem 1rem;
     font-size: 0.85rem;
 }
+
+.mission-modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+            display: flex; align-items: center; justify-content: center; z-index: 1000;
+        }
+        .mission-modal {
+            background: #fff; border-radius: 12px; padding: 24px; max-width: 420px; width: 90%;
+            position: relative; box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        .mission-modal-close {
+            position: absolute; top: 12px; right: 16px; background: none; border: none;
+            font-size: 24px; cursor: pointer; color: #888;
+        }
+        .mission-modal h2 { margin: 0 0 16px; font-size: 20px; color: #1a1a1a; }
+        .mission-modal-row { margin-bottom: 8px; font-size: 14px; color: #1a1a1a; }
