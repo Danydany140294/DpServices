@@ -9,7 +9,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cormorant+Garamond:wght@600&display=swap" rel="stylesheet">
-
+    <link rel="manifest" href="{{ asset('manifest.json') }}">
+    <meta name="theme-color" content="#2C1810">
     {# Font Awesome (icônes sidebar/topbar) #}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
@@ -23,7 +24,7 @@
 
     <aside class="sidebar">
         <div class="sidebar-logo">
-            <img src="{{ asset('assets/images/LOGO.jpg') }}" alt="DP Services Sud">
+            <img src="{{ asset('assets/images/logologo.png') }}" alt="DP Services Sud">
         </div>
 
         {% if is_granted('ROLE_ADMIN') %}
