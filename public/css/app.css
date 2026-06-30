@@ -3247,3 +3247,174 @@ form .invalid-feedback {
         }
         .mission-modal h2 { margin: 0 0 16px; font-size: 20px; color: #1a1a1a; }
         .mission-modal-row { margin-bottom: 8px; font-size: 14px; color: #1a1a1a; }
+
+
+        /* ==========================================================================
+   28. RESPONSIVE — MOBILE (J48)
+   Ajustements globaux pour petits écrans (<768px), sans modifier les
+   classes existantes : sidebar transformée en bottom-nav, tableaux
+   scrollables horizontalement, topbar compactée, modal pleine largeur.
+   ========================================================================== */
+
+@media (max-width: 768px) {
+
+    /* -- Layout général : sidebar passe en barre fixe en bas d'écran -- */
+    .app-layout {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding: 8px 4px;
+        gap: 0;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 200;
+        border-right: none;
+        border-top: 1px solid var(--border);
+    }
+
+    .sidebar-logo {
+        display: none;
+    }
+
+    .sidebar a {
+        flex-direction: column;
+        gap: 2px;
+        margin: 0 2px;
+        padding: 6px 8px;
+        font-size: 10px;
+        white-space: nowrap;
+    }
+
+    .sidebar a i {
+        font-size: 16px;
+    }
+
+    .sidebar a.active::before {
+        display: none;
+    }
+
+    /* Laisse la place pour la sidebar fixe en bas */
+    .main {
+        padding-bottom: 64px;
+    }
+
+    /* -- Topbar : empile titre/recherche/actions au lieu de tout aligner -- */
+    .topbar {
+        flex-wrap: wrap;
+        padding: 12px 16px;
+        gap: 10px;
+    }
+
+    .topbar-search {
+        order: 3;
+        max-width: 100%;
+        margin: 0;
+        flex-basis: 100%;
+    }
+
+    .topbar-actions {
+        gap: 8px;
+    }
+
+    .topbar-cta span,
+    .topbar-cta {
+        font-size: 12px;
+        padding: 8px 12px;
+    }
+
+    .topbar-user-info {
+        display: none;
+    }
+
+    .content {
+        padding: 1rem;
+    }
+
+    /* -- Tableaux : scroll horizontal plutôt que débordement cassé -- */
+    .data-table,
+    .devis-table,
+    .table-wrapper,
+    .devis-table-wrapper {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    /* -- Grilles à 2 colonnes -> 1 colonne -- */
+    .info-grid,
+    .lead-detail__grid,
+    .dash-row--legacy,
+    .grid-split {
+        grid-template-columns: 1fr !important;
+    }
+
+    .lead-detail__timeline {
+        grid-column: auto;
+    }
+
+    /* -- Filtres calendrier : empilés verticalement -- */
+    .filters,
+    .filters__form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .filters select,
+    .filters button,
+    .filters__reset {
+        width: 100%;
+    }
+
+    /* -- Modal fiche mission : pleine largeur, padding réduit -- */
+    .mission-modal {
+        max-width: calc(100% - 32px);
+        padding: 18px;
+        max-height: 85vh;
+        overflow-y: auto;
+    }
+
+    /* -- Dropdown notifications : pleine largeur sur mobile -- */
+    .topbar-notif-dropdown {
+        position: fixed;
+        top: 64px;
+        left: 8px;
+        right: 8px;
+        width: auto;
+    }
+
+    /* -- KPI dashboard : 1 colonne -- */
+    .dash-kpis,
+    .cards,
+    .grid-auto,
+    .card-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* -- Calendrier dashboard : cache la grille horaire dense sur mobile -- */
+    .dash-cal-days {
+        grid-template-columns: 36px repeat(7, minmax(28px, 1fr));
+        font-size: 9px;
+    }
+}
+
+@media (max-width: 480px) {
+    .sidebar a span,
+    .sidebar a {
+        font-size: 9px;
+    }
+
+    .topbar-title {
+        font-size: 1rem;
+    }
+
+    .mission-modal h2 {
+        font-size: 17px;
+    }
+}
