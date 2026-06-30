@@ -132,13 +132,16 @@ class CleaningRequestController extends AbstractController
         $form = $this->createForm(CleaningRequestType::class, $cleaningRequest, ['cleaners' => $cleaners]);
         $form->handleRequest($request);
 
-       if ($form->isSubmitted() && $form->isValid()) {
+        if ($form->isSubmitted() && $form->isValid()) {
             $em->persist($cleaningRequest);
             $em->flush();
 
             $this->googleSyncService->pushCreate($cleaningRequest);
 
             if ($cleaningRequest->getAssignedCleaner()) {
+                $cleaningRequest->setAssignedAt(new \DateTime());
+                $em->flush();
+
                 $this->notificationService->notifyMissionAssigned(
                     $cleaningRequest->getAssignedCleaner(),
                     $cleaningRequest,

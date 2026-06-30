@@ -249,6 +249,7 @@ class GoogleSyncService
         $cleaner = $this->sectorAssignmentService->findCleanerForProperty($property);
         if ($cleaner !== null) {
             $cleaningRequest->setAssignedCleaner($cleaner);
+            $cleaningRequest->setAssignedAt(new \DateTime());
         }
 
         return $cleaningRequest;

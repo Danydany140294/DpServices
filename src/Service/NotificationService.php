@@ -91,4 +91,30 @@ class NotificationService
             ]);
         }
     }
+
+    /**
+     * J41 : notifie (in-app + SMS) un salarié qu'une mission lui a été
+     * assignée depuis plus de 6h sans qu'il l'ait consultée.
+     */
+    public function notifyMissionReminder(User $cleaner, CleaningRequest $cleaningRequest): void
+    {
+        $message = sprintf(
+            'Rappel : mission non consultée — %s le %s à %s',
+            $cleaningRequest->getProperty()->getName(),
+            $cleaningRequest->getScheduledDate()->format('d/m/Y'),
+            $cleaningRequest->getScheduledTime()->format('H:i')
+        );
+
+        $this->notify($cleaner, Notification::TYPE_MISSION_REMINDER, $message);
+
+        try {
+            $this->cleanerSmsService->sendSms($cleaner, $message);
+        } catch (\Throwable $e) {
+            $this->logger->warning('NotificationService: échec envoi SMS relance mission (notification in-app envoyée malgré tout)', [
+                'cleaner_id' => $cleaner->getId(),
+                'cleaning_request_id' => $cleaningRequest->getId(),
+                'exception' => $e->getMessage(),
+            ]);
+        }
+    }
 }

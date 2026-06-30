@@ -71,6 +71,12 @@ class CleaningRequest
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTime $openedAt = null;
 
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTime $assignedAt = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTime $reminderSentAt = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -279,4 +285,29 @@ class CleaningRequest
 
         return $this;
     }
+
+    public function getAssignedAt(): ?\DateTime
+    {
+        return $this->assignedAt;
+    }
+
+    public function setAssignedAt(?\DateTime $assignedAt): static
+    {
+        $this->assignedAt = $assignedAt;
+
+        return $this;
+    }
+
+    public function getReminderSentAt(): ?\DateTime
+    {
+        return $this->reminderSentAt;
+    }
+
+    public function setReminderSentAt(?\DateTime $reminderSentAt): static
+    {
+        $this->reminderSentAt = $reminderSentAt;
+
+        return $this;
+    }
 }
+
