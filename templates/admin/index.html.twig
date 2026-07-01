@@ -61,13 +61,13 @@
 
         {# -- Mini calendrier de la semaine --
            ⚠️ CONTROLLER : `jours` doit être un tableau de 7 entrées
-           [{ code: 'LUN', num: 19, active: false }, ...] représentant
-           la semaine en cours (ex: généré via une boucle sur
-           CarbonPeriod ou DateTime dans le controller).
-           `evenements` : missions/réservations du calendrier existant
-           (probablement déjà en base pour FullCalendar — à transformer
-           ici en version mini : [{ day: 0..6, top: <% position>,
-           tone: 'gold'|'teal', title: '...', place: '...' }]). -- #}
+           [{ code: 'LUN', num: 19, active: false, overflow: false }, ...]
+           représentant la semaine en cours.
+           `evenements` : [{ day: 0..6, mode: 'positioned'|'stacked',
+           top: <% position>, tone: 'gold'|'teal', title: '...',
+           place: '...' (seulement en mode positioned) }].
+           `missionsDebordantes` : détail des jours ayant 4+ missions,
+           affiché sous la grille plutôt que dans les cases du calendrier. -- #}
         <div class="card">
             <div class="dash-card-head">
                 <h3>Calendrier <span class="dim">— Aperçu de la semaine</span></h3>
@@ -85,6 +85,9 @@
                     <div class="dash-cal-day{% if j.active|default(false) %} active{% endif %}">
                         <div class="dn">{{ j.code }}</div>
                         <div class="num">{{ j.num }}</div>
+                        {% if j.overflow|default(false) %}
+                            <div style="width:5px;height:5px;border-radius:50%;background:var(--gold);margin:3px auto 0;"></div>
+                        {% endif %}
                     </div>
                 {% endfor %}
             </div>
@@ -101,16 +104,39 @@
                         <div class="dash-cal-col">
                             {% for e in evenementsList %}
                                 {% if e.day == col %}
-                                    <div class="dash-event {{ e.tone }}" style="top:{{ e.top }}%">
-                                        <div class="t">{{ e.title }}</div>
-                                        <div class="p">{{ e.place }}</div>
-                                    </div>
+                                    {% if e.mode == 'stacked' %}
+                                        <div class="dash-event dash-event--stacked {{ e.tone }}" style="top:{{ e.top }}%;">
+                                            <div class="t">{{ e.title }}</div>
+                                        </div>
+                                    {% else %}
+                                        <div class="dash-event {{ e.tone }}" style="top:{{ e.top }}%;">
+                                            <div class="t">{{ e.title }}</div>
+                                            <div class="p">{{ e.place }}</div>
+                                        </div>
+                                    {% endif %}
                                 {% endif %}
                             {% endfor %}
                         </div>
                     {% endfor %}
                 </div>
             </div>
+
+            {% if missionsDebordantes|default([])|length > 0 %}
+                <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border-soft);">
+                    <div style="font-size:11px;color:var(--text-dim);margin-bottom:8px;">Missions supplémentaires (4+ le même jour)</div>
+                    <div style="display:flex;flex-direction:column;gap:6px;">
+                        {% for m in missionsDebordantes %}
+                            <div style="display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text);">
+                                <span style="width:6px;height:6px;border-radius:50%;background:{{ m.tone == 'gold' ? 'var(--gold)' : 'var(--teal-accent)' }};flex-shrink:0;"></span>
+                                <span style="color:var(--text-dim);min-width:32px;">{{ m.dayLabel }}</span>
+                                <span style="color:var(--text-dim);">{{ m.time }}</span>
+                                <span>{{ m.title }}</span>
+                                <span style="color:var(--text-dim);">— {{ m.place }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
         </div>
 
         {# -- Demandes à valider -- #}

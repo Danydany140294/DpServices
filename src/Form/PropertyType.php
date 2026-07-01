@@ -7,7 +7,6 @@ use App\Entity\User;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
-use Symfony\Component\Form\Extension\Core\Type\ColorType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -26,18 +25,41 @@ class PropertyType extends AbstractType
                 'label' => 'Ville',
                 'constraints' => [new NotBlank()],
             ])
-            ->add('color', ColorType::class, [
+            ->add('color', ChoiceType::class, [
                 'label' => 'Couleur',
+                'expanded' => true,
+                'multiple' => false,
+                'constraints' => [new NotBlank()],
+                // Palette figée sur les 11 couleurs officielles d'événement
+                // Google Calendar (colorId 1 à 11), pour garantir une
+                // correspondance exacte avec l'event poussé dans Google
+                // Agenda (voir GoogleCalendarService::resolveGoogleColorId).
+                'choices' => [
+                    'Lavande' => '#7986cb',
+                    'Sauge' => '#33b679',
+                    'Raisin' => '#8e24aa',
+                    'Flamant' => '#e67c73',
+                    'Banane' => '#f6bf26',
+                    'Mandarine' => '#f4511e',
+                    'Paon' => '#039be5',
+                    'Graphite' => '#616161',
+                    'Myrtille' => '#3f51b5',
+                    'Basilic' => '#0b8043',
+                    'Tomate' => '#d50000',
+                ],
+                'choice_attr' => function (?string $choiceValue) {
+                    return $choiceValue !== null ? ['data-color' => $choiceValue] : [];
+                },
             ])
             ->add('sector', ChoiceType::class, [
-    'label' => 'Secteur',
-    'required' => false,
-    'placeholder' => 'Choisir un secteur',
-    'choices' => [
-        'Montpellier' => 'montpellier',
-        'Nîmes' => 'nimes',
-    ],
-])
+                'label' => 'Secteur',
+                'required' => false,
+                'placeholder' => 'Choisir un secteur',
+                'choices' => [
+                    'Montpellier' => 'montpellier',
+                    'Nîmes' => 'nimes',
+                ],
+            ])
             ->add('owner', EntityType::class, [
                 'class' => User::class,
                 'label' => 'Propriétaire',

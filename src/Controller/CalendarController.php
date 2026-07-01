@@ -67,17 +67,19 @@ public function events(CleaningRequestRepository $repo, \App\Repository\LeadRepo
         }
 
         $events[] = [
-            'id' => 'cr_' . $req->getId(),
-            'title' => $req->getProperty()->getName(),
-            'start' => $req->getScheduledDate()->format('Y-m-d') . 'T' . $req->getScheduledTime()->format('H:i:s'),
-            'backgroundColor' => $req->getProperty()->getColor(),
-            'borderColor' => $req->getProperty()->getColor(),
-            'extendedProps' => [
-                'status' => $req->getStatus(),
-                'service' => $req->getService()->getName(),
-                'cleaner' => $req->getAssignedCleaner() ? $req->getAssignedCleaner()->getFirstname() . ' ' . $req->getAssignedCleaner()->getLastname() : 'Non assigné',
-            ],
-        ];
+    'id' => 'cr_' . $req->getId(),
+    'title' => $req->getProperty()->getName(),
+    'start' => $req->getScheduledDate()->format('Y-m-d') . 'T' . $req->getScheduledTime()->format('H:i:s'),
+    // Style désormais géré en CSS via la classe fc-status-* (voir app.css) :
+    // couleur du logement remplacée par une couleur liée au statut, plus
+    // parlante pour l'admin (en attente / confirmée / annulée...).
+    'classNames' => ['fc-mission-event', 'fc-status-' . strtolower($req->getStatus())],
+    'extendedProps' => [
+        'status' => $req->getStatus(),
+        'service' => $req->getService()->getName(),
+        'cleaner' => $req->getAssignedCleaner() ? $req->getAssignedCleaner()->getFirstname() . ' ' . $req->getAssignedCleaner()->getLastname() : 'Non assigné',
+    ],
+];
     }
 
     // J59 — Rappels de prospection (uniquement visibles par l'admin)

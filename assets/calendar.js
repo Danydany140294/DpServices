@@ -35,6 +35,10 @@ document.addEventListener('DOMContentLoaded', function () {
         plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
         initialView: 'dayGridMonth',
         locale: 'fr',
+         height: 1100,
+        dayMaxEvents: 2,
+        eventDisplay: 'block',
+        eventTimeFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
         headerToolbar: {
             left: 'prev,next today',
             center: 'title',

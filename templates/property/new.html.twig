@@ -17,4 +17,10 @@
     <a href="{{ path('app_properties') }}" class="text-secondary text-secondary--spaced">Annuler</a>
 {{ form_end(form) }}
     </div>
+
+    <script>
+        document.querySelectorAll('#property_color input[data-color]').forEach(function (input) {
+            input.style.setProperty('--swatch-color', input.dataset.color);
+        });
+    </script>
 {% endblock %}

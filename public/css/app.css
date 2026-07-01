@@ -898,10 +898,109 @@ a {
    non accessible/ajustable depuis app.css — un fond foncé rendrait ce
    texte généré par la librairie illisible. -- */
 #calendar {
-    background: #F5F0E1;
+    --fc-border-color: rgba(245, 240, 225, 0.08);
+    --fc-page-bg-color: var(--bg);
+    --fc-neutral-bg-color: var(--card-alt);
+    --fc-list-event-hover-bg-color: var(--card-2);
+    --fc-today-bg-color: rgba(232, 184, 74, 0.08);
+    --fc-now-indicator-color: var(--gold);
+    --fc-event-border-color: transparent;
+
+    background: var(--card-alt);
     padding: 1.5rem;
-    border-radius: 8px;
+    border-radius: var(--radius-lg);
     box-shadow: var(--shadow-soft);
+    color: var(--text);
+}
+
+#calendar .fc-col-header-cell,
+#calendar .fc-daygrid-day-number,
+#calendar .fc-timegrid-slot-label,
+#calendar .fc-list-day-text,
+#calendar .fc-list-day-side-text {
+    color: var(--text);
+}
+
+#calendar .fc-day-today {
+    background: rgba(232, 184, 74, 0.08) !important;
+}
+
+#calendar .fc-button {
+    background: var(--card-2) !important;
+    border: 1px solid var(--border-soft) !important;
+    color: var(--text) !important;
+    box-shadow: none !important;
+    text-transform: capitalize;
+}
+
+#calendar .fc-button:hover {
+    background: var(--gold-soft) !important;
+    color: var(--gold) !important;
+}
+
+#calendar .fc-button-active {
+    background: var(--gold) !important;
+    color: var(--bg) !important;
+}
+
+#calendar .fc-toolbar-title {
+    color: var(--gold-strong);
+    font-size: 1.1rem;
+}
+
+#calendar a {
+    color: var(--text);
+}
+
+/* -- Chips d'événements colorés par statut (remplace le point rouge par
+      défaut de FullCalendar, activé via eventDisplay: 'block' côté JS) -- */
+#calendar .fc-mission-event {
+    background: transparent !important;
+    border: none !important;
+    margin-bottom: 2px !important;
+}
+
+#calendar .fc-mission-event .fc-event-main {
+    padding: 2px 6px;
+    border-radius: 5px;
+    font-size: 10px;
+    line-height: 1.4;
+}
+
+#calendar .fc-mission-event .fc-event-time {
+    font-weight: 600;
+    margin-right: 4px;
+}
+
+#calendar .fc-mission-event.fc-status-pending .fc-event-main {
+    background: rgba(232, 184, 74, 0.18);
+    color: #F0C868;
+}
+
+#calendar .fc-mission-event.fc-status-validated .fc-event-main,
+#calendar .fc-mission-event.fc-status-completed .fc-event-main {
+    background: rgba(45, 212, 191, 0.18);
+    color: #7EE7D8;
+}
+
+#calendar .fc-mission-event.fc-status-cancelled .fc-event-main {
+    background: rgba(239, 68, 68, 0.18);
+    color: #f87171;
+}
+
+#calendar .fc-mission-event.fc-status-pending_modification .fc-event-main {
+    background: rgba(249, 115, 22, 0.18);
+    color: #fb923c;
+}
+
+/* -- Lien "+X de plus" (dayMaxEvents), stylé assorti au thème -- */
+#calendar .fc-daygrid-more-link {
+    background: rgba(232, 184, 74, 0.12);
+    color: var(--gold);
+    border-radius: 5px;
+    padding: 2px 6px;
+    font-size: 9px;
+    font-weight: 500;
 }
 
 /* -- Barre de filtres au-dessus du calendrier -- */
@@ -2642,6 +2741,48 @@ form .invalid-feedback {
     margin-top: 0.25rem;
 }
 
+/* -- Sélecteur de couleur en pastilles (palette Google Calendar figée,
+      formulaire logement) -- */
+#property_color {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 4px;
+}
+
+#property_color > div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+#property_color input[type="radio"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    background-color: var(--swatch-color, #888);
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+#property_color input[type="radio"]:hover {
+    transform: scale(1.08);
+}
+
+#property_color input[type="radio"]:checked {
+    border-color: var(--card-alt);
+    box-shadow: 0 0 0 2px var(--gold);
+}
+
+#property_color label {
+    font-size: 10px;
+    color: var(--text-dim);
+    text-align: center;
+}
 
 /* ==========================================================================
    26. PAGE : CONNEXION (login)
@@ -2801,7 +2942,7 @@ form .invalid-feedback {
     margin-bottom: 24px;
 }
 
-.dash-row--3-2 { grid-template-columns: 3fr 2fr; }
+.dash-row--3-2 { grid-template-columns: 2fr 3fr; }
 .dash-row--3   { grid-template-columns: repeat(3, 1fr); }
 
 @media (max-width: 1200px) {
@@ -2961,10 +3102,38 @@ form .invalid-feedback {
     font-size: 10px;
     line-height: 1.3;
     border: 1px solid;
+    overflow: hidden;
+    box-sizing: border-box;
 }
 
 .dash-event .t { font-weight: 600; }
-.dash-event .p { opacity: 0.75; font-size: 9px; }
+.dash-event .p { opacity: 0.75; font-size: 9px;     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; }
+
+.dash-event--compact {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 2px;
+}
+
+.dash-event--compact .t {
+    font-size: 9px;
+    font-weight: 700;
+}
+
+
+.dash-event--stacked {
+    height: 26px;
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+}
+
+.dash-event--stacked .t {
+    font-size: 10px;
+}
 
 .dash-event.gold {
     background: rgba(232, 184, 74, 0.2);

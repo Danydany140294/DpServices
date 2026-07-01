@@ -22,6 +22,20 @@ class GoogleCalendarService
     private GoogleClient $client;
     private ?GoogleCalendar $calendarService = null;
 
+    private const HEX_TO_GOOGLE_COLOR_ID = [
+        '#7986cb' => '1',  // Lavande
+        '#33b679' => '2',  // Sauge
+        '#8e24aa' => '3',  // Raisin
+        '#e67c73' => '4',  // Flamant
+        '#f6bf26' => '5',  // Banane
+        '#f4511e' => '6',  // Mandarine
+        '#039be5' => '7',  // Paon
+        '#616161' => '8',  // Graphite
+        '#3f51b5' => '9',  // Myrtille
+        '#0b8043' => '10', // Basilic
+        '#d50000' => '11', // Tomate
+    ];
+
     public function __construct(
         private readonly string $googleClientId,
         private readonly string $googleClientSecret,
@@ -180,6 +194,15 @@ class GoogleCalendarService
         return sprintf('Ménage %s', $propertyName);
     }
 
+    private function resolveGoogleColorId(?string $hex): ?string
+    {
+        if ($hex === null) {
+            return null;
+        }
+
+        return self::HEX_TO_GOOGLE_COLOR_ID[strtolower($hex)] ?? null;
+    }
+
     /**
      * Construit un objet GoogleEvent (titre, description, horaires) à partir
      * d'une mission Symfony. Durée déduite du CleaningService associé.
@@ -202,6 +225,11 @@ class GoogleCalendarService
         $event = new GoogleEvent();
         $event->setSummary($this->buildEventTitle($cleaningRequest));
         $event->setDescription($cleaningRequest->getComment() ?? '');
+
+        $colorId = $this->resolveGoogleColorId($cleaningRequest->getProperty()?->getColor());
+        if ($colorId !== null) {
+            $event->setColorId($colorId);
+        }
 
         $eventStart = new EventDateTime();
         $eventStart->setDateTime($start->format(\DateTime::RFC3339));
