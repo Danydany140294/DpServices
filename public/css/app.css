@@ -81,6 +81,7 @@
 
 html, body {
     height: 100%;
+    background: var(--bg);
 }
 
 body {
@@ -139,6 +140,17 @@ a {
 .app-layout {
     display: flex;
     min-height: 100vh;
+}
+
+.app-layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Éléments mobiles : cachés par défaut, révélés uniquement en <768px */
+.mobile-topbar,
+.mobile-bottom-nav {
+    display: none;
 }
 
 /* -- Sidebar de navigation -- */
@@ -2942,9 +2954,8 @@ form .invalid-feedback {
     margin-bottom: 24px;
 }
 
-.dash-row--3-2 { grid-template-columns: 2fr 3fr; }
-.dash-row--3   { grid-template-columns: repeat(3, 1fr); }
-
+.dash-row--3-2 { grid-template-columns: 1fr; }
+.dash-row--3   { grid-template-columns: repeat(2, 1fr); }
 @media (max-width: 1200px) {
     .dash-row--3-2,
     .dash-row--3 {
@@ -3334,6 +3345,26 @@ form .invalid-feedback {
 .dash-tl-item:last-child {
     padding-bottom: 0;
 }
+/* Accès rapides devenu solo dans dash-row--legacy : pleine largeur, fin */
+.dash-row--legacy {
+    grid-template-columns: 1fr;
+}
+
+.card-quicklinks {
+    padding: 0.75rem 1rem;
+    margin-bottom: 1.5rem;
+}
+.card-quicklinks .section-title {
+    margin-bottom: 0.6rem;
+    font-size: 0.8rem;
+}
+.card-quicklinks .quick-links {
+    gap: 0.5rem;
+}
+.card-quicklinks .btn-quick {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+}
 
 .dash-tl-item::before {
     content: "";
@@ -3419,62 +3450,98 @@ form .invalid-feedback {
 
 
         /* ==========================================================================
-   28. RESPONSIVE — MOBILE (J48)
-   Ajustements globaux pour petits écrans (<768px), sans modifier les
-   classes existantes : sidebar transformée en bottom-nav, tableaux
-   scrollables horizontalement, topbar compactée, modal pleine largeur.
+ /* ==========================================================================
+   RESPONSIVE MOBILE (<768px)
+   Topbar mobile + Bottom navigation + Ajustements globaux
    ========================================================================== */
 
 @media (max-width: 768px) {
 
-    /* -- Layout général : sidebar passe en barre fixe en bas d'écran -- */
+    /* ==========================
+       Layout général
+    ========================== */
+
     .app-layout {
         flex-direction: column;
     }
 
     .sidebar {
-        width: 100%;
-        flex-direction: row;
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        padding: 8px 4px;
-        gap: 0;
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        z-index: 200;
-        border-right: none;
-        border-top: 1px solid var(--border);
-    }
-
-    .sidebar-logo {
         display: none;
     }
 
-    .sidebar a {
-        flex-direction: column;
-        gap: 2px;
-        margin: 0 2px;
-        padding: 6px 8px;
-        font-size: 10px;
-        white-space: nowrap;
+    .desktop-only {
+        display: none !important;
     }
 
-    .sidebar a i {
-        font-size: 16px;
-    }
-
-    .sidebar a.active::before {
-        display: none;
-    }
-
-    /* Laisse la place pour la sidebar fixe en bas */
     .main {
-        padding-bottom: 64px;
+        padding-top: 0;
+        padding-bottom: 70px;
     }
 
-    /* -- Topbar : empile titre/recherche/actions au lieu de tout aligner -- */
+    .content {
+        padding: 1rem;
+    }
+
+    /* ==========================
+       Topbar mobile
+    ========================== */
+
+    .mobile-topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 16px;
+        background: var(--card);
+        border-bottom: 1px solid var(--border-soft);
+        position: sticky;
+        top: 0;
+        z-index: 300;
+        box-shadow: var(--shadow-soft);
+    }
+
+    .mobile-topbar-logo img {
+        height: 36px;
+        width: auto;
+        border-radius: 6px;
+        object-fit: contain;
+    }
+
+    .mobile-topbar-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .mobile-topbar-btn {
+        position: relative;
+        display: grid;
+        place-items: center;
+        width: 36px;
+        height: 36px;
+        background: var(--card-2);
+        border: 1px solid var(--border-soft);
+        border-radius: 50%;
+        color: var(--text);
+        font-size: 15px;
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+    .mobile-topbar-avatar {
+        display: grid;
+        place-items: center;
+        flex-shrink: 0;
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--gold), #B8862E);
+        color: var(--bg);
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    /* Ancienne topbar desktop */
+
     .topbar {
         flex-wrap: wrap;
         padding: 12px 16px;
@@ -3483,30 +3550,117 @@ form .invalid-feedback {
 
     .topbar-search {
         order: 3;
+        flex-basis: 100%;
         max-width: 100%;
         margin: 0;
-        flex-basis: 100%;
     }
 
     .topbar-actions {
         gap: 8px;
     }
 
-    .topbar-cta span,
-    .topbar-cta {
-        font-size: 12px;
-        padding: 8px 12px;
+    .topbar-user-info,
+    .topbar-cta,
+    #notif-dropdown-desktop {
+        display: none !important;
     }
 
-    .topbar-user-info {
-        display: none;
+    /* Notifications */
+
+    .topbar-notif-dropdown,
+    .mobile-topbar .topbar-notif-dropdown {
+        position: fixed;
+        top: 64px;
+        left: 8px;
+        right: 8px;
+        width: auto;
+        z-index: 400;
     }
 
-    .content {
-        padding: 1rem;
+    /* ==========================
+       Bottom navigation
+    ========================== */
+
+    .mobile-bottom-nav {
+        display: flex;
+        align-items: stretch;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 64px;
+        background: var(--card);
+        border-top: 1px solid var(--border);
+        box-shadow: 0 -4px 20px rgba(0,0,0,.2);
+        z-index: 300;
     }
 
-    /* -- Tableaux : scroll horizontal plutôt que débordement cassé -- */
+    .mobile-bottom-nav a,
+    .mobile-bottom-nav button {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        padding: 6px 4px;
+        background: none;
+        border: none;
+        color: var(--text-dim);
+        font: inherit;
+        font-size: 10px;
+        font-weight: 500;
+        text-decoration: none;
+        cursor: pointer;
+        transition: color .2s;
+        position: relative;
+    }
+
+    .mobile-bottom-nav a i,
+    .mobile-bottom-nav button i {
+        font-size: 18px;
+        margin-bottom: 1px;
+    }
+
+    .mobile-bottom-nav a.active,
+    .mobile-bottom-nav a.active i {
+        color: var(--gold);
+    }
+
+    .mobile-bottom-nav a.active::after {
+        content: "";
+        position: absolute;
+        bottom: 6px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background: var(--gold);
+    }
+
+    .mobile-nav-pwa {
+        flex: 0 0 52px !important;
+        padding: 6px 8px !important;
+        background: var(--gold-soft) !important;
+        border-left: 1px solid var(--border-soft) !important;
+        border-radius: 0 !important;
+        color: var(--gold) !important;
+    }
+
+    .mobile-nav-pwa i,
+    .mobile-nav-pwa span {
+        color: var(--gold) !important;
+    }
+
+    .mobile-nav-pwa span {
+        font-size: 9px !important;
+    }
+
+    /* ==========================
+       Tableaux
+    ========================== */
+
     .data-table,
     .devis-table,
     .table-wrapper,
@@ -3516,19 +3670,119 @@ form .invalid-feedback {
         white-space: nowrap;
     }
 
-    /* -- Grilles à 2 colonnes -> 1 colonne -- */
+    /* ==========================
+       Grilles
+    ========================== */
+
     .info-grid,
     .lead-detail__grid,
-    .dash-row--legacy,
-    .grid-split {
+    .grid-split,
+    .cards,
+    .card-grid {
         grid-template-columns: 1fr !important;
+    }
+
+    .dash-kpis,
+    .grid-auto,
+    .dash-row--3 {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+    }
+
+    .dash-row--legacy {
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+    }
+
+    /* Cartes KPI : padding et police réduits pour tenir en 2 colonnes */
+    .dash-kpi {
+        padding: 14px 12px;
+    }
+    .dash-kpi-icon {
+        height: 34px;
+        width: 34px;
+        margin-bottom: 10px;
+        font-size: 15px;
+    }
+    .dash-kpi-value {
+        font-size: 22px;
+    }
+    .dash-kpi-label {
+        font-size: 11px;
+    }
+
+    /* Statuts des demandes : pastilles resserrées */
+    .status-pill {
+        padding: 0.6rem;
+    }
+    .status-pill__value {
+        font-size: 1.3rem;
+    }
+    .status-pill__label {
+        font-size: 0.75rem;
+    }
+
+       /* Statuts des demandes : 4 carrés cote à cote */
+   .status-grid {
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 8px !important;
+    }
+     .status-grid .status-pill {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 0.75rem 0.4rem;
+        min-height: 78px;
+        text-align: center;
+    }
+    .status-grid .status-pill__value {
+        font-size: 1.15rem;
+        line-height: 1.2;
+    }
+     .status-grid .status-pill__label {
+        font-size: 0.62rem;
+        line-height: 1.3;
+        margin-top: 4px;
+    }
+
+    .card.card-quicklinks {
+    display: none !important;
+}
+    /* Missions assignées / Messages : on masque l'heure et le statut,
+       trop serrés en 2 colonnes — le nom + sous-titre suffisent */
+    .dash-row--3 .dash-ri-time,
+    .dash-row--3 .dash-pill,
+    .dash-row--3 .dash-unread {
+        display: none;
+    }
+    .dash-row--3 .dash-ri-name,
+    .dash-row--3 .dash-ri-sub {
+        white-space: normal;
+    }
+
+    .dash-row--3 .dash-li-time,
+    .dash-row--3 .dash-btn-validate {
+        display: none;
+    }
+
+    /* Historique : timeline resserrée */
+    .dash-tl-title {
+        font-size: 12px;
+    }
+    .dash-tl-desc,
+    .dash-tl-time {
+        font-size: 10px;
     }
 
     .lead-detail__timeline {
         grid-column: auto;
     }
 
-    /* -- Filtres calendrier : empilés verticalement -- */
+    /* ==========================
+       Filtres
+    ========================== */
+
     .filters,
     .filters__form {
         flex-direction: column;
@@ -3541,43 +3795,32 @@ form .invalid-feedback {
         width: 100%;
     }
 
-    /* -- Modal fiche mission : pleine largeur, padding réduit -- */
+    /* ==========================
+       Modal mission
+    ========================== */
+
     .mission-modal {
         max-width: calc(100% - 32px);
-        padding: 18px;
         max-height: 85vh;
+        padding: 18px;
         overflow-y: auto;
     }
 
-    /* -- Dropdown notifications : pleine largeur sur mobile -- */
-    .topbar-notif-dropdown {
-        position: fixed;
-        top: 64px;
-        left: 8px;
-        right: 8px;
-        width: auto;
-    }
+    /* ==========================
+       Dashboard calendrier
+    ========================== */
 
-    /* -- KPI dashboard : 1 colonne -- */
-    .dash-kpis,
-    .cards,
-    .grid-auto,
-    .card-grid {
-        grid-template-columns: 1fr;
-    }
-
-    /* -- Calendrier dashboard : cache la grille horaire dense sur mobile -- */
     .dash-cal-days {
         grid-template-columns: 36px repeat(7, minmax(28px, 1fr));
         font-size: 9px;
     }
 }
 
+/* ==========================================================================
+   Très petits écrans
+   ========================================================================== */
+
 @media (max-width: 480px) {
-    .sidebar a span,
-    .sidebar a {
-        font-size: 9px;
-    }
 
     .topbar-title {
         font-size: 1rem;
@@ -3585,5 +3828,10 @@ form .invalid-feedback {
 
     .mission-modal h2 {
         font-size: 17px;
+    }
+
+    .mobile-bottom-nav a,
+    .mobile-bottom-nav span {
+        font-size: 9px;
     }
 }

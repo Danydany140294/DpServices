@@ -29,7 +29,7 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
  */
 class GoogleSyncService
 {
-    private const DEFAULT_SERVICE_ID = 3; // "Ménage simple"
+    private const DEFAULT_SERVICE_NAME = 'Ménage simple';
 
     public function __construct(
         private readonly GoogleCalendarService $googleCalendarService,
@@ -48,13 +48,13 @@ class GoogleSyncService
     {
         $stats = ['created' => 0, 'skipped' => 0, 'errors' => 0, 'deleted' => 0];
 
-        $defaultService = $this->cleaningServiceRepository->find(self::DEFAULT_SERVICE_ID);
-        if ($defaultService === null) {
-            throw new \RuntimeException(sprintf(
-                'CleaningService par défaut (id=%d) introuvable en base. Vérifiez la table cleaning_service.',
-                self::DEFAULT_SERVICE_ID
-            ));
-        }
+        $defaultService = $this->cleaningServiceRepository->findOneBy(['name' => self::DEFAULT_SERVICE_NAME]);
+if ($defaultService === null) {
+    throw new \RuntimeException(sprintf(
+        'CleaningService par défaut ("%s") introuvable en base. Créez-le via la page Prestations avant de lancer la sync.',
+        self::DEFAULT_SERVICE_NAME
+    ));
+}
 
         $events = $this->googleCalendarService->listEvents($timeMin, $timeMax);
 

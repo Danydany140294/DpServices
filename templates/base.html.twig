@@ -5,30 +5,70 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}DP Services{% endblock %}</title>
 
-    {# Polices : Inter (texte courant) + Cormorant Garamond (logo sidebar) #}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cormorant+Garamond:wght@600&display=swap" rel="stylesheet">
     <link rel="manifest" href="{{ asset('manifest.json') }}">
-    <meta name="theme-color" content="#2C1810">
-    {# Font Awesome (icônes sidebar/topbar) #}
+    <meta name="theme-color" content="#14474A">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
     {% block stylesheets %}{% endblock %}
     {{ encore_entry_link_tags('app') }}
 </head>
 <body>
 
-    <div class="app-layout">
 
+
+{# ── TOPBAR MOBILE (visible uniquement sur mobile <768px) ── #}
+    <header class="mobile-topbar">
+        <div class="mobile-topbar-logo">
+            <img src="{{ asset('assets/images/logologo.png') }}" alt="DP Services">
+        </div>
+        <div class="mobile-topbar-actions">
+            {# Notifications #}
+            <div class="topbar-notif-wrapper">
+                <button class="mobile-topbar-btn" type="button" aria-label="Notifications"
+                        onclick="document.getElementById('notif-dropdown').classList.toggle('is-open')">
+                    <i class="fa-solid fa-bell"></i>
+                    {% set unreadCount = unread_notifications_count(app.user) %}
+                    {% if unreadCount > 0 %}
+                        <span class="topbar-badge">{{ unreadCount }}</span>
+                    {% endif %}
+                </button>
+                <div id="notif-dropdown" class="topbar-notif-dropdown">
+                    {% set recentNotifs = recent_notifications(app.user, 8) %}
+                    {% if recentNotifs is empty %}
+                        <div class="topbar-notif-empty">Aucune notification</div>
+                    {% else %}
+                        {% for notif in recentNotifs %}
+                            <a href="{{ notif.link ?: '#' }}" class="topbar-notif-item {{ notif.isRead ? '' : 'topbar-notif-item--unread' }}">
+                                <span class="topbar-notif-message">{{ notif.message }}</span>
+                                <span class="topbar-notif-date">{{ notif.createdAt|date('d/m H:i') }}</span>
+                            </a>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+            {# Avatar + logout #}
+            {% if app.user %}
+                <span class="mobile-topbar-avatar">{{ app.user.firstname|first }}{{ app.user.lastname|first }}</span>
+                <a href="{{ path('app_logout') }}" class="mobile-topbar-btn" title="Déconnexion">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                </a>
+            {% endif %}
+        </div>
+    </header>
+
+<div class="app-layout">
+
+    {# ── SIDEBAR DESKTOP (cachée sur mobile) ── #}
     <aside class="sidebar">
         <div class="sidebar-logo">
             <img src="{{ asset('assets/images/logologo.png') }}" alt="DP Services Sud">
         </div>
 
         {% if is_granted('ROLE_ADMIN') %}
-            <a href="{{ path('app_admin') }}" {% if app.request.get('_route') == 'app_admin' %}class="active"{% endif %}><i class="fa-solid fa-gear"></i> Admin</a>
+            <a href="{{ path('app_admin') }}" {% if app.request.get('_route') == 'app_admin' %}class="active"{% endif %}><i class="fa-solid fa-gauge"></i> Dashboard</a>
             <a href="{{ path('app_users') }}" {% if app.request.get('_route') starts with 'app_user' %}class="active"{% endif %}><i class="fa-solid fa-users"></i> Utilisateurs</a>
             <a href="{{ path('app_properties') }}" {% if app.request.get('_route') starts with 'app_propert' %}class="active"{% endif %}><i class="fa-solid fa-house"></i> Logements</a>
             <a href="{{ path('app_services') }}" {% if app.request.get('_route') starts with 'app_service' %}class="active"{% endif %}><i class="fa-solid fa-broom"></i> Prestations</a>
@@ -46,42 +86,38 @@
             <a href="{{ path('app_calendar') }}" {% if app.request.get('_route') == 'app_calendar' %}class="active"{% endif %}><i class="fa-solid fa-calendar-days"></i> Calendrier</a>
         {% endif %}
 
-        <button id="pwa-install-btn" type="button" style="display:none; margin-top:auto; background:none; border:none; cursor:pointer; width:100%; text-align:left; padding:12px 16px; color:inherit; font:inherit; display:flex; align-items:center; gap:10px;">
+        <button id="pwa-install-btn" type="button" class="sidebar-pwa-btn" style="display:none;">
             <i class="fa-solid fa-download"></i> Installer l'app
         </button>
     </aside>
 
-    <div class="main">
-        <div class="topbar">
-            <h1 class="topbar-title">{% block page_title %}DP Services{% endblock %}</h1>
+    
 
-            {# -- Barre de recherche --
-               ⚠️ CONTROLLER : pas de soumission/route branchée pour l'instant.
-               À connecter à une route de recherche globale (ex: app_search)
-               qui interroge demandes/logements/propriétaires. -- #}
+    <div class="main">
+
+        {# ── TOPBAR DESKTOP (cachée sur mobile) ── #}
+        <div class="topbar desktop-only">
+            <h1 class="topbar-title">{% block page_title %}DP Services{% endblock %}</h1>
             <div class="topbar-search">
                 <i class="fa-solid fa-magnifying-glass"></i>
                 <input type="text" placeholder="Rechercher (demande, logement, propriétaire...)">
             </div>
-
             <div class="topbar-actions">
-               
-
-                {# -- Cloche de notifications (J37-J41) -- #}
                 <div class="topbar-notif-wrapper">
-                    <button class="topbar-icon-btn" type="button" aria-label="Notifications" onclick="document.getElementById('notif-dropdown').classList.toggle('is-open')">
+                    <button class="topbar-icon-btn" type="button" aria-label="Notifications"
+                            onclick="document.getElementById('notif-dropdown-desktop').classList.toggle('is-open')">
                         <i class="fa-solid fa-bell"></i>
-                        {% set unreadCount = unread_notifications_count(app.user) %}
-                        {% if unreadCount > 0 %}
-                            <span class="topbar-badge">{{ unreadCount }}</span>
+                        {% set unreadCountDesktop = unread_notifications_count(app.user) %}
+                        {% if unreadCountDesktop > 0 %}
+                            <span class="topbar-badge">{{ unreadCountDesktop }}</span>
                         {% endif %}
                     </button>
-                    <div id="notif-dropdown" class="topbar-notif-dropdown">
-                        {% set recentNotifs = recent_notifications(app.user, 8) %}
-                        {% if recentNotifs is empty %}
+                    <div id="notif-dropdown-desktop" class="topbar-notif-dropdown">
+                        {% set recentNotifsDesktop = recent_notifications(app.user, 8) %}
+                        {% if recentNotifsDesktop is empty %}
                             <div class="topbar-notif-empty">Aucune notification</div>
                         {% else %}
-                            {% for notif in recentNotifs %}
+                            {% for notif in recentNotifsDesktop %}
                                 <a href="{{ notif.link ?: '#' }}" class="topbar-notif-item {{ notif.isRead ? '' : 'topbar-notif-item--unread' }}">
                                     <span class="topbar-notif-message">{{ notif.message }}</span>
                                     <span class="topbar-notif-date">{{ notif.createdAt|date('d/m H:i') }}</span>
@@ -90,7 +126,6 @@
                         {% endif %}
                     </div>
                 </div>
-
                 {% if app.user %}
                     <div class="topbar-user">
                         <span class="topbar-avatar">{{ app.user.firstname|first }}{{ app.user.lastname|first }}</span>
@@ -103,14 +138,11 @@
                                 {% endif %}
                             </span>
                         </span>
-                        <a href="{{ path('app_logout') }}" class="logout" title="Déconnexion"><i class="fa-solid fa-arrow-right-from-bracket"></i></a>
+                        <a href="{{ path('app_logout') }}" class="logout" title="Déconnexion">
+                            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                        </a>
                     </div>
                 {% endif %}
-
-                {# -- CTA Nouvelle demande --
-                   ⚠️ CONTROLLER : adapter la route si le nom diffère
-                   (actuellement supposé app_request_new, cohérent avec le
-                   bouton "+ Demande" déjà utilisé dans le dashboard). -- #}
                 <a href="{{ path('app_request_new') }}" class="topbar-cta">
                     <i class="fa-solid fa-plus"></i> Nouvelle demande
                 </a>
@@ -136,50 +168,142 @@
         </div>
     </div>
 
-    </div>
+</div>
+{# ── NAVBAR MOBILE BAS D'ÉCRAN (visible uniquement sur mobile) ── #}
+<nav class="mobile-bottom-nav">
+    {% if is_granted('ROLE_ADMIN') %}
 
-    {% block javascripts %}{% endblock %}
-    {{ encore_entry_script_tags('app') }}
+        <a href="{{ path('app_admin') }}" class="{{ app.request.get('_route') == 'app_admin' ? 'active' : '' }}">
+            <i class="fa-solid fa-gauge"></i>
+            <span>Admin</span>
+        </a>
 
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function () {
-                navigator.serviceWorker.register('/sw.js').catch(function (error) {
-                    console.error('Service Worker registration failed:', error);
+        <a href="{{ path('app_users') }}" class="{{ app.request.get('_route') starts with 'app_user' ? 'active' : '' }}">
+            <i class="fa-solid fa-users"></i>
+            <span>Utilisateurs</span>
+        </a>
+
+        <a href="{{ path('app_properties') }}" class="{{ app.request.get('_route') starts with 'app_propert' ? 'active' : '' }}">
+            <i class="fa-solid fa-house"></i>
+            <span>Logements</span>
+        </a>
+
+        <a href="{{ path('app_requests') }}" class="{{ app.request.get('_route') starts with 'app_request' ? 'active' : '' }}">
+            <i class="fa-solid fa-clipboard-list"></i>
+            <span>Demandes</span>
+        </a>
+
+        <a href="{{ path('app_calendar') }}" class="{{ app.request.get('_route') == 'app_calendar' ? 'active' : '' }}">
+            <i class="fa-solid fa-calendar-days"></i>
+            <span>Calendrier</span>
+        </a>
+
+        <button
+            id="pwa-install-btn-mobile"
+            type="button"
+            class="mobile-nav-pwa"
+            style="display: none;"
+        >
+            <i class="fa-solid fa-download"></i>
+            <span>Installer</span>
+        </button>
+
+    {% elseif is_granted('ROLE_CLEANER') %}
+
+        <a href="{{ path('app_cleaner') }}" class="{{ app.request.get('_route') == 'app_cleaner' ? 'active' : '' }}">
+            <i class="fa-solid fa-broom"></i>
+            <span>Missions</span>
+        </a>
+
+        <a href="{{ path('app_calendar') }}" class="{{ app.request.get('_route') == 'app_calendar' ? 'active' : '' }}">
+            <i class="fa-solid fa-calendar-days"></i>
+            <span>Calendrier</span>
+        </a>
+
+        <button
+            id="pwa-install-btn-mobile"
+            type="button"
+            class="mobile-nav-pwa"
+            style="display: none;"
+        >
+            <i class="fa-solid fa-download"></i>
+            <span>Installer</span>
+        </button>
+
+    {% endif %}
+</nav>
+
+{% block javascripts %}{% endblock %}
+{{ encore_entry_script_tags('app') }}
+
+<script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function () {
+            navigator.serviceWorker
+                .register('/sw.js')
+                .catch(function (error) {
+                    console.error('SW error:', error);
                 });
-            });
+        });
+    }
+
+    let deferredPrompt;
+
+    const installBtnDesktop = document.getElementById('pwa-install-btn');
+    const installBtnMobile = document.getElementById('pwa-install-btn-mobile');
+
+    window.addEventListener('beforeinstallprompt', function (event) {
+        event.preventDefault();
+
+        deferredPrompt = event;
+
+        if (installBtnDesktop) {
+            installBtnDesktop.style.display = 'flex';
         }
 
-        let deferredPrompt;
-        const installBtn = document.getElementById('pwa-install-btn');
+        if (installBtnMobile) {
+            installBtnMobile.style.display = 'flex';
+        }
+    });
 
-        window.addEventListener('beforeinstallprompt', function (event) {
-            event.preventDefault();
-            deferredPrompt = event;
-            if (installBtn) {
-                installBtn.style.display = 'flex';
-            }
-        });
-
-        if (installBtn) {
-            installBtn.addEventListener('click', function () {
-                if (!deferredPrompt) return;
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then(function () {
-                    deferredPrompt = null;
-                    installBtn.style.display = 'none';
-                });
-            });
+    function handleInstall() {
+        if (!deferredPrompt) {
+            return;
         }
 
-        window.addEventListener('appinstalled', function () {
-            if (installBtn) {
-                installBtn.style.display = 'none';
+        deferredPrompt.prompt();
+
+        deferredPrompt.userChoice.then(function () {
+            deferredPrompt = null;
+
+            if (installBtnDesktop) {
+                installBtnDesktop.style.display = 'none';
+            }
+
+            if (installBtnMobile) {
+                installBtnMobile.style.display = 'none';
             }
         });
-    </script>
+    }
+
+    if (installBtnDesktop) {
+        installBtnDesktop.addEventListener('click', handleInstall);
+    }
+
+    if (installBtnMobile) {
+        installBtnMobile.addEventListener('click', handleInstall);
+    }
+
+    window.addEventListener('appinstalled', function () {
+        if (installBtnDesktop) {
+            installBtnDesktop.style.display = 'none';
+        }
+
+        if (installBtnMobile) {
+            installBtnMobile.style.display = 'none';
+        }
+    });
+</script>
 
 </body>
-
-
 </html>
