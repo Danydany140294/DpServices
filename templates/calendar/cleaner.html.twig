@@ -4,24 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calendrier — DP Services</title>
-    <link rel="stylesheet" href="{{ asset('css/cleaner.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
     {{ encore_entry_link_tags('calendar') }}
-    <style>
-        #calendar {
-            background: white;
-            padding: 0.75rem;
-            border-radius: 8px;
-        }
-        .fc .fc-toolbar-title {
-            font-size: 1rem;
-        }
-        .fc .fc-button {
-            padding: 0.25rem 0.5rem;
-            font-size: 0.75rem;
-        }
-    </style>
 </head>
-<body>
+<body class="has-bottom-nav">
 
     <header class="mobile-header">
         <h1>📅 Calendrier</h1>

@@ -8,19 +8,19 @@
     {# ── Alertes ── #}
     {% set toFollowUp = leads|filter(l => l.nextFollowUp is not null and l.nextFollowUp <= date()) %}
     {% if toFollowUp|length > 0 %}
-        <div class="alert-banner alert-banner--warning">
+        <div class="alert alert--warning alert--mb-sm">
             🔔 <strong>{{ toFollowUp|length }} prospect(s) à relancer aujourd'hui</strong>
         </div>
     {% endif %}
 
     {% if noResponse|length > 0 %}
-        <div class="alert-banner alert-banner--danger">
+        <div class="alert alert--danger">
             ⏰ <strong>{{ noResponse|length }} prospect(s) sans réponse depuis 7 jours ou plus</strong>
-            <span class="alert-banner__note"> — pensez à relancer :</span>
+            <span class="text-secondary--sm"> — pensez à relancer :</span>
             {% for lead in noResponse|slice(0, 3) %}
-                <a href="{{ path('app_lead_show', {id: lead.id}) }}" class="alert-banner__link">{{ lead.companyName }}</a>
+                <a href="{{ path('app_lead_show', {id: lead.id}) }}" class="ml-sm">{{ lead.companyName }}</a>{% if not loop.last %},{% endif %}
             {% endfor %}
-            {% if noResponse|length > 3 %}<span class="alert-banner__note"> et {{ noResponse|length - 3 }} autre(s)</span>{% endif %}
+            {% if noResponse|length > 3 %}<span class="text-secondary--sm"> et {{ noResponse|length - 3 }} autre(s)</span>{% endif %}
         </div>
     {% endif %}
 
@@ -47,19 +47,19 @@
 
             <input type="text" name="city" value="{{ currentCity }}" placeholder="Ville...">
 
-            <input type="number" name="score_min" value="{{ currentScoreMin }}" placeholder="Score min..." class="filters__input--narrow">
+            <input type="number" name="score_min" value="{{ currentScoreMin }}" placeholder="Score min..." style="width:110px;">
 
             <input type="date" name="follow_up" value="{{ currentFollowUp }}">
 
             <button type="submit">Filtrer</button>
             <a href="{{ path('app_leads') }}" class="filters__reset">Réinitialiser</a>
 
-            {# ── Légende ── #}
+            {# ── Légende (dropdown au clic, même logique que la cloche de notifications) ── #}
             <div class="legend-wrapper">
-                <button type="button" onclick="document.getElementById('legend').classList.toggle('hidden')" class="legend-trigger">
+                <button type="button" onclick="document.getElementById('legend').classList.toggle('is-open')" class="legend-trigger">
                     ? Aide
                 </button>
-                <div id="legend" class="hidden legend-panel">
+                <div id="legend" class="legend-panel">
                     <h3 class="legend-panel__title legend-panel__title--intro">📊 Comprendre le score</h3>
                     <p class="legend-panel__intro">Plus le score est élevé, plus ce prospect a de chances de devenir client.</p>
                     <div class="legend-panel__row">🔴 <strong>80-100</strong> — Priorité absolue → Appeler aujourd'hui</div>
@@ -74,10 +74,10 @@
                     <h3 class="legend-panel__title u-mt-1">🎯 Barème score</h3>
                     <div class="legend-panel__list">
                         Conciergerie Airbnb +50 · Gestion locative +30<br>
-                        Agence immo +20 · >100 avis +20 · Site web +10<br>
-                        Note >4.5 +10 · 50-100 avis +10 · Ville prioritaire +10
+                        Agence immo +20 · &gt;100 avis +20 · Site web +10<br>
+                        Note &gt;4.5 +10 · 50-100 avis +10 · Ville prioritaire +10
                     </div>
-                    <button type="button" onclick="document.getElementById('legend').classList.toggle('hidden')" class="legend-panel__close">
+                    <button type="button" onclick="document.getElementById('legend').classList.remove('is-open')" class="legend-panel__close">
                         ✖ Fermer
                     </button>
                 </div>
@@ -86,15 +86,15 @@
     </div>
 
     {# ── Boutons actions ── #}
-    <div class="action-bar">
+    <div class="quick-links u-mb-1">
         <a href="{{ path('app_lead_new') }}" class="btn-quick btn-quick--blue">+ Nouveau prospect</a>
         <a href="{{ path('app_lead_search') }}" class="btn-quick btn-quick--green">🔍 Rechercher</a>
         <a href="{{ path('app_lead_group_email') }}" class="btn-quick btn-quick--purple">📧 Email groupé</a>
         <a href="{{ path('app_lead_import_file') }}" class="btn-quick btn-quick--cyan">📂 Importer un fichier</a>
         <a href="{{ path('app_lead_export_excel', {status: currentStatus, city: currentCity, category: currentCategory, score_min: currentScoreMin}) }}" class="btn-quick btn-quick--emerald">📊 Export Excel</a>
-        <a href="{{ path('app_leads_kanban') }}" class="btn-quick btn-quick--purple">📋 Vue Kanban</a>
-        <form method="post" action="{{ path('app_leads_rescore_all') }}">
-            <button type="submit" class="btn-quick btn-quick--amber">
+        <a href="{{ path('app_leads_kanban') }}" class="btn-quick btn-quick--orange">📋 Vue Kanban</a>
+        <form method="post" action="{{ path('app_leads_rescore_all') }}" class="inline">
+            <button type="submit" class="btn-quick btn-quick--purple">
                 🔄 Recalculer tous les scores
             </button>
         </form>
@@ -102,7 +102,7 @@
 
     {# ── Recherche rapide ── #}
     <div class="u-mb-1">
-        <input type="text" id="searchInput" placeholder="🔍 Rechercher par nom ou ville..." class="quick-search">
+        <input type="text" id="searchInput" placeholder="🔍 Rechercher par nom ou ville..." class="form-control">
     </div>
 
     {# ── Tableau ── #}
@@ -110,12 +110,12 @@
         <table class="data-table">
             <thead>
                 <tr>
-                    <th class="data-table__th--sortable" onclick="sortTable(0)">Entreprise ↕</th>
-                    <th class="data-table__th--sortable" onclick="sortTable(1)">Ville ↕</th>
-                    <th class="data-table__th--sortable" onclick="sortTable(2)">Catégorie ↕</th>
-                    <th class="data-table__th--sortable" onclick="sortTable(3)">Score ↕</th>
-                    <th class="data-table__th--sortable" onclick="sortTable(4)">Statut ↕</th>
-                    <th class="data-table__th--sortable" onclick="sortTable(5)">Relance ↕</th>
+                    <th style="cursor:pointer;" onclick="sortTable(0)">Entreprise ↕</th>
+                    <th style="cursor:pointer;" onclick="sortTable(1)">Ville ↕</th>
+                    <th style="cursor:pointer;" onclick="sortTable(2)">Catégorie ↕</th>
+                    <th style="cursor:pointer;" onclick="sortTable(3)">Score ↕</th>
+                    <th style="cursor:pointer;" onclick="sortTable(4)">Statut ↕</th>
+                    <th style="cursor:pointer;" onclick="sortTable(5)">Relance ↕</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -123,56 +123,57 @@
                 {% for lead in leads %}
                 <tr>
                     <td>
-                        <div class="data-table__cell-title">{{ lead.companyName }}</div>
-                        {% if lead.contactName %}<div class="data-table__cell-subtitle">{{ lead.contactName }}</div>{% endif %}
+                        <div>{{ lead.companyName }}</div>
+                        {% if lead.contactName %}<div class="text-secondary--sm">{{ lead.contactName }}</div>{% endif %}
                     </td>
                     <td class="data-table__text">{{ lead.city }}</td>
                     <td class="data-table__text">{{ lead.category ? lead.category.name : '—' }}</td>
 
-                    {# Colonne Score — avec barre #}
+                    {# Colonne Score — badge + barre (réutilise .kanban-card__score et .progress-bar déjà définis) #}
                     <td>
                         {% set score = lead.score %}
                         {% set scoreTier = score >= 80 ? 'critical' : (score >= 50 ? 'high' : (score >= 20 ? 'medium' : 'low')) %}
+                        {% set barTier = score >= 80 ? 'danger' : (score >= 50 ? 'warning' : (score >= 20 ? 'caution' : 'neutral')) %}
                         {% if score >= 80 %}
-                            <span class="score-badge score-badge--critical">🔴 {{ score }}</span>
+                            <span class="kanban-card__score kanban-card__score--critical">🔴 {{ score }}</span>
                         {% elseif score >= 50 %}
-                            <span class="score-badge score-badge--high">🟠 {{ score }}</span>
+                            <span class="kanban-card__score kanban-card__score--high">🟠 {{ score }}</span>
                         {% elseif score >= 20 %}
-                            <span class="score-badge score-badge--medium">🟡 {{ score }}</span>
+                            <span class="kanban-card__score kanban-card__score--medium">🟡 {{ score }}</span>
                         {% else %}
-                            <span class="score-badge score-badge--low">⚪ {{ score }}</span>
+                            <span class="kanban-card__score kanban-card__score--low">⚪ {{ score }}</span>
                         {% endif %}
-                        <div class="score-bar">
-                            <div class="score-bar__fill score-bar__fill--{{ scoreTier }}" style="width:{{ score }}%;"></div>
+                        <div class="progress-bar" style="width:100%; margin:6px 0 0;">
+                            <div class="progress-bar__fill progress-bar__fill--{{ barTier }}" style="width:{{ score }}%;"></div>
                         </div>
                     </td>
 
-                    {# Colonne Statut #}
+                    {# Colonne Statut — réutilise .status-badge (section 10) en version compacte #}
                     <td>
                         {% if lead.status == 'NEW' %}
-                            <span class="status-badge status-badge--new">🔵 Nouveau</span>
+                            <span class="status-badge status-badge--sm status-badge--info">🔵 Nouveau</span>
                         {% elseif lead.status == 'CONTACTED' %}
-                            <span class="status-badge status-badge--contacted">🟡 Contacté</span>
+                            <span class="status-badge status-badge--sm status-badge--caution">🟡 Contacté</span>
                         {% elseif lead.status == 'DISCUSSION' %}
-                            <span class="status-badge status-badge--discussion">🟠 En discussion</span>
+                            <span class="status-badge status-badge--sm status-badge--warning">🟠 En discussion</span>
                         {% elseif lead.status == 'QUOTE_SENT' %}
-                            <span class="status-badge status-badge--quote-sent">🟣 Devis envoyé</span>
+                            <span class="status-badge status-badge--sm status-badge--purple">🟣 Devis envoyé</span>
                         {% elseif lead.status == 'CLIENT' %}
-                            <span class="status-badge status-badge--client">🟢 Client</span>
+                            <span class="status-badge status-badge--sm status-badge--success">🟢 Client</span>
                         {% elseif lead.status == 'LOST' %}
-                            <span class="status-badge status-badge--lost">🔴 Perdu</span>
+                            <span class="status-badge status-badge--sm status-badge--danger">🔴 Perdu</span>
                         {% elseif lead.status == 'TO_FOLLOW_UP' %}
-                            <span class="status-badge status-badge--follow-up">⚪ À relancer</span>
+                            <span class="status-badge status-badge--sm status-badge--neutral">⚪ À relancer</span>
                         {% endif %}
                     </td>
 
                     {% set overdue = lead.nextFollowUp is not null and lead.nextFollowUp <= date() %}
-                    <td class="data-table__text{{ overdue ? ' data-table__text--overdue' : '' }}">
+                    <td class="data-table__text{{ overdue ? ' follow-up-notice--overdue' : '' }}">
                         {{ lead.nextFollowUp ? lead.nextFollowUp|date('d/m/Y') : '—' }}
                     </td>
                     <td>
                         <a href="{{ path('app_lead_show', {id: lead.id}) }}" class="table-action-link">Voir</a>
-                        <a href="{{ path('app_lead_edit', {id: lead.id}) }}" class="table-action-link--warning">Modifier</a>
+                        <a href="{{ path('app_lead_edit', {id: lead.id}) }}" class="text-link--warning">Modifier</a>
                     </td>
                 </tr>
                 {% else %}
@@ -216,6 +217,15 @@
                 const text = row.textContent.toLowerCase();
                 row.style.display = text.includes(search) ? '' : 'none';
             });
+        });
+
+        // Ferme la légende si on clique en dehors du panneau
+        document.addEventListener('click', function(e) {
+            const wrapper = document.querySelector('.legend-wrapper');
+            const legend = document.getElementById('legend');
+            if (wrapper && legend && legend.classList.contains('is-open') && !wrapper.contains(e.target)) {
+                legend.classList.remove('is-open');
+            }
         });
     </script>
 

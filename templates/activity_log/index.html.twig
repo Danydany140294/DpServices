@@ -5,13 +5,18 @@
 
 {% block body %}
 
-    <div class="table-wrapper">
+    <div class="card users-card">
+        <div class="users-card__head">
+            <h2>Historique</h2>
+            <span class="users-count">{{ logs|length }}</span>
+        </div>
+
         {% if logs is empty %}
             <div class="table-wrapper__empty">
                 Aucune action enregistrée.
             </div>
         {% else %}
-            <table class="data-table">
+            <table class="data-table users-table">
                 <thead>
                     <tr>
                         <th>Date</th>
@@ -23,18 +28,18 @@
                 <tbody>
                     {% for log in logs %}
                     <tr>
-                        <td class="data-table__date">
+                        <td data-label="Date" class="data-table__date">
                             {{ log.createdAt|date('d/m/Y H:i') }}
                         </td>
-                        <td>
+                        <td data-label="Action">
                             <span class="badge-action">
                                 {{ log.action }}
                             </span>
                         </td>
-                        <td class="data-table__text">
+                        <td data-label="Détail" class="data-table__text">
                             {{ log.description ?? '—' }}
                         </td>
-                        <td class="data-table__text">
+                        <td data-label="Par" class="data-table__text">
                             {{ log.author ? log.author.firstname ~ ' ' ~ log.author.lastname : 'Système' }}
                         </td>
                     </tr>

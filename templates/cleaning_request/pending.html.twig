@@ -5,53 +5,59 @@
 
 {% block body %}
 
-    <div class="u-mb-1">
-        <a href="{{ path('app_requests') }}" class="btn-link">
-            ← Retour aux demandes
-        </a>
-    </div>
+    <a href="{{ path('app_requests') }}" class="back-link"><i class="fa-solid fa-arrow-left"></i> Retour aux demandes</a>
 
-    <table class="data-table">
-        <thead>
-            <tr>
-                <th>Logement</th>
-                <th>Date actuelle</th>
-                <th>Heure actuelle</th>
-                <th>Date proposée (Google)</th>
-                <th>Heure proposée (Google)</th>
-                <th>Commentaire proposé</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for req in requests %}
-            <tr>
-                <td>
-                    <span class="property-dot property-dot--square" style="background:{{ req.property.color }};"></span>
-                    {{ req.property.name }}
-                </td>
-                <td>{{ req.scheduledDate ? req.scheduledDate|date('d/m/Y') : '—' }}</td>
-                <td>{{ req.scheduledTime ? req.scheduledTime|date('H:i') : '—' }}</td>
-                <td><strong>{{ req.pendingScheduledDate ? req.pendingScheduledDate|date('d/m/Y') : '—' }}</strong></td>
-                <td><strong>{{ req.pendingScheduledTime ? req.pendingScheduledTime|date('H:i') : '—' }}</strong></td>
-                <td>{{ req.pendingComment ?: '—' }}</td>
-                <td>
-                    <form method="post" action="{{ path('app_request_accept_modification', {id: req.id}) }}" class="inline-form">
-                        <input type="hidden" name="_token" value="{{ csrf_token('accept' ~ req.id) }}">
-                        <button type="submit" class="table-action-btn table-action-btn--success">Accepter</button>
-                    </form>
-                    <form method="post" action="{{ path('app_request_reject_modification', {id: req.id}) }}" class="inline-form" onsubmit="return confirm('Refuser cette modification ?')">
-                        <input type="hidden" name="_token" value="{{ csrf_token('reject' ~ req.id) }}">
-                        <button type="submit" class="table-action-btn table-action-btn--danger">Refuser</button>
-                    </form>
-                </td>
-            </tr>
-            {% else %}
-            <tr>
-                <td colspan="7" class="table-empty-cell">Aucune modification en attente</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div class="card users-card">
+        <div class="users-card__head">
+            <h2>Modifications en attente</h2>
+            <span class="users-count">{{ requests|length }}</span>
+        </div>
+        <table class="data-table users-table">
+            <thead>
+                <tr>
+                    <th>Logement</th>
+                    <th>Date actuelle</th>
+                    <th>Heure actuelle</th>
+                    <th>Date proposée</th>
+                    <th>Heure proposée</th>
+                    <th>Commentaire proposé</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for req in requests %}
+                <tr>
+                    <td data-label="Logement">
+                        <div class="user-cell">
+                            <span class="property-dot property-dot--square" style="background:{{ req.property.color }};"></span>
+                            {{ req.property.name }}
+                        </div>
+                    </td>
+                    <td data-label="Date actuelle">{{ req.scheduledDate ? req.scheduledDate|date('d/m/Y') : '—' }}</td>
+                    <td data-label="Heure actuelle">{{ req.scheduledTime ? req.scheduledTime|date('H:i') : '—' }}</td>
+                    <td data-label="Date proposée"><strong class="pending-value">{{ req.pendingScheduledDate ? req.pendingScheduledDate|date('d/m/Y') : '—' }}</strong></td>
+                    <td data-label="Heure proposée"><strong class="pending-value">{{ req.pendingScheduledTime ? req.pendingScheduledTime|date('H:i') : '—' }}</strong></td>
+                    <td data-label="Commentaire proposé">{{ req.pendingComment ?: '—' }}</td>
+                    <td data-label="Actions">
+                        <div class="row-actions">
+                            <form method="post" action="{{ path('app_request_accept_modification', {id: req.id}) }}" class="inline-form">
+                                <input type="hidden" name="_token" value="{{ csrf_token('accept' ~ req.id) }}">
+                                <button type="submit" class="action-btn action-btn--enable" title="Accepter"><i class="fa-solid fa-check"></i></button>
+                            </form>
+                            <form method="post" action="{{ path('app_request_reject_modification', {id: req.id}) }}" class="inline-form" onsubmit="return confirm('Refuser cette modification ?')">
+                                <input type="hidden" name="_token" value="{{ csrf_token('reject' ~ req.id) }}">
+                                <button type="submit" class="action-btn action-btn--delete" title="Refuser"><i class="fa-solid fa-xmark"></i></button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="table-empty-cell">Aucune modification en attente</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
 {% endblock %}

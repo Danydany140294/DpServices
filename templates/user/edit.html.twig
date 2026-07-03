@@ -4,18 +4,37 @@
 {% block page_title %}Modifier {{ user.firstname }} {{ user.lastname }}{% endblock %}
 
 {% block body %}
-    <div class="welcome">
-        {{ form_start(form) }}
-            {{ form_row(form.firstname) }}
-            {{ form_row(form.lastname) }}
-            {{ form_row(form.email) }}
-            {{ form_row(form.phone) }}
+
+    <a href="{{ path('app_users') }}" class="back-link"><i class="fa-solid fa-arrow-left"></i> Retour aux utilisateurs</a>
+
+    <div class="form-card">
+        <div class="form-card__head">
+            <div class="form-card__icon"><i class="fa-solid fa-user-pen"></i></div>
+            <div>
+                <h2>Modifier {{ user.firstname }} {{ user.lastname }}</h2>
+                <p>Mettez à jour les informations du compte</p>
+            </div>
+        </div>
+
+        {{ form_start(form, {'attr': {'class': 'form-card__body'}}) }}
+            <div class="form-grid-2">
+                {{ form_row(form.firstname) }}
+                {{ form_row(form.lastname) }}
+            </div>
+            <div class="form-grid-2">
+                {{ form_row(form.email) }}
+                {{ form_row(form.phone) }}
+            </div>
             {{ form_row(form.plainPassword) }}
             {{ form_row(form.roles) }}
-            <button type="submit" class="btn btn--primary btn--lg mt-md">
-                Sauvegarder
-            </button>
-            <a href="{{ path('app_users') }}" class="text-secondary text-secondary--spaced">Annuler</a>
+
+            <div class="form-card__actions">
+                <button type="submit" class="btn btn--primary btn--lg">
+                    <i class="fa-solid fa-check"></i> Sauvegarder
+                </button>
+                <a href="{{ path('app_users') }}" class="text-secondary text-secondary--spaced">Annuler</a>
+            </div>
         {{ form_end(form) }}
     </div>
+
 {% endblock %}

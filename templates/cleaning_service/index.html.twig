@@ -5,38 +5,46 @@
 
 {% block body %}
 
-    <div class="u-mb-1">
-        <a href="{{ path('app_service_new') }}" class="btn-link">
-            + Nouvelle prestation
+    <div class="mb-md">
+        <a href="{{ path('app_service_new') }}" class="btn btn--primary btn--md">
+            <i class="fa-solid fa-plus"></i> Nouvelle prestation
         </a>
     </div>
 
-    <table class="data-table">
-        <thead>
-            <tr>
-                <th>Nom</th>
-                <th>Durée</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for service in services %}
-            <tr>
-                <td>{{ service.name }}</td>
-                <td>{{ service.duration }} min</td>
-                <td>
-                    <a href="{{ path('app_service_edit', {id: service.id}) }}" class="table-action-link">Modifier</a>
-                    <form method="post" action="{{ path('app_service_delete', {id: service.id}) }}" class="inline-form" onsubmit="return confirm('Supprimer cette prestation ?')">
-                        <button type="submit" class="table-action-btn table-action-btn--danger">Supprimer</button>
-                    </form>
-                </td>
-            </tr>
-            {% else %}
-            <tr>
-                <td colspan="3" class="table-empty-cell">Aucune prestation</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div class="card users-card">
+        <div class="users-card__head">
+            <h2>Prestations</h2>
+            <span class="users-count">{{ services|length }}</span>
+        </div>
+        <table class="data-table users-table">
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th>Durée</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for service in services %}
+                <tr>
+                    <td data-label="Nom">{{ service.name }}</td>
+                    <td data-label="Durée">{{ service.duration }} min</td>
+                    <td data-label="Actions">
+                        <div class="row-actions">
+                            <a href="{{ path('app_service_edit', {id: service.id}) }}" class="action-btn action-btn--edit" title="Modifier"><i class="fa-solid fa-pen"></i></a>
+                            <form method="post" action="{{ path('app_service_delete', {id: service.id}) }}" class="inline-form" onsubmit="return confirm('Supprimer cette prestation ?')">
+                                <button type="submit" class="action-btn action-btn--delete" title="Supprimer"><i class="fa-solid fa-trash"></i></button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="3" class="table-empty-cell">Aucune prestation</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
 {% endblock %}

@@ -2,6 +2,7 @@ import { Calendar } from '@fullcalendar/core';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
+import listPlugin from '@fullcalendar/list';
 
 let calendar;
 
@@ -31,12 +32,15 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    const isMobile = window.matchMedia('(max-width: 768px)').matches;
+
     calendar = new Calendar(calendarEl, {
-        plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
-        initialView: 'dayGridMonth',
+        plugins: [dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin],
+        initialView: isMobile ? 'listWeek' : 'dayGridMonth',
         locale: 'fr',
-         height: 1100,
-        dayMaxEvents: 2,
+        
+        height: isMobile ? 480 : 700,
+        dayMaxEvents: isMobile ? false : 2,
         eventDisplay: 'block',
         eventTimeFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
         headerToolbar: {
@@ -45,6 +49,8 @@ document.addEventListener('DOMContentLoaded', function () {
             right: 'dayGridMonth,timeGridWeek,timeGridDay'
         },
         editable: true,
+        slotMinTime: '07:00:00',
+        slotMaxTime: '20:00:00',
         events: '/api/calendar/events',
         eventClick: function(info) {
             const eventId = info.event.id;
@@ -57,6 +63,8 @@ document.addEventListener('DOMContentLoaded', function () {
             fetch('/api/calendar/events/' + realId + '/open', { method: 'POST' }).catch(() => {});
             openMissionModal(realId);
         },
+
+        
         eventDrop: function(info) {
             const eventId = info.event.id;
             if (!eventId.startsWith('cr_')) {

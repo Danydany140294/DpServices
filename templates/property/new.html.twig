@@ -4,18 +4,34 @@
 {% block page_title %}Créer un logement{% endblock %}
 
 {% block body %}
-    <div class="welcome">
-        {{ form_start(form) }}
-    {{ form_row(form.name) }}
-    {{ form_row(form.city) }}
-    {{ form_row(form.color) }}
-    {{ form_row(form.sector) }}
-    {{ form_row(form.owner) }}
-    <button type="submit" class="btn btn--primary btn--lg mt-md">
-        Créer
-    </button>
-    <a href="{{ path('app_properties') }}" class="text-secondary text-secondary--spaced">Annuler</a>
-{{ form_end(form) }}
+
+    <a href="{{ path('app_properties') }}" class="back-link"><i class="fa-solid fa-arrow-left"></i> Retour aux logements</a>
+
+    <div class="form-card">
+        <div class="form-card__head">
+            <div class="form-card__icon"><i class="fa-solid fa-house-circle-check"></i></div>
+            <div>
+                <h2>Nouveau logement</h2>
+                <p>Renseignez les informations du logement</p>
+            </div>
+        </div>
+
+        {{ form_start(form, {'attr': {'class': 'form-card__body'}}) }}
+            <div class="form-grid-2">
+                {{ form_row(form.name) }}
+                {{ form_row(form.city) }}
+            </div>
+            {{ form_row(form.color) }}
+            {{ form_row(form.sector) }}
+            {{ form_row(form.owner) }}
+
+            <div class="form-card__actions">
+                <button type="submit" class="btn btn--primary btn--lg">
+                    <i class="fa-solid fa-check"></i> Créer le logement
+                </button>
+                <a href="{{ path('app_properties') }}" class="text-secondary text-secondary--spaced">Annuler</a>
+            </div>
+        {{ form_end(form) }}
     </div>
 
     <script>

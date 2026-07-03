@@ -4,19 +4,43 @@
 {% block page_title %}Valider la demande{% endblock %}
 
 {% block body %}
-    <div class="card">
-        <p class="summary-text">
-            <strong>Logement :</strong> {{ cleaningRequest.property.name }}<br>
-            <strong>Prestation :</strong> {{ cleaningRequest.service.name }}<br>
-            <strong>Date :</strong> {{ cleaningRequest.scheduledDate|date('d/m/Y') }} à {{ cleaningRequest.scheduledTime|date('H:i') }}
-        </p>
 
-        {{ form_start(form) }}
+    <a href="{{ path('app_requests') }}" class="back-link"><i class="fa-solid fa-arrow-left"></i> Retour aux demandes</a>
+
+    <div class="form-card">
+        <div class="form-card__head">
+            <div class="form-card__icon"><i class="fa-solid fa-clipboard-check"></i></div>
+            <div>
+                <h2>Valider la demande</h2>
+                <p>Assignez une femme de ménage pour confirmer cette demande</p>
+            </div>
+        </div>
+
+        <div class="request-summary">
+            <div class="request-summary__row">
+                <i class="fa-solid fa-house"></i>
+                <span>{{ cleaningRequest.property.name }}</span>
+            </div>
+            <div class="request-summary__row">
+                <i class="fa-solid fa-broom"></i>
+                <span>{{ cleaningRequest.service.name }}</span>
+            </div>
+            <div class="request-summary__row">
+                <i class="fa-regular fa-calendar"></i>
+                <span>{{ cleaningRequest.scheduledDate|date('d/m/Y') }} à {{ cleaningRequest.scheduledTime|date('H:i') }}</span>
+            </div>
+        </div>
+
+        {{ form_start(form, {'attr': {'class': 'form-card__body'}}) }}
             {{ form_row(form.assignedCleaner) }}
-            <button type="submit" class="btn-submit btn-submit--success">
-                Valider et assigner
-            </button>
-            <a href="{{ path('app_requests') }}" class="btn-cancel-link">Annuler</a>
+
+            <div class="form-card__actions">
+                <button type="submit" class="btn btn--success btn--lg">
+                    <i class="fa-solid fa-check"></i> Valider et assigner
+                </button>
+                <a href="{{ path('app_requests') }}" class="text-secondary text-secondary--spaced">Annuler</a>
+            </div>
         {{ form_end(form) }}
     </div>
+
 {% endblock %}

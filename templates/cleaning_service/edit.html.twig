@@ -4,14 +4,29 @@
 {% block page_title %}Modifier {{ service.name }}{% endblock %}
 
 {% block body %}
-    <div class="card">
-        {{ form_start(form) }}
+
+    <a href="{{ path('app_services') }}" class="back-link"><i class="fa-solid fa-arrow-left"></i> Retour aux prestations</a>
+
+    <div class="form-card">
+        <div class="form-card__head">
+            <div class="form-card__icon"><i class="fa-solid fa-broom"></i></div>
+            <div>
+                <h2>Modifier {{ service.name }}</h2>
+                <p>Mettez à jour les informations de la prestation</p>
+            </div>
+        </div>
+
+        {{ form_start(form, {'attr': {'class': 'form-card__body'}}) }}
             {{ form_row(form.name) }}
             {{ form_row(form.duration) }}
-            <button type="submit" class="btn-submit">
-                Sauvegarder
-            </button>
-            <a href="{{ path('app_services') }}" class="btn-cancel-link">Annuler</a>
+
+            <div class="form-card__actions">
+                <button type="submit" class="btn btn--primary btn--lg">
+                    <i class="fa-solid fa-check"></i> Sauvegarder
+                </button>
+                <a href="{{ path('app_services') }}" class="text-secondary text-secondary--spaced">Annuler</a>
+            </div>
         {{ form_end(form) }}
     </div>
+
 {% endblock %}

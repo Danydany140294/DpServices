@@ -919,10 +919,16 @@ a {
     --fc-event-border-color: transparent;
 
     background: var(--card-alt);
-    padding: 1.5rem;
+    padding: 0.75rem;
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-soft);
     color: var(--text);
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+#calendar .fc-daygrid-day-frame {
+    min-height: 65px;
 }
 
 #calendar .fc-col-header-cell,
@@ -943,6 +949,8 @@ a {
     color: var(--text) !important;
     box-shadow: none !important;
     text-transform: capitalize;
+    padding: 4px 8px !important;
+        font-size: 11px !important;
 }
 
 #calendar .fc-button:hover {
@@ -957,7 +965,7 @@ a {
 
 #calendar .fc-toolbar-title {
     color: var(--gold-strong);
-    font-size: 1.1rem;
+    font-size: 1rem;
 }
 
 #calendar a {
@@ -1004,6 +1012,8 @@ a {
     background: rgba(249, 115, 22, 0.18);
     color: #fb923c;
 }
+
+
 
 /* -- Lien "+X de plus" (dayMaxEvents), stylé assorti au thème -- */
 #calendar .fc-daygrid-more-link {
@@ -3449,9 +3459,494 @@ form .invalid-feedback {
         .mission-modal-row { margin-bottom: 8px; font-size: 14px; color: #1a1a1a; }
 
 
+.users-card {
+    padding: 0;
+    overflow: hidden;
+}
+
+.users-card__head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border-soft);
+}
+
+.users-card__head h2 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: var(--gold-strong);
+}
+
+.users-count {
+    background: var(--gold-soft);
+    color: var(--gold);
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 2px 10px;
+    border-radius: 999px;
+}
+
+.users-table {
+    margin: 0;
+    box-shadow: none;
+    border-radius: 0;
+}
+
+.users-table thead tr {
+    background: var(--card-2);
+}
+
+.users-table tbody tr {
+    transition: background 0.15s;
+}
+
+.users-table tbody tr:hover {
+    background: var(--card-2);
+}
+
+.user-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 500;
+}
+
+.user-avatar {
+    height: 32px;
+    width: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--gold), #B8862E);
+    color: var(--bg);
+    font-size: 11px;
+    font-weight: 700;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+}
+
+.row-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.action-btn {
+    display: grid;
+    place-items: center;
+    height: 34px;
+    width: 34px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+    text-decoration: none;
+    transition: filter 0.15s, transform 0.15s;
+}
+
+.action-btn:hover {
+    filter: brightness(1.15);
+    transform: translateY(-1px);
+}
+
+.action-btn--edit    { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+.action-btn--enable   { background: rgba(34, 197, 94, 0.15); color: #4ade80; }
+.action-btn--disable  { background: rgba(249, 115, 22, 0.15); color: #fb923c; }
+.action-btn--delete   { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+
+
+.form-card {
+    background: var(--card-alt);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-soft);
+    overflow: hidden;
+    max-width: 640px;
+}
+
+.form-card__head {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border-soft);
+}
+
+.form-card__icon {
+    height: 44px;
+    width: 44px;
+    flex-shrink: 0;
+    border-radius: 12px;
+    background: var(--gold-soft);
+    color: var(--gold);
+    display: grid;
+    place-items: center;
+    font-size: 18px;
+}
+
+.form-card__head h2 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: var(--text);
+}
+
+.form-card__head p {
+    margin: 2px 0 0;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+}
+
+.form-card__body {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.form-card__actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-soft);
+}
+
+.form-card .btn--primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.user-cell .color-swatch {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+.requests-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.pending-value {
+    color: var(--gold-strong);
+}
+
+.request-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 1.25rem 1.5rem;
+    background: rgba(0, 0, 0, 0.15);
+    border-bottom: 1px solid var(--border-soft);
+}
+
+.request-summary__row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.9rem;
+    color: var(--text);
+}
+
+.request-summary__row i {
+    color: var(--gold);
+    width: 16px;
+    text-align: center;
+}
+
+.acq-hero {
+    text-align: center;
+    padding: 3rem 2rem;
+    background: var(--card-alt);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-soft);
+    margin-bottom: 2rem;
+    border: 1px solid var(--border);
+}
+
+.acq-hero__icon {
+    height: 64px;
+    width: 64px;
+    margin: 0 auto 1.25rem;
+    border-radius: 50%;
+    background: var(--gold-soft);
+    color: var(--gold);
+    display: grid;
+    place-items: center;
+    font-size: 26px;
+}
+
+.acq-hero__title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--gold-strong);
+    margin: 0 0 0.5rem;
+}
+
+.acq-hero__subtitle {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    margin: 0;
+    max-width: 440px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.acq-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+}
+
+.acq-card {
+    position: relative;
+    display: block;
+    background: var(--card-alt);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 2rem 1.75rem;
+    text-decoration: none;
+    color: var(--text);
+    box-shadow: var(--shadow-soft);
+    transition: border-color 0.2s, transform 0.2s;
+}
+
+.acq-card:hover {
+    border-color: rgba(232, 184, 74, 0.45);
+    transform: translateY(-3px);
+}
+
+.acq-card__icon {
+    height: 52px;
+    width: 52px;
+    border-radius: 14px;
+    display: grid;
+    place-items: center;
+    font-size: 22px;
+    margin-bottom: 1.25rem;
+}
+
+.acq-card__icon--gold   { background: var(--gold-soft); color: var(--gold); }
+.acq-card__icon--teal   { background: rgba(45, 212, 191, 0.15); color: var(--teal-accent); }
+.acq-card__icon--purple { background: rgba(124, 58, 237, 0.15); color: #a78bfa; }
+
+.acq-card__title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0 0 0.35rem;
+}
+
+.acq-card__desc {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+.acq-card__arrow {
+    position: absolute;
+    top: 1.75rem;
+    right: 1.75rem;
+    color: var(--text-dim);
+    font-size: 14px;
+    transition: color 0.2s, transform 0.2s;
+}
+
+.acq-card:hover .acq-card__arrow {
+    color: var(--gold);
+    transform: translateX(3px);
+}
+
+
+/* ==========================================================================
+   29. PAGE : PROSPECTS — Légende déroulante + Pagination
+   Fichier source : leads.html.twig (page liste des prospects)
+   Ces composants n'existaient pas encore dans app.css — le bouton "? Aide"
+   togglait une classe .hidden qui n'était définie nulle part, donc le clic
+   ne produisait aucun effet visuel. Corrigé ici en suivant le même principe
+   que les dropdowns existants (.topbar-notif-dropdown.is-open, section 2) :
+   fermé par défaut, une classe .is-open l'affiche.
+   ========================================================================== */
+
+/* -- Bouton "? Aide" -- */
+.legend-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.legend-trigger {
+    padding: 0.5rem 1rem;
+    background: var(--card-2);
+    color: var(--text);
+    border: 1px solid var(--border-soft);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.legend-trigger:hover {
+    background: var(--gold-soft);
+    border-color: var(--gold);
+    color: var(--gold);
+}
+
+/* -- Panneau déroulant -- */
+.legend-panel {
+    display: none;
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: 320px;
+    max-height: 420px;
+    overflow-y: auto;
+    background: var(--card);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-soft);
+    padding: 1.25rem;
+    z-index: 200;
+    color: var(--text);
+}
+
+.legend-panel.is-open {
+    display: block;
+    animation: legendUnfold 0.2s ease;
+}
+
+@keyframes legendUnfold {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.legend-panel__title {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--gold-strong);
+    margin: 1rem 0 0.5rem;
+}
+
+.legend-panel__title--intro {
+    margin-top: 0;
+}
+
+.legend-panel__intro {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin: 0 0 0.75rem;
+}
+
+.legend-panel__row {
+    font-size: 0.8rem;
+    color: var(--text);
+    padding: 0.35rem 0;
+    border-bottom: 1px solid var(--border-soft);
+}
+
+.legend-panel__row--gap {
+    margin-bottom: 0.5rem;
+    border-bottom: none;
+}
+
+.legend-panel__list {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+}
+
+.legend-panel__close {
+    display: block;
+    width: 100%;
+    margin-top: 1rem;
+    padding: 0.5rem;
+    background: var(--card-2);
+    color: var(--text-muted);
+    border: 1px solid var(--border-soft);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+}
+
+.legend-panel__close:hover {
+    background: var(--gold-soft);
+    color: var(--gold);
+}
+
+@media (max-width: 768px) {
+    .legend-panel {
+        position: fixed;
+        top: 64px;
+        left: 8px;
+        right: 8px;
+        width: auto;
+    }
+}
+
+/* -- Pagination -- */
+.pagination {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+}
+
+.pagination__link,
+.pagination__page {
+    display: inline-block;
+    padding: 0.5rem 0.9rem;
+    border-radius: 6px;
+    background: var(--card-alt);
+    color: var(--text);
+    text-decoration: none;
+    font-size: 0.85rem;
+    border: 1px solid var(--border-soft);
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.pagination__link:hover,
+.pagination__page:hover {
+    border-color: var(--gold);
+    color: var(--gold);
+}
+
+.pagination__page--active {
+    background: var(--gold);
+    color: var(--bg);
+    border-color: var(--gold);
+    font-weight: 600;
+}
+
+.pagination__total {
+    margin-left: auto;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+}
+
+@media (max-width: 768px) {
+    .pagination__total {
+        margin-left: 0;
+        width: 100%;
+        text-align: center;
+    }
+}
+
+
+
+
+
+
         /* ==========================================================================
  /* ==========================================================================
-   RESPONSIVE MOBILE (<768px)
+   28 RESPONSIVE MOBILE (<768px)
    Topbar mobile + Bottom navigation + Ajustements globaux
    ========================================================================== */
 
@@ -3478,8 +3973,129 @@ form .invalid-feedback {
         padding-bottom: 70px;
     }
 
+    .requests-actions {
+        flex-direction: column;
+    }
+    .requests-actions .btn {
+        width: 100%;
+        justify-content: center;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .acq-hero {
+        padding: 2rem 1.25rem;
+    }
+    .acq-hero__title {
+        font-size: 1.2rem;
+    }
+    .acq-grid {
+        grid-template-columns: 1fr;
+    }
+
     .content {
         padding: 1rem;
+    }
+#calendar {
+        padding: 0.6rem;
+        max-width: 1000%;
+        max-height: 20%;
+    }
+    #calendar .fc-toolbar {
+        flex-direction: column;
+        gap: 8px;
+    }
+    #calendar .fc-toolbar-title {
+        font-size: 0.9rem;
+    }
+    #calendar .fc-button {
+        padding: 3px 7px !important;
+        font-size: 10px !important;
+    }
+    #calendar .fc-daygrid-day-frame {
+        min-height: 34px !important;
+    }
+    #calendar .fc-daygrid-day-number {
+        font-size: 10px;
+        padding: 1px 3px;
+    }
+    #calendar .fc-col-header-cell {
+        font-size: 9px;
+        padding: 3px 0;
+    }
+    #calendar .fc-daygrid-day-events {
+        min-height: 0;
+    }
+    #calendar .fc-mission-event .fc-event-main {
+        padding: 1px 4px;
+        font-size: 8px;
+    }
+    #calendar .fc-list-day-cushion {
+        background: var(--card-2) !important;
+    }
+    #calendar .fc-list-event:hover td {
+        background: var(--card-2) !important;
+    }
+    #calendar .fc-list-event-title,
+    #calendar .fc-list-event-time {
+        color: var(--text) !important;
+    }
+
+    #calendar .fc-daygrid-day-frame {
+        min-height: 34px !important;
+        max-height: 34px !important;
+    }
+    #calendar .fc-daygrid-day-top {
+        justify-content: center;
+    }
+
+    .form-card {
+        max-width: 100%;
+    }
+    .form-grid-2 {
+        grid-template-columns: 1fr !important;
+    }
+
+    .users-table thead {
+        display: none;
+    }
+    .users-table,
+    .users-table tbody,
+    .users-table tr,
+    .users-table td {
+        display: block;
+        width: 100%;
+    }
+    .users-table tbody tr {
+        background: var(--card-2);
+        border-radius: 12px;
+        padding: 12px 14px;
+        margin-bottom: 10px;
+        border: 1px solid var(--border-soft);
+    }
+    .users-table td {
+        padding: 6px 0;
+        border: none;
+        font-size: 13px;
+    }
+    .users-table td::before {
+        content: attr(data-label);
+        display: block;
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--text-dim);
+        margin-bottom: 2px;
+    }
+    .users-table td[data-label="Nom"]::before {
+        display: none;
+    }
+    .users-table td[data-label="Actions"] {
+        padding-top: 10px;
+    }
+    .row-actions {
+        justify-content: flex-start;
     }
 
     /* ==========================

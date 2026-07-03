@@ -7,13 +7,16 @@
 
     <div class="mb-md">
         <a href="{{ path('app_user_new') }}" class="btn btn--primary btn--md">
-            + Nouvel utilisateur
+            <i class="fa-solid fa-plus"></i> Nouvel utilisateur
         </a>
     </div>
 
-    <div class="mb-xl">
-        <h2>Propriétaires ({{ owners|length }})</h2>
-        <table class="data-table mt-md">
+    <div class="mb-xl card users-card">
+        <div class="users-card__head">
+            <h2>Propriétaires</h2>
+            <span class="users-count">{{ owners|length }}</span>
+        </div>
+        <table class="data-table users-table">
             <thead>
                 <tr>
                     <th>Nom</th>
@@ -27,26 +30,33 @@
             <tbody>
                 {% for owner in owners %}
                 <tr class="{{ 'ROLE_DISABLED' in owner.roles ? 'data-table__row--disabled' : '' }}">
-                    <td>{{ owner.firstname }} {{ owner.lastname }}</td>
-                    <td>{{ owner.email }}</td>
-                    <td>{{ owner.phone ?? '-' }}</td>
-                    <td>{{ owner.createdAt|date('d/m/Y') }}</td>
-                    <td>
+                    <td data-label="Nom">
+                        <div class="user-cell">
+                            <span class="user-avatar">{{ owner.firstname|first }}{{ owner.lastname|first }}</span>
+                            {{ owner.firstname }} {{ owner.lastname }}
+                        </div>
+                    </td>
+                    <td data-label="Email">{{ owner.email }}</td>
+                    <td data-label="Téléphone">{{ owner.phone ?? '-' }}</td>
+                    <td data-label="Créé le">{{ owner.createdAt|date('d/m/Y') }}</td>
+                    <td data-label="Statut">
                         {% if 'ROLE_DISABLED' in owner.roles %}
                             <span class="status-badge status-badge--sm status-badge--danger">Désactivé</span>
                         {% else %}
                             <span class="status-badge status-badge--sm status-badge--success">Actif</span>
                         {% endif %}
                     </td>
-                    <td>
-                        <a href="{{ path('app_user_edit', {id: owner.id}) }}" class="text-link">Modifier</a>
-                        <a href="{{ path('app_user_toggle', {id: owner.id}) }}" class="text-link {{ 'ROLE_DISABLED' in owner.roles ? 'text-link--success' : 'text-link--warning' }} ml-sm">
-                            {{ 'ROLE_DISABLED' in owner.roles ? 'Activer' : 'Désactiver' }}
-                        </a>
-                        <form method="post" action="{{ path('app_user_delete', {id: owner.id}) }}" class="inline" onsubmit="return confirm('Supprimer définitivement {{ owner.firstname }} {{ owner.lastname }} ?')">
-                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ owner.id) }}">
-                            <button type="submit" class="text-btn text-btn--danger ml-sm">Supprimer</button>
-                        </form>
+                    <td data-label="Actions">
+                        <div class="row-actions">
+                            <a href="{{ path('app_user_edit', {id: owner.id}) }}" class="action-btn action-btn--edit" title="Modifier"><i class="fa-solid fa-pen"></i></a>
+                            <a href="{{ path('app_user_toggle', {id: owner.id}) }}" class="action-btn {{ 'ROLE_DISABLED' in owner.roles ? 'action-btn--enable' : 'action-btn--disable' }}" title="{{ 'ROLE_DISABLED' in owner.roles ? 'Activer' : 'Désactiver' }}">
+                                <i class="fa-solid {{ 'ROLE_DISABLED' in owner.roles ? 'fa-toggle-off' : 'fa-toggle-on' }}"></i>
+                            </a>
+                            <form method="post" action="{{ path('app_user_delete', {id: owner.id}) }}" class="inline" onsubmit="return confirm('Supprimer définitivement {{ owner.firstname }} {{ owner.lastname }} ?')">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ owner.id) }}">
+                                <button type="submit" class="action-btn action-btn--delete" title="Supprimer"><i class="fa-solid fa-trash"></i></button>
+                            </form>
+                        </div>
                     </td>
                 </tr>
                 {% else %}
@@ -58,9 +68,12 @@
         </table>
     </div>
 
-    <div>
-        <h2>Femmes de ménage ({{ cleaners|length }})</h2>
-        <table class="data-table mt-md">
+    <div class="card users-card">
+        <div class="users-card__head">
+            <h2>Femmes de ménage</h2>
+            <span class="users-count">{{ cleaners|length }}</span>
+        </div>
+        <table class="data-table users-table">
             <thead>
                 <tr>
                     <th>Nom</th>
@@ -74,26 +87,33 @@
             <tbody>
                 {% for cleaner in cleaners %}
                 <tr class="{{ 'ROLE_DISABLED' in cleaner.roles ? 'data-table__row--disabled' : '' }}">
-                    <td>{{ cleaner.firstname }} {{ cleaner.lastname }}</td>
-                    <td>{{ cleaner.email }}</td>
-                    <td>{{ cleaner.phone ?? '-' }}</td>
-                    <td>{{ cleaner.createdAt|date('d/m/Y') }}</td>
-                    <td>
+                    <td data-label="Nom">
+                        <div class="user-cell">
+                            <span class="user-avatar">{{ cleaner.firstname|first }}{{ cleaner.lastname|first }}</span>
+                            {{ cleaner.firstname }} {{ cleaner.lastname }}
+                        </div>
+                    </td>
+                    <td data-label="Email">{{ cleaner.email }}</td>
+                    <td data-label="Téléphone">{{ cleaner.phone ?? '-' }}</td>
+                    <td data-label="Créé le">{{ cleaner.createdAt|date('d/m/Y') }}</td>
+                    <td data-label="Statut">
                         {% if 'ROLE_DISABLED' in cleaner.roles %}
                             <span class="status-badge status-badge--sm status-badge--danger">Désactivé</span>
                         {% else %}
                             <span class="status-badge status-badge--sm status-badge--success">Actif</span>
                         {% endif %}
                     </td>
-                    <td>
-                        <a href="{{ path('app_user_edit', {id: cleaner.id}) }}" class="text-link">Modifier</a>
-                        <a href="{{ path('app_user_toggle', {id: cleaner.id}) }}" class="text-link {{ 'ROLE_DISABLED' in cleaner.roles ? 'text-link--success' : 'text-link--warning' }} ml-sm">
-                            {{ 'ROLE_DISABLED' in cleaner.roles ? 'Activer' : 'Désactiver' }}
-                        </a>
-                        <form method="post" action="{{ path('app_user_delete', {id: cleaner.id}) }}" class="inline" onsubmit="return confirm('Supprimer définitivement {{ cleaner.firstname }} {{ cleaner.lastname }} ?')">
-                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ cleaner.id) }}">
-                            <button type="submit" class="text-btn text-btn--danger ml-sm">Supprimer</button>
-                        </form>
+                    <td data-label="Actions">
+                        <div class="row-actions">
+                            <a href="{{ path('app_user_edit', {id: cleaner.id}) }}" class="action-btn action-btn--edit" title="Modifier"><i class="fa-solid fa-pen"></i></a>
+                            <a href="{{ path('app_user_toggle', {id: cleaner.id}) }}" class="action-btn {{ 'ROLE_DISABLED' in cleaner.roles ? 'action-btn--enable' : 'action-btn--disable' }}" title="{{ 'ROLE_DISABLED' in cleaner.roles ? 'Activer' : 'Désactiver' }}">
+                                <i class="fa-solid {{ 'ROLE_DISABLED' in cleaner.roles ? 'fa-toggle-off' : 'fa-toggle-on' }}"></i>
+                            </a>
+                            <form method="post" action="{{ path('app_user_delete', {id: cleaner.id}) }}" class="inline" onsubmit="return confirm('Supprimer définitivement {{ cleaner.firstname }} {{ cleaner.lastname }} ?')">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ cleaner.id) }}">
+                                <button type="submit" class="action-btn action-btn--delete" title="Supprimer"><i class="fa-solid fa-trash"></i></button>
+                            </form>
+                        </div>
                     </td>
                 </tr>
                 {% else %}

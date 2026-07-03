@@ -3,33 +3,37 @@
 {% block title %}Acquisition — DP Services{% endblock %}
 {% block page_title %}Module Acquisition{% endblock %}
 
-{# Pas de <link> ici : app.css est chargé une seule fois dans base.html.twig #}
-
 {% block body %}
-    <div class="welcome">
-        <h2>🎯 Bienvenue dans le module Acquisition</h2>
-        <p>Ce module vous permet de trouver et gérer vos prospects.</p>
 
-        <div class="action-grid">
-
-            <a href="{{ path('app_leads') }}" class="action-card">
-                <div class="action-card__icon">👥</div>
-                <h3 class="action-card__title">Prospects</h3>
-                <p class="action-card__desc">Gérer vos leads</p>
-            </a>
-
-            <a href="{{ path('app_lead_search') }}" class="action-card">
-                <div class="action-card__icon">🔍</div>
-                <h3 class="action-card__title">Recherche</h3>
-                <p class="action-card__desc">Trouver des prospects</p>
-            </a>
-
-            <a href="{{ path('app_acquisition_dashboard') }}" target="_blank" class="action-card">
-                <div class="action-card__icon">📊</div>
-                <h3 class="action-card__title">Dashboard</h3>
-                <p class="action-card__desc">Statistiques</p>
-            </a>
-
-        </div>
+    <div class="acq-hero">
+        <div class="acq-hero__icon"><i class="fa-solid fa-bullseye"></i></div>
+        <h2 class="acq-hero__title">Bienvenue dans le module Acquisition</h2>
+        <p class="acq-hero__subtitle">Trouvez, suivez et convertissez vos prospects en un seul endroit.</p>
     </div>
+
+    <div class="acq-grid">
+
+        <a href="{{ path('app_leads') }}" class="acq-card">
+            <div class="acq-card__icon acq-card__icon--gold"><i class="fa-solid fa-users"></i></div>
+            <h3 class="acq-card__title">Prospects</h3>
+            <p class="acq-card__desc">Gérer vos leads</p>
+            <span class="acq-card__arrow"><i class="fa-solid fa-arrow-right"></i></span>
+        </a>
+
+        <a href="{{ path('app_lead_search') }}" class="acq-card">
+            <div class="acq-card__icon acq-card__icon--teal"><i class="fa-solid fa-magnifying-glass"></i></div>
+            <h3 class="acq-card__title">Recherche</h3>
+            <p class="acq-card__desc">Trouver des prospects</p>
+            <span class="acq-card__arrow"><i class="fa-solid fa-arrow-right"></i></span>
+        </a>
+
+        <a href="{{ path('app_acquisition_dashboard') }}" target="_blank" class="acq-card">
+            <div class="acq-card__icon acq-card__icon--purple"><i class="fa-solid fa-chart-line"></i></div>
+            <h3 class="acq-card__title">Dashboard</h3>
+            <p class="acq-card__desc">Statistiques</p>
+            <span class="acq-card__arrow"><i class="fa-solid fa-arrow-up-right-from-square"></i></span>
+        </a>
+
+    </div>
+
 {% endblock %}

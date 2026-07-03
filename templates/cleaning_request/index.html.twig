@@ -16,73 +16,83 @@
                 <option value="CANCELLED" {{ currentStatus == 'CANCELLED' ? 'selected' : '' }}>❌ Annulée</option>
             </select>
             <input type="date" name="date" value="{{ currentDate }}">
-            <button type="submit">Filtrer</button>
+            <button type="submit"><i class="fa-solid fa-filter"></i> Filtrer</button>
             <a href="{{ path('app_requests') }}" class="filters__reset">Réinitialiser</a>
         </form>
     </div>
 
-    <div class="u-mb-1">
-        <a href="{{ path('app_request_new') }}" class="btn-link">
-            + Nouvelle demande
+    <div class="mb-md requests-actions">
+        <a href="{{ path('app_request_new') }}" class="btn btn--primary btn--md">
+            <i class="fa-solid fa-plus"></i> Nouvelle demande
         </a>
-        <a href="{{ path('app_requests_pending') }}" class="btn-link">
-            ⏳ Modifications en attente
+        <a href="{{ path('app_requests_pending') }}" class="btn btn--secondary btn--md">
+            <i class="fa-solid fa-hourglass-half"></i> Modifications en attente
         </a>
     </div>
 
-    <table class="data-table">
-        <thead>
-            <tr>
-                <th>Logement</th>
-                <th>Prestation</th>
-                <th>Date</th>
-                <th>Heure</th>
-                <th>Femme de ménage</th>
-                <th>Statut</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for req in requests %}
-            <tr>
-                <td>
-                    <span class="property-dot property-dot--square" style="background:{{ req.property.color }};"></span>
-                    {{ req.property.name }}
-                </td>
-                <td>{{ req.service.name }}</td>
-                <td>{{ req.scheduledDate|date('d/m/Y') }}</td>
-                <td>{{ req.scheduledTime|date('H:i') }}</td>
-                <td>{{ req.assignedCleaner ? req.assignedCleaner.firstname ~ ' ' ~ req.assignedCleaner.lastname : '—' }}</td>
-                <td>
-                    {% if req.status == 'PENDING' %}
-                        <span class="status-badge status-badge--pending">En attente</span>
-                    {% elseif req.status == 'VALIDATED' %}
-                        <span class="status-badge status-badge--validated">Validée</span>
-                    {% elseif req.status == 'COMPLETED' %}
-                        <span class="status-badge status-badge--completed">Terminée</span>
-                    {% elseif req.status == 'CANCELLED' %}
-                        <span class="status-badge status-badge--cancelled">Annulée</span>
-                    {% endif %}
-                </td>
-                <td>
-                    <a href="{{ path('app_request_validate', {id: req.id}) }}" class="table-action-link">Valider</a>
-                    <form method="post" action="{{ path('app_request_complete', {id: req.id}) }}" class="inline-form">
-                        <input type="hidden" name="_token" value="{{ csrf_token('complete' ~ req.id) }}">
-                        <button type="submit" class="table-action-btn table-action-btn--success">Terminer</button>
-                    </form>
-                    <form method="post" action="{{ path('app_request_cancel', {id: req.id}) }}" class="inline-form" onsubmit="return confirm('Annuler ?')">
-                        <input type="hidden" name="_token" value="{{ csrf_token('cancel' ~ req.id) }}">
-                        <button type="submit" class="table-action-btn table-action-btn--danger">Annuler</button>
-                    </form>
-                </td>
-            </tr>
-            {% else %}
-            <tr>
-                <td colspan="7" class="table-empty-cell">Aucune demande</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div class="card users-card">
+        <div class="users-card__head">
+            <h2>Demandes</h2>
+            <span class="users-count">{{ requests|length }}</span>
+        </div>
+        <table class="data-table users-table">
+            <thead>
+                <tr>
+                    <th>Logement</th>
+                    <th>Prestation</th>
+                    <th>Date</th>
+                    <th>Heure</th>
+                    <th>Femme de ménage</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for req in requests %}
+                <tr>
+                    <td data-label="Logement">
+                        <div class="user-cell">
+                            <span class="property-dot property-dot--square" style="background:{{ req.property.color }};"></span>
+                            {{ req.property.name }}
+                        </div>
+                    </td>
+                    <td data-label="Prestation">{{ req.service.name }}</td>
+                    <td data-label="Date">{{ req.scheduledDate|date('d/m/Y') }}</td>
+                    <td data-label="Heure">{{ req.scheduledTime|date('H:i') }}</td>
+                    <td data-label="Femme de ménage">{{ req.assignedCleaner ? req.assignedCleaner.firstname ~ ' ' ~ req.assignedCleaner.lastname : '—' }}</td>
+                    <td data-label="Statut">
+                        {% if req.status == 'PENDING' %}
+                            <span class="status-badge status-badge--sm status-badge--pending">En attente</span>
+                        {% elseif req.status == 'VALIDATED' %}
+                            <span class="status-badge status-badge--sm status-badge--validated">Validée</span>
+                        {% elseif req.status == 'COMPLETED' %}
+                            <span class="status-badge status-badge--sm status-badge--completed">Terminée</span>
+                        {% elseif req.status == 'CANCELLED' %}
+                            <span class="status-badge status-badge--sm status-badge--cancelled">Annulée</span>
+                        {% endif %}
+                    </td>
+                    <td data-label="Actions">
+                        <div class="row-actions">
+                            <a href="{{ path('app_request_validate', {id: req.id}) }}" class="action-btn action-btn--enable" title="Valider"><i class="fa-solid fa-check"></i></a>
+                            <form method="post" action="{{ path('app_request_complete', {id: req.id}) }}" class="inline-form">
+                                <input type="hidden" name="_token" value="{{ csrf_token('complete' ~ req.id) }}">
+                                <button type="submit" class="action-btn action-btn--edit" title="Terminer"><i class="fa-solid fa-flag-checkered"></i></button>
+                            </form>
+                            <form method="post" action="{{ path('app_request_cancel', {id: req.id}) }}" class="inline-form" onsubmit="return confirm('Annuler ?')">
+                                <input type="hidden" name="_token" value="{{ csrf_token('cancel' ~ req.id) }}">
+                                <button type="submit" class="action-btn action-btn--delete" title="Annuler"><i class="fa-solid fa-xmark"></i></button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="table-empty-cell">Aucune demande</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
     <div class="u-mt-1">
         {{ knp_pagination_render(requests) }}

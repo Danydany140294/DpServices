@@ -7,44 +7,53 @@
 
     <div class="mb-md">
         <a href="{{ path('app_property_new') }}" class="btn btn--primary btn--md">
-            + Nouveau logement
+            <i class="fa-solid fa-plus"></i> Nouveau logement
         </a>
     </div>
 
-    <table class="data-table">
-        <thead>
-            <tr>
-                <th>Couleur</th>
-                <th>Nom</th>
-                <th>Ville</th>
-                <th>Propriétaire</th>
-                <th>Créé le</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for property in properties %}
-            <tr>
-                <td>
-                    <span class="color-swatch" style="background:{{ property.color }};"></span>
-                </td>
-                <td>{{ property.name }}</td>
-                <td>{{ property.city }}</td>
-                <td>{{ property.owner.firstname }} {{ property.owner.lastname }}</td>
-                <td>{{ property.createdAt|date('d/m/Y') }}</td>
-                <td>
-                    <a href="{{ path('app_property_edit', {id: property.id}) }}" class="text-link mr-md">Modifier</a>
-                    <form method="post" action="{{ path('app_property_delete', {id: property.id}) }}" class="inline" onsubmit="return confirm('Supprimer ce logement ?')">
-                        <button type="submit" class="text-btn text-btn--danger">Supprimer</button>
-                    </form>
-                </td>
-            </tr>
-            {% else %}
-            <tr>
-                <td colspan="6" class="data-table__empty">Aucun logement</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div class="card users-card">
+        <div class="users-card__head">
+            <h2>Logements</h2>
+            <span class="users-count">{{ properties|length }}</span>
+        </div>
+        <table class="data-table users-table">
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th>Ville</th>
+                    <th>Propriétaire</th>
+                    <th>Créé le</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for property in properties %}
+                <tr>
+                    <td data-label="Nom">
+                        <div class="user-cell">
+                            <span class="color-swatch" style="background:{{ property.color }};"></span>
+                            {{ property.name }}
+                        </div>
+                    </td>
+                    <td data-label="Ville">{{ property.city }}</td>
+                    <td data-label="Propriétaire">{{ property.owner.firstname }} {{ property.owner.lastname }}</td>
+                    <td data-label="Créé le">{{ property.createdAt|date('d/m/Y') }}</td>
+                    <td data-label="Actions">
+                        <div class="row-actions">
+                            <a href="{{ path('app_property_edit', {id: property.id}) }}" class="action-btn action-btn--edit" title="Modifier"><i class="fa-solid fa-pen"></i></a>
+                            <form method="post" action="{{ path('app_property_delete', {id: property.id}) }}" class="inline" onsubmit="return confirm('Supprimer ce logement ?')">
+                                <button type="submit" class="action-btn action-btn--delete" title="Supprimer"><i class="fa-solid fa-trash"></i></button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="data-table__empty">Aucun logement</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
 {% endblock %}
