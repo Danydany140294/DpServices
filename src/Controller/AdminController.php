@@ -6,6 +6,7 @@ use App\Repository\ActivityLogRepository;
 use App\Repository\CleaningRequestRepository;
 use App\Repository\PropertyRepository;
 use App\Repository\UserRepository;
+use App\Service\GoogleCalendarService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -20,7 +21,8 @@ class AdminController extends AbstractController
         UserRepository $userRepo,
         PropertyRepository $propertyRepo,
         CleaningRequestRepository $requestRepo,
-        ActivityLogRepository $logRepo
+        ActivityLogRepository $logRepo,
+        GoogleCalendarService $googleCalendarService
     ): Response {
         $owners = $userRepo->findByRole('ROLE_OWNER');
         $cleaners = $userRepo->findByRole('ROLE_CLEANER');
@@ -60,8 +62,8 @@ class AdminController extends AbstractController
         // ════════════════════════════════════════════════════════════
         // -- Mini calendrier hebdomadaire (dashboard) --
         // Calcule la semaine en cours (lundi -> dimanche) et transforme
-        // les CleaningRequest de cette semaine en événements pour le
-        // widget .dash-cal-* du dashboard.
+        // les CleaningRequest + événements Google Calendar de cette
+        // semaine en événements pour le widget .dash-cal-* du dashboard.
         //
         // Règles d'affichage selon le nombre de missions du même jour :
         //   1 mission        -> positionnée selon l'heure, titre + logement
@@ -86,14 +88,55 @@ class AdminController extends AbstractController
             return $r->getScheduledDate() >= $weekStart && $r->getScheduledDate() < $weekEndExclusive;
         });
 
-        // -- Regroupe les missions par jour (0 = lundi ... 6 = dimanche) --
-        $missionsByDay = [];
+        // -- Normalisation : CleaningRequest -> tableau simple --
+        $normalized = [];
         foreach ($missionsWeek as $mission) {
-            $day = (int) $weekStart->diff($mission->getScheduledDate())->days;
-            if ($day < 0 || $day > 6 || $mission->getScheduledTime() === null) {
+            $normalized[] = [
+                'date' => $mission->getScheduledDate(),
+                'time' => $mission->getScheduledTime(),
+                'tone' => in_array($mission->getStatus(), ['VALIDATED', 'COMPLETED'], true) ? 'gold' : 'teal',
+                'title' => $mission->getService()?->getName() ?? 'Prestation',
+                'place' => $mission->getProperty()?->getName() ?? '',
+            ];
+        }
+
+        // -- Ajout des événements Google Calendar de la semaine --
+        try {
+            $googleEvents = $googleCalendarService->listEvents($weekStart, $weekEndExclusive);
+            foreach ($googleEvents as $gEvent) {
+                $start = $gEvent->getStart();
+                $startDateTime = $start->getDateTime() ?? $start->getDate();
+
+                if ($startDateTime === null) {
+                    continue;
+                }
+
+                $dt = new \DateTime($startDateTime);
+// On extrait uniquement la date calendaire (Y-m-d), en ignorant le fuseau
+// horaire de l'événement, pour que le regroupement par jour soit cohérent
+// avec $weekStart (qui utilise le fuseau par défaut du serveur).
+$dateOnly = new \DateTime($dt->format('Y-m-d'));
+
+$normalized[] = [
+    'date' => $dateOnly,
+    'time' => $dt,
+    'tone' => 'gold',
+    'title' => $gEvent->getSummary() ?: '(Sans titre)',
+    'place' => '',
+];
+            }
+        } catch (\Throwable $e) {
+            // Le dashboard reste utilisable même si Google est indisponible.
+        }
+
+        // -- Regroupe par jour (0 = lundi ... 6 = dimanche) --
+        $missionsByDay = [];
+        foreach ($normalized as $item) {
+            $day = (int) $weekStart->diff($item['date'])->days;
+            if ($day < 0 || $day > 6) {
                 continue;
             }
-            $missionsByDay[$day][] = $mission;
+            $missionsByDay[$day][] = $item;
         }
 
         // -- Tableau "jours" pour l'en-tête du mini calendrier --
@@ -118,19 +161,19 @@ class AdminController extends AbstractController
 
         foreach ($missionsByDay as $day => $missionsThatDay) {
             // Tri par heure croissante (ordre d'empilement / d'affichage).
-            usort($missionsThatDay, fn($a, $b) => $a->getScheduledTime() <=> $b->getScheduledTime());
+            usort($missionsThatDay, fn($a, $b) => $a['time'] <=> $b['time']);
             $count = count($missionsThatDay);
 
             // -- 4 missions ou plus : pas de rendu dans la grille, tout part
             //    dans la liste "missionsDebordantes" affichée sous le calendrier. --
             if ($count >= 4) {
-                foreach ($missionsThatDay as $mission) {
+                foreach ($missionsThatDay as $item) {
                     $missionsDebordantes[] = [
                         'dayLabel' => $dayLabels[$day],
-                        'time' => $mission->getScheduledTime()->format('H:i'),
-                        'tone' => in_array($mission->getStatus(), ['VALIDATED', 'COMPLETED'], true) ? 'gold' : 'teal',
-                        'title' => $mission->getService()?->getName() ?? 'Prestation',
-                        'place' => $mission->getProperty()?->getName() ?? '',
+                        'time' => $item['time']->format('H:i'),
+                        'tone' => $item['tone'],
+                        'title' => $item['title'],
+                        'place' => $item['place'],
                     ];
                 }
                 continue;
@@ -138,8 +181,8 @@ class AdminController extends AbstractController
 
             // -- 1 seule mission : comportement inchangé, positionnée selon l'heure --
             if ($count === 1) {
-                $mission = $missionsThatDay[0];
-                $time = $mission->getScheduledTime();
+                $item = $missionsThatDay[0];
+                $time = $item['time'];
                 $hourDecimal = (int) $time->format('H') + ((int) $time->format('i') / 60);
                 $top = ($hourDecimal - $calendarStartHour) / ($calendarEndHour - $calendarStartHour) * 100;
                 $top = max(0, min(95, $top));
@@ -148,9 +191,10 @@ class AdminController extends AbstractController
                     'day' => $day,
                     'mode' => 'positioned',
                     'top' => round($top, 1),
-                    'tone' => in_array($mission->getStatus(), ['VALIDATED', 'COMPLETED'], true) ? 'gold' : 'teal',
-                    'title' => $mission->getService()?->getName() ?? 'Prestation',
-                    'place' => $mission->getProperty()?->getName() ?? '',
+                    'tone' => $item['tone'],
+                    'title' => $item['title'],
+                    'place' => $item['place'],
+                    
                 ];
                 continue;
             }
@@ -158,13 +202,14 @@ class AdminController extends AbstractController
             // -- 2 ou 3 missions : empilées verticalement, titre seul, sans
             //    tenir compte de l'heure réelle pour la position (on les
             //    répartit simplement du haut vers le bas de la grille). --
-            foreach ($missionsThatDay as $index => $mission) {
+            foreach ($missionsThatDay as $index => $item) {
                 $evenements[] = [
                     'day' => $day,
                     'mode' => 'stacked',
                     'top' => 5 + ($index * 30),
-                    'tone' => in_array($mission->getStatus(), ['VALIDATED', 'COMPLETED'], true) ? 'gold' : 'teal',
-                    'title' => $mission->getService()?->getName() ?? 'Prestation',
+                    'tone' => $item['tone'],
+                    'title' => $item['title'],
+                    
                 ];
             }
         }

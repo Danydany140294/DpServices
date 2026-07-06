@@ -1,5 +1,9 @@
 {% extends 'base.html.twig' %}
 
+{% block stylesheets %}
+    {{ encore_entry_link_tags('calendar') }}
+{% endblock %}
+
 {% block title %}Admin — DP Services{% endblock %}
 {% block page_title %}Tableau de bord{% endblock %}
 
@@ -322,14 +326,14 @@
             </div>
         </div>
 
-        <div class="card card-quicklinks">
-            <h2 class="section-title">Accès rapides</h2>
+        {# <div class="card card-quicklinks">
+            {# <h2 class="section-title">Accès rapides</h2>
             <div class="quick-links">
                 <a href="{{ path('app_user_new') }}" class="btn-quick btn-quick--blue">+ Utilisateur</a>
                 <a href="{{ path('app_property_new') }}" class="btn-quick btn-quick--green">+ Logement</a>
                 <a href="{{ path('app_service_new') }}" class="btn-quick btn-quick--orange">+ Prestation</a>
                 <a href="{{ path('app_request_new') }}" class="btn-quick btn-quick--purple">+ Demande</a>
-            </div>
+            </div> #}
             {# ⚠️ Les 4 KPI d'origine (Propriétaires/Femmes de ménage/
                Logements/Total demandes) ont été retirés de l'affichage
                principal car redondants avec les nouveaux KPI riches en
@@ -356,7 +360,7 @@
                 </div>
             </div>
             #}
-        </div>
+        
 
     </div>
 
