@@ -819,7 +819,18 @@ a { color: inherit; }
     margin-bottom: 2px !important;
 }
 
-#calendar .fc-mission-event .fc-event-main { padding: 2px 6px; border-radius: 5px; font-size: 10px; line-height: 1.4; }
+#calendar .fc-mission-event .fc-event-main {
+    padding: 2px 6px;
+    border-radius: 5px;
+    font-size: 10px;
+    line-height: 1.4;
+    text-align: center;
+}
+
+#calendar .fc-mission-event {
+    margin-left: 35px !important;
+    margin-right: 35px !important;
+}
 #calendar .fc-mission-event .fc-event-time { font-weight: 600; margin-right: 4px; }
 
 #calendar .fc-mission-event.fc-status-pending .fc-event-main { background: rgba(232, 184, 74, 0.18); color: #F0C868; }
@@ -1965,7 +1976,7 @@ form .invalid-feedback { color: #dc2626; font-size: 0.8rem; margin-top: 0.25rem;
 .dash-cal-grid {
     position: relative;
     margin-top: 6px;
-    height: 110px;
+    height: 250px;
     border-radius: 12px;
     border: 1px solid var(--border-soft);
     background: rgba(0, 0, 0, 0.15);
@@ -1979,7 +1990,7 @@ form .invalid-feedback { color: #dc2626; font-size: 0.8rem; margin-top: 0.25rem;
 .dash-cal-cols { position: absolute; inset: 0; padding-left: 44px; padding-right: 6px; display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
 .dash-cal-col { position: relative; }
 
-.dash-event { position: absolute; left: 2px; right: 2px; padding: 5px 8px; border-radius: 6px; font-size: 10px; line-height: 1.3; border: 1px solid; overflow: hidden; box-sizing: border-box; }
+.dash-event { position: absolute; left: 75px; right: 75px; text-align: center; padding: 5px 8px; border-radius: 6px; font-size: 10px; line-height: 1.3; border: 1px solid; overflow: hidden; box-sizing: border-box; }
 .dash-event .t { font-weight: 600; }
 .dash-event .p { opacity: 0.75; font-size: 9px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
@@ -2164,7 +2175,6 @@ form .invalid-feedback { color: #dc2626; font-size: 0.8rem; margin-top: 0.25rem;
 /* ==========================================================================
    29. RESPONSIVE MOBILE (<768px)
    ========================================================================== */
-
 @media (max-width: 768px) {
 
     .app-layout { flex-direction: column; }
@@ -2181,11 +2191,21 @@ form .invalid-feedback { color: #dc2626; font-size: 0.8rem; margin-top: 0.25rem;
 
     .content { padding: 1rem; }
 
+    #calendar .fc-mission-event {
+    margin-left: 2px !important;
+    margin-right: 2px !important;
+}
+
+#calendar .fc-daygrid-day-frame { min-height: 46px !important; max-height: 46px !important; }
+#calendar .fc-mission-event .fc-event-main { font-size: 9px; padding: 1px 3px; }
+#calendar .fc-col-header-cell { font-size: 9.5px; }
+#calendar .fc-daygrid-day-number { font-size: 10.5px; }
+
     #calendar { padding: 0.6rem; max-width: 100%; }
     #calendar .fc-toolbar { flex-direction: column; gap: 8px; }
     #calendar .fc-toolbar-title { font-size: 0.9rem; }
     #calendar .fc-button { padding: 3px 7px !important; font-size: 10px !important; }
-    #calendar .fc-daygrid-day-frame { min-height: 34px !important; max-height: 34px !important; }
+    #calendar .fc-daygrid-day-frame { min-height: 50px !important; max-height: 50px !important; }
     #calendar .fc-daygrid-day-number { font-size: 10px; padding: 1px 3px; }
     #calendar .fc-col-header-cell { font-size: 9px; padding: 3px 0; }
     #calendar .fc-daygrid-day-events { min-height: 0; }
@@ -2201,12 +2221,13 @@ form .invalid-feedback { color: #dc2626; font-size: 0.8rem; margin-top: 0.25rem;
 
     .users-table thead { display: none; }
     .users-table, .users-table tbody, .users-table tr, .users-table td { display: block; width: 100%; }
-    .users-table tbody tr { background: var(--card-2); border-radius: 12px; padding: 12px 14px; margin-bottom: 10px; border: 1px solid var(--border-soft); }
-    .users-table td { padding: 6px 0; border: none; font-size: 13px; }
-    .users-table td::before { content: attr(data-label); display: block; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dim); margin-bottom: 2px; }
+    .users-table tbody tr { background: var(--card-2); border-radius: 12px; padding: 2px 10px; margin: 0 48px 25px 48px; width: calc(100% - 96px); border: 1px solid var(--border-soft); }
+    .users-table td { padding: 4px 0; border: none; font-size: 13px; text-align: center; }
+    .users-table td::before { content: attr(data-label); display: block; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dim); margin-bottom: 2px; text-align: center; }
     .users-table td[data-label="Nom"]::before { display: none; }
-    .users-table td[data-label="Actions"] { padding-top: 10px; }
-    .row-actions { justify-content: flex-start; }
+    .users-table td[data-label="Actions"] { padding-top: 8px; }
+    .row-actions { justify-content: center; }
+    .user-cell { justify-content: center; }
 
     .mobile-topbar {
         display: flex;
@@ -2391,7 +2412,29 @@ form .invalid-feedback { color: #dc2626; font-size: 0.8rem; margin-top: 0.25rem;
     }
 
     .dash-event .p { display: none; }
+
+    .card > h2 + *,
+.card > h3 + *,
+.card-header + *,
+.card-header--spaced + *,
+.card-title + *,
+.card-title--spaced + *,
+.section-title + *,
+[class*="card__head"] + *,
+[class*="-header"] + ul,
+[class*="-header"] + table,
+[class*="-header"] + div {
+    margin-top: 24px;
 }
+
+.dash-list, .data-table, .devis-table, .devis-table-wrapper,
+.kanban-cards, .checkbox-list, .timeline, .action-list, .recipient-list {
+    margin-top: 42px;
+}
+
+    
+}
+
 
 @media (max-width: 480px) {
     .topbar-title { font-size: 1rem; }

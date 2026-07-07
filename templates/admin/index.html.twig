@@ -68,7 +68,8 @@
            [{ code: 'LUN', num: 19, active: false, overflow: false }, ...]
            représentant la semaine en cours.
            `evenements` : [{ day: 0..6, mode: 'positioned'|'stacked',
-           top: <% position>, tone: 'gold'|'teal', title: '...',
+           top: <% position>, color: '#RRGGBB' (couleur du logement,
+           identique à la page Calendrier), title: '...',
            place: '...' (seulement en mode positioned) }].
            `missionsDebordantes` : détail des jours ayant 4+ missions,
            affiché sous la grille plutôt que dans les cases du calendrier. -- #}
@@ -109,11 +110,11 @@
                             {% for e in evenementsList %}
                                 {% if e.day == col %}
                                     {% if e.mode == 'stacked' %}
-                                        <div class="dash-event dash-event--stacked {{ e.tone }}" style="top:{{ e.top }}%;">
+                                        <div class="dash-event dash-event--stacked" style="top:{{ e.top }}%; background:{{ e.color }}; border-color:{{ e.color }}; color:#fff;">
                                             <div class="t">{{ e.title }}</div>
                                         </div>
                                     {% else %}
-                                        <div class="dash-event {{ e.tone }}" style="top:{{ e.top }}%;">
+                                        <div class="dash-event" style="top:{{ e.top }}%; background:{{ e.color }}; border-color:{{ e.color }}; color:#fff;">
                                             <div class="t">{{ e.title }}</div>
                                             <div class="p">{{ e.place }}</div>
                                         </div>
@@ -131,7 +132,7 @@
                     <div style="display:flex;flex-direction:column;gap:6px;">
                         {% for m in missionsDebordantes %}
                             <div style="display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text);">
-                                <span style="width:6px;height:6px;border-radius:50%;background:{{ m.tone == 'gold' ? 'var(--gold)' : 'var(--teal-accent)' }};flex-shrink:0;"></span>
+                                <span style="width:6px;height:6px;border-radius:50%;background:{{ m.color }};flex-shrink:0;"></span>
                                 <span style="color:var(--text-dim);min-width:32px;">{{ m.dayLabel }}</span>
                                 <span style="color:var(--text-dim);">{{ m.time }}</span>
                                 <span>{{ m.title }}</span>
@@ -143,33 +144,10 @@
             {% endif %}
         </div>
 
-        {# -- Demandes à valider -- #}
-        {# <div class="card">
-            <div class="dash-card-head">
-                <h3>Demandes à valider</h3>
-                <a href="{{ path('app_requests') }}" class="dash-link">Tout voir ({{ pendingRequests }})</a>
-            </div>
-            <ul class="dash-list">
-                {% for d in demandesAValider %}
-                    <li class="dash-list-item">
-                        <div class="dash-li-icon"><i class="fa-solid fa-clipboard-list"></i></div>
-                        <div class="dash-li-body">
-                            <div class="dash-li-title">{{ d.property.name }}</div>
-                            <div class="dash-li-sub"><i class="fa-solid fa-location-dot"></i> {{ d.service.name }}</div>
-                        </div>
-                        <div class="dash-li-time">{{ d.scheduledDate|date('d/m') }}, {{ d.scheduledTime|date('H:i') }}</div>
-                        <a href="{{ path('app_request_validate', { id: d.id }) }}" class="dash-btn-validate">Valider</a>
-                    </li>
-                {% else %}
-                    <li class="dash-li-sub" style="padding:12px 0;">Aucune demande en attente.</li>
-                {% endfor %}
-            </ul>
-        </div> #}
-
     </div>
 
     {# ════════════════════════════════════════════════════════════════
-       MISSIONS ASSIGNÉES + MESSAGES + HISTORIQUE
+       MISSIONS ASSIGNÉES + DEMANDES À VALIDER + MESSAGES + HISTORIQUE
        ════════════════════════════════════════════════════════════════ #}
     <div class="dash-row dash-row--3">
 
@@ -212,11 +190,10 @@
                     <li class="dash-li-sub" style="padding:12px 0;">Aucune mission assignée aujourd'hui.</li>
                 {% endfor %}
             </ul>
-
-           
         </div>
 
-         <div class="card">
+        {# -- Demandes à valider -- #}
+        <div class="card">
             <div class="dash-card-head">
                 <h3>Demandes à valider</h3>
                 <a href="{{ path('app_requests') }}" class="dash-link">Tout voir ({{ pendingRequests }})</a>
@@ -325,42 +302,6 @@
 
             </div>
         </div>
-
-        {# <div class="card card-quicklinks">
-            {# <h2 class="section-title">Accès rapides</h2>
-            <div class="quick-links">
-                <a href="{{ path('app_user_new') }}" class="btn-quick btn-quick--blue">+ Utilisateur</a>
-                <a href="{{ path('app_property_new') }}" class="btn-quick btn-quick--green">+ Logement</a>
-                <a href="{{ path('app_service_new') }}" class="btn-quick btn-quick--orange">+ Prestation</a>
-                <a href="{{ path('app_request_new') }}" class="btn-quick btn-quick--purple">+ Demande</a>
-            </div> #}
-            {# ⚠️ Les 4 KPI d'origine (Propriétaires/Femmes de ménage/
-               Logements/Total demandes) ont été retirés de l'affichage
-               principal car redondants avec les nouveaux KPI riches en
-               haut de page. Si tu veux les garder visibles quelque part
-               (ex: dans ce même bloc, en mini-liste), décommente et
-               adapte ci-dessous : #}
-            {#
-            <div class="grid-auto" style="margin-top: 1rem;">
-                <div class="kpi-border kpi-border--blue">
-                    <div class="kpi-border__label">Propriétaires</div>
-                    <div class="kpi-border__value">{{ totalOwners }}</div>
-                </div>
-                <div class="kpi-border kpi-border--green">
-                    <div class="kpi-border__label">Femmes de ménage</div>
-                    <div class="kpi-border__value">{{ totalCleaners }}</div>
-                </div>
-                <div class="kpi-border kpi-border--orange">
-                    <div class="kpi-border__label">Logements</div>
-                    <div class="kpi-border__value">{{ totalProperties }}</div>
-                </div>
-                <div class="kpi-border kpi-border--purple">
-                    <div class="kpi-border__label">Total demandes</div>
-                    <div class="kpi-border__value">{{ totalRequests }}</div>
-                </div>
-            </div>
-            #}
-        
 
     </div>
 

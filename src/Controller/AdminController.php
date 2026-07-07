@@ -65,6 +65,13 @@ class AdminController extends AbstractController
         // les CleaningRequest + événements Google Calendar de cette
         // semaine en événements pour le widget .dash-cal-* du dashboard.
         //
+        // ⚠️ Couleur : on utilise désormais la couleur du logement
+        // (Property::getColor()) — exactement la même source que la
+        // page Calendrier (CalendarController::events(), $req->getProperty()->getColor()) —
+        // au lieu de l'ancien mapping "gold si validé/terminé, teal sinon".
+        // Les événements Google Calendar reprennent la même palette que
+        // googleColorToHex() de CalendarController.
+        //
         // Règles d'affichage selon le nombre de missions du même jour :
         //   1 mission        -> positionnée selon l'heure, titre + logement
         //   2 ou 3 missions  -> empilées verticalement, titre seul
@@ -94,7 +101,7 @@ class AdminController extends AbstractController
             $normalized[] = [
                 'date' => $mission->getScheduledDate(),
                 'time' => $mission->getScheduledTime(),
-                'tone' => in_array($mission->getStatus(), ['VALIDATED', 'COMPLETED'], true) ? 'gold' : 'teal',
+                'color' => $mission->getProperty()?->getColor() ?? '#E8B84A',
                 'title' => $mission->getService()?->getName() ?? 'Prestation',
                 'place' => $mission->getProperty()?->getName() ?? '',
             ];
@@ -112,18 +119,18 @@ class AdminController extends AbstractController
                 }
 
                 $dt = new \DateTime($startDateTime);
-// On extrait uniquement la date calendaire (Y-m-d), en ignorant le fuseau
-// horaire de l'événement, pour que le regroupement par jour soit cohérent
-// avec $weekStart (qui utilise le fuseau par défaut du serveur).
-$dateOnly = new \DateTime($dt->format('Y-m-d'));
+                // On extrait uniquement la date calendaire (Y-m-d), en ignorant le fuseau
+                // horaire de l'événement, pour que le regroupement par jour soit cohérent
+                // avec $weekStart (qui utilise le fuseau par défaut du serveur).
+                $dateOnly = new \DateTime($dt->format('Y-m-d'));
 
-$normalized[] = [
-    'date' => $dateOnly,
-    'time' => $dt,
-    'tone' => 'gold',
-    'title' => $gEvent->getSummary() ?: '(Sans titre)',
-    'place' => '',
-];
+                $normalized[] = [
+                    'date' => $dateOnly,
+                    'time' => $dt,
+                    'color' => $this->googleColorToHex($gEvent->getColorId()),
+                    'title' => $gEvent->getSummary() ?: '(Sans titre)',
+                    'place' => '',
+                ];
             }
         } catch (\Throwable $e) {
             // Le dashboard reste utilisable même si Google est indisponible.
@@ -171,7 +178,7 @@ $normalized[] = [
                     $missionsDebordantes[] = [
                         'dayLabel' => $dayLabels[$day],
                         'time' => $item['time']->format('H:i'),
-                        'tone' => $item['tone'],
+                        'color' => $item['color'],
                         'title' => $item['title'],
                         'place' => $item['place'],
                     ];
@@ -191,10 +198,9 @@ $normalized[] = [
                     'day' => $day,
                     'mode' => 'positioned',
                     'top' => round($top, 1),
-                    'tone' => $item['tone'],
+                    'color' => $item['color'],
                     'title' => $item['title'],
                     'place' => $item['place'],
-                    
                 ];
                 continue;
             }
@@ -207,9 +213,8 @@ $normalized[] = [
                     'day' => $day,
                     'mode' => 'stacked',
                     'top' => 5 + ($index * 30),
-                    'tone' => $item['tone'],
+                    'color' => $item['color'],
                     'title' => $item['title'],
-                    
                 ];
             }
         }
@@ -238,5 +243,28 @@ $normalized[] = [
             'evenements' => $evenements,
             'missionsDebordantes' => $missionsDebordantes,
         ]);
+    }
+
+    /**
+     * Identique à CalendarController::googleColorToHex() — même palette
+     * pour que les événements Google Calendar aient la même couleur
+     * sur le dashboard que sur la vraie page Calendrier.
+     */
+    private function googleColorToHex(?string $colorId): string
+    {
+        return match ($colorId) {
+            '1' => '#7986CB',
+            '2' => '#33B679',
+            '3' => '#8E24AA',
+            '4' => '#E67C73',
+            '5' => '#F6BF26',
+            '6' => '#F4511E',
+            '7' => '#039BE5',
+            '8' => '#616161',
+            '9' => '#3F51B5',
+            '10' => '#0B8043',
+            '11' => '#D50000',
+            default => '#4285F4',
+        };
     }
 }
