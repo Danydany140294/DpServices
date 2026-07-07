@@ -1,25 +1,32 @@
+{# templates/cleaner/index.html.twig #}
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mes missions — DP Services</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/fill/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
 </head>
 <body class="has-bottom-nav">
 
+
+    {# ==========================================================
+       HEADER — salutation + date + cloche notifications
+       (logique de notif inchangée par rapport à l'existant)
+       ========================================================== #}
     <header class="mobile-header">
         <div class="mobile-header__title">
-            <h1>🧹 Mes missions</h1>
-            <span class="user-name">{{ app.user.firstname }}</span>
+            <h1>Bonjour {{ app.user.firstname }} 👋</h1>
+            {# ⚠️ nécessite twig/intl-extra pour le rendu en français,
+               sinon le nom du jour/mois restera en anglais #}
+            <span class="user-name">{{ today|format_date('full', locale='fr') }}</span>
         </div>
 
-        {# -- Cloche de notifications (réutilise les mêmes fonctions Twig
-              que base.html.twig : unread_notifications_count / recent_notifications) -- #}
         <div class="mobile-notif-wrapper">
             <button class="mobile-notif-btn" type="button" aria-label="Notifications" onclick="document.getElementById('mobile-notif-dropdown').classList.toggle('is-open')">
-                <i class="fa-solid fa-bell"></i>
+                <i class="ph-fill ph-bell"></i>
                 {% set unreadCount = unread_notifications_count(app.user) %}
                 {% if unreadCount > 0 %}
                     <span class="mobile-notif-badge">{{ unreadCount }}</span>
@@ -43,60 +50,107 @@
 
     <div class="mobile-content">
 
+        {# ==========================================================
+           CARTE "Missions du jour"
+           todayMissionsCount vient du contrôleur (étape 2)
+           ========================================================== #}
+        <div class="missions-count-card">
+            <div>
+                <div class="missions-count-card__label">Missions du jour</div>
+                <div class="missions-count-card__value">{{ todayMissionsCount }}</div>
+            </div>
+            <a href="{{ path('app_calendar') }}" class="missions-count-card__icon" aria-label="Voir le calendrier">
+                <i class="ph-fill ph-calendar-check"></i>
+            </a>
+        </div>
+
+        {# ==========================================================
+           PROCHAINE MISSION — adresse + photo dynamiques
+           nextMission vient du contrôleur (étape 2), peut être null
+           ========================================================== #}
+        {% if nextMission is defined and nextMission is not null %}
+            <div class="next-mission-card">
+                <div class="next-mission-card__label">Prochaine mission</div>
+                <div class="next-mission-card__body">
+                    {% if nextMission.property.photo %}
+                        <img src="{{ asset('uploads/properties/' ~ nextMission.property.photo) }}"
+                             alt="{{ nextMission.property.name }}"
+                             class="next-mission-card__photo">
+                    {% else %}
+                        <div class="next-mission-card__photo next-mission-card__photo--placeholder">
+                            <i class="ph-fill ph-house"></i>
+                        </div>
+                    {% endif %}
+
+                    <div class="next-mission-card__info">
+                        <div class="next-mission-card__time">
+                            {{ nextMission.scheduledTime|date('H:i') }} — {{ nextMission.property.name }}
+                        </div>
+                        <div class="next-mission-card__address">
+                            <i class="ph-fill ph-map-pin"></i>
+                            {{ nextMission.property.address ?: 'Adresse non renseignée' }}
+                        </div>
+                    </div>
+                </div>
+
+                {% if nextMission.property.address %}
+                    <a href="https://www.google.com/maps/search/?api=1&query={{ nextMission.property.address|url_encode }}"
+                       target="_blank" rel="noopener"
+                       class="next-mission-card__cta">
+                        <i class="ph-fill ph-navigation-arrow"></i> Itinéraire
+                    </a>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        {# ==========================================================
+           LISTE DES MISSIONS (design condensé façon maquette)
+           ========================================================== #}
         {% if missions is empty %}
             <div class="empty-state">
                 <div class="emoji">✅</div>
                 <p>Aucune mission à venir</p>
             </div>
         {% else %}
-            {% for mission in missions %}
-                {% set isToday = mission.scheduledDate|date('Y-m-d') == today|date('Y-m-d') %}
-                <div class="mission-card {{ isToday ? 'today' : '' }}">
-                    <div class="mission-date">
-                        {{ isToday ? '📅 Aujourd\'hui' : mission.scheduledDate|date('d/m/Y') }}
-                    </div>
-                    <div class="mission-property">
-                        <span class="property-dot" style="background:{{ mission.property.color }};"></span>
-                        {{ mission.property.name }}
-                    </div>
-                    <div class="mission-service">{{ mission.service.name }} — {{ mission.service.duration }} min</div>
-                    <div class="mission-time">🕐 {{ mission.scheduledTime|date('H:i') }}</div>
+            <div class="mission-list">
+                {% for mission in missions %}
+                    {% set isToday = mission.scheduledDate|date('Y-m-d') == today|date('Y-m-d') %}
+                    <div class="mission-row" style="--mission-color: {{ mission.property.color }};">
+                        <div class="mission-row__time">{{ mission.scheduledTime|date('H:i') }}</div>
 
-                    {% if mission.comment %}
-                        <div class="mission-comment">
-                            💬 {{ mission.comment }}
+                        <div class="mission-row__main">
+                            <div class="mission-row__property">{{ mission.property.name }}</div>
+                            <div class="mission-row__service">{{ mission.service.name }}</div>
+                            {% if mission.comment %}
+                                <div class="mission-row__comment">💬 {{ mission.comment }}</div>
+                            {% endif %}
                         </div>
-                    {% endif %}
 
-                    {% if mission.status == 'VALIDATED' %}
-                        <form method="post" action="{{ path('app_cleaner_complete', {id: mission.id}) }}">
-                            <button type="submit" class="btn-complete">✅ Marquer comme terminée</button>
-                        </form>
-                    {% elseif mission.status == 'COMPLETED' %}
-                        <div class="mission-status-done">✅ Terminée</div>
-                    {% else %}
-                        <div class="mission-status-pending">⏳ En attente de validation</div>
-                    {% endif %}
-                </div>
-            {% endfor %}
+                        <div class="mission-row__side">
+                            {% if mission.status == 'COMPLETED' %}
+                                <span class="mission-badge mission-badge--done">Terminée</span>
+                            {% elseif mission.status == 'VALIDATED' %}
+                                <span class="mission-badge mission-badge--upcoming">{{ isToday ? 'Aujourd\'hui' : mission.scheduledDate|date('d/m') }}</span>
+                            {% else %}
+                                <span class="mission-badge mission-badge--pending">En attente</span>
+                            {% endif %}
+
+                            {% if mission.status == 'VALIDATED' %}
+                                <form method="post" action="{{ path('app_cleaner_complete', {id: mission.id}) }}">
+                                    <button type="submit" class="mission-row__complete-btn" aria-label="Marquer comme terminée">
+                                        <i class="ph-fill ph-check-circle"></i>
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
         {% endif %}
 
     </div>
 
-    <nav class="bottom-nav">
-        <a href="{{ path('app_cleaner') }}" class="{{ app.request.get('_route') == 'app_cleaner' ? 'active' : '' }}">
-            <span class="icon">🧹</span>
-            Missions
-        </a>
-        <a href="{{ path('app_calendar') }}" class="{{ app.request.get('_route') == 'app_calendar' ? 'active' : '' }}">
-            <span class="icon">📅</span>
-            Calendrier
-        </a>
-        <a href="{{ path('app_cleaner_history') }}" class="{{ app.request.get('_route') == 'app_cleaner_history' ? 'active' : '' }}">
-            <span class="icon">✅</span>
-            Historique
-        </a>
-    </nav>
+    {% include 'cleaner/_bottom_nav.html.twig' %}
 
 </body>
 </html>

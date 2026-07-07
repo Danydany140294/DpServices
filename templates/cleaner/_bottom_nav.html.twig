@@ -1,0 +1,28 @@
+<nav class="bottom-nav">
+
+    <a href="{{ path('app_cleaner') }}" class="{{ app.request.get('_route') == 'app_cleaner' ? 'active' : '' }}">
+        <i class="ph ph-house"></i>
+        <span>Missions</span>
+    </a>
+
+    <a href="{{ path('app_calendar') }}" class="{{ app.request.get('_route') == 'app_calendar' ? 'active' : '' }}">
+        <i class="ph ph-calendar"></i>
+        <span>Calendrier</span>
+    </a>
+
+    <a href="{{ path('app_cleaner_history') }}" class="{{ app.request.get('_route') == 'app_cleaner_history' ? 'active' : '' }}">
+        <i class="ph ph-arrow-counter-clockwise"></i>
+        <span>Historique</span>
+    </a>
+
+    {# <a href="{{ path('app_cleaner_messages') }}" class="{{ app.request.get('_route') == 'app_cleaner_messages' ? 'active' : '' }}">
+        <i class="ph ph-chat-circle"></i>
+        <span>Messages</span>
+    </a> #}
+
+    <a href="{{ path('app_cleaner_profile') }}" class="{{ app.request.get('_route') == 'app_cleaner_profile' ? 'active' : '' }}">
+        <i class="ph ph-user"></i>
+        <span>Profil</span>
+    </a>
+
+</nav>

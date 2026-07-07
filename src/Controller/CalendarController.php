@@ -25,8 +25,10 @@ class CalendarController extends AbstractController
         $owners = $userRepository->findByRole('ROLE_OWNER');
 
         if ($this->isGranted('ROLE_CLEANER') && !$this->isGranted('ROLE_ADMIN')) {
-            return $this->render('calendar/cleaner.html.twig');
-        }
+    return $this->render('calendar/cleaner.html.twig', [
+        'today' => new \DateTime('today'),
+    ]);
+}
 
         return $this->render('calendar/index.html.twig', [
             'cleaners' => $cleaners,

@@ -1,34 +1,40 @@
+{# templates/cleaner/profile.html.twig #}
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calendrier — DP Services</title>
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    <title>Profil — DP Services</title>
     <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
     <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/fill/style.css">
-    {{ encore_entry_link_tags('calendar') }}
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
 </head>
 <body class="has-bottom-nav">
 
     <header class="mobile-header">
-        
-        <div class="mobile-header__title">
-        
-            <h1>Bonjour {{ app.user.firstname }} 👋</h1>
+     <div class="mobile-header__title">
+        <h1>Bonjour {{ app.user.firstname }} 👋</h1>
             {# ⚠️ nécessite twig/intl-extra pour le rendu en français,
                sinon le nom du jour/mois restera en anglais #}
             <span class="user-name">{{ today|format_date('full', locale='fr') }}</span>
-        </div>
+    </div>
     </header>
 
     <div class="mobile-content">
-        <div id="calendar"></div>
+        <div class="card">
+            <div class="card__title">{{ user.firstname }} {{ user.lastname }}</div>
+            <div class="stat-row">
+                <span class="stat-row__label">Email</span>
+                <span class="stat-row__value">{{ user.email }}</span>
+            </div>
+        </div>
+
+        <a href="{{ path('app_logout') }}" class="btn btn--secondary btn--block u-mt-1">
+            Se déconnecter
+        </a>
     </div>
 
     {% include 'cleaner/_bottom_nav.html.twig' %}
-
-    {{ encore_entry_script_tags('calendar') }}
 
 </body>
 </html>

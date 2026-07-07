@@ -3,14 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Historique — DP Services</title>
+    <title>Historique — DP Services</title><link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/fill/style.css">
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
 </head>
 <body class="has-bottom-nav">
 
     <header class="mobile-header">
-        <h1>✅ Historique</h1>
-        <span class="user-name">{{ app.user.firstname }}</span>
+    <div class="mobile-header__title">
+         <h1>Bonjour {{ app.user.firstname }} 👋</h1>
+            {# ⚠️ nécessite twig/intl-extra pour le rendu en français,
+               sinon le nom du jour/mois restera en anglais #}
+            <span class="user-name">{{ today|format_date('full', locale='fr') }}</span>
+    </div>
     </header>
 
     <div class="mobile-content">
@@ -37,20 +42,7 @@
 
     </div>
 
-    <nav class="bottom-nav">
-        <a href="{{ path('app_cleaner') }}" class="{{ app.request.get('_route') == 'app_cleaner' ? 'active' : '' }}">
-            <span class="icon">🧹</span>
-            Missions
-        </a>
-        <a href="{{ path('app_calendar') }}" class="{{ app.request.get('_route') == 'app_calendar' ? 'active' : '' }}">
-            <span class="icon">📅</span>
-            Calendrier
-        </a>
-        <a href="{{ path('app_cleaner_history') }}" class="{{ app.request.get('_route') == 'app_cleaner_history' ? 'active' : '' }}">
-            <span class="icon">✅</span>
-            Historique
-        </a>
-    </nav>
+    {% include 'cleaner/_bottom_nav.html.twig' %}
 
 </body>
 </html>
