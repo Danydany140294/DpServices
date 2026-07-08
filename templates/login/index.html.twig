@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet"href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <title>Connexion — DP Services</title>
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
 </head>
@@ -19,13 +20,35 @@
                 <label for="email">Email</label>
                 <input type="email" id="email" name="_username" value="{{ last_username }}" required autofocus>
             </div>
-            <div class="form-group">
-                <label for="password">Mot de passe</label>
-                <input type="password" id="password" name="_password" required>
-            </div>
+           <div class="form-group">
+    <label for="password">Mot de passe</label>
+
+    <div class="password-wrapper">
+        <input type="password" id="password" name="_password" required>
+        <i class="fa-solid fa-eye toggle-password"></i>
+    </div>
+</div>
             <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
             <button type="submit">Se connecter</button>
         </form>
     </div>
+
+
+    <script>
+        const toggle = document.querySelector(".toggle-password");
+        const password = document.querySelector("#password");
+
+        toggle.addEventListener("click", function () {
+
+            if(password.type === "password"){
+                password.type = "text";
+                this.innerHTML = '<i class="fa-solid fa-eye-slash"></i>';
+            }else{
+                password.type = "password";
+                this.innerHTML = '<i class="fa-solid fa-eye"></i>';
+            }
+
+        });
+    </script>
 </body>
 </html>
