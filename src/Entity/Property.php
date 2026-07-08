@@ -31,6 +31,12 @@ class Property
     #[ORM\JoinColumn(nullable: false)]
     private ?User $owner = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $photo = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $address = null;
+
     /**
      * @var Collection<int, CleaningRequest>
      */
@@ -152,4 +158,26 @@ class Property
 
         return $this;
     }
+
+    public function getPhoto(): ?string
+{
+    return $this->photo;
+}
+
+public function setPhoto(?string $photo): static
+{
+    $this->photo = $photo;
+    return $this;
+}
+
+public function getAddress(): ?string
+{
+    return $this->address;
+}
+
+public function setAddress(?string $address): static
+{
+    $this->address = $address;
+    return $this;
+}
 }

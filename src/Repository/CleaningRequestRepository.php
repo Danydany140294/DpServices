@@ -29,10 +29,10 @@ class CleaningRequestRepository extends ServiceEntityRepository
             ->orderBy('r.scheduledDate', 'ASC')
             ->addOrderBy('r.scheduledTime', 'ASC');
 
-        if ($user->getSector()) {
-            $qb->andWhere('LOWER(p.city) LIKE :sector')
-               ->setParameter('sector', '%' . strtolower($user->getSector()) . '%');
-        }
+       if ($user->getSector()) {
+    $qb->andWhere('p.sector = :sector')
+       ->setParameter('sector', strtolower($user->getSector()));
+}
 
         return $qb->getQuery()->getResult();
     }
