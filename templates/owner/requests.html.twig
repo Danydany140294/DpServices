@@ -24,13 +24,15 @@
                         <span class="topbar-badge">{{ unreadCount }}</span>
                     {% endif %}
                 </button>
+
                 <div id="notif-dropdown" class="topbar-notif-dropdown">
                     {% set recentNotifs = recent_notifications(app.user, 8) %}
                     {% if recentNotifs is empty %}
                         <div class="topbar-notif-empty">Aucune notification</div>
                     {% else %}
                         {% for notif in recentNotifs %}
-                            <a href="{{ notif.link ?: '#' }}" class="topbar-notif-item {{ notif.isRead ? '' : 'topbar-notif-item--unread' }}">
+                            <a href="{{ notif.link ?: '#' }}"
+                               class="topbar-notif-item {{ notif.isRead ? '' : 'topbar-notif-item--unread' }}">
                                 <span class="topbar-notif-message">{{ notif.message }}</span>
                                 <span class="topbar-notif-date">{{ notif.createdAt|date('d/m H:i') }}</span>
                             </a>
@@ -38,9 +40,15 @@
                     {% endif %}
                 </div>
             </div>
+
             {% if app.user %}
-                <span class="mobile-topbar-avatar">{{ app.user.firstname|first }}{{ app.user.lastname|first }}</span>
-                <a href="{{ path('app_logout') }}" class="mobile-topbar-btn" title="Déconnexion">
+                <span class="mobile-topbar-avatar">
+                    {{ app.user.firstname|first }}{{ app.user.lastname|first }}
+                </span>
+
+                <a href="{{ path('app_logout') }}"
+                   class="mobile-topbar-btn"
+                   title="Déconnexion">
                     <i class="fa-solid fa-arrow-right-from-bracket"></i>
                 </a>
             {% endif %}
@@ -49,44 +57,114 @@
 
     <div class="mobile-content">
 
-        <h2 class="section-title">📋 Mes demandes ({{ requests|length }})</h2>
+        <h2 class="section-title">
+            📋 Mes demandes ({{ requests|length }})
+        </h2>
+
+        <div class="requests-actions u-mb-1">
+            <a href="{{ path('app_owner_request_new') }}" class="btn btn--primary">
+                <i class="fa-solid fa-plus"></i>
+                Nouvelle demande
+            </a>
+        </div>
 
         {% if requests is empty %}
+
             <div class="empty-state">
                 <div class="emoji">✅</div>
                 <p>Aucune demande en cours.</p>
             </div>
+
         {% else %}
+
             <div class="mission-list">
+
                 {% for req in requests %}
-                    <div class="mission-row" style="--mission-color: {{ req.property.color }};">
-                        <div class="mission-row__time">
-                            {{ req.scheduledDate|date('d/m') }}<br>{{ req.scheduledTime|date('H:i') }}
-                        </div>
-                        <div class="mission-row__main">
-                            <div class="mission-row__property">
-                                <span class="color-dot" style="background:{{ req.property.color }};"></span>
-                                {{ req.property.name }}
-                            </div>
-                            <div class="mission-row__service">{{ req.service.name }}</div>
-                            {% if req.assignedCleaner %}
-                                <div class="mission-row__comment">FdM : {{ req.assignedCleaner.firstname }} {{ req.assignedCleaner.lastname }}</div>
-                            {% endif %}
-                        </div>
-                        <div class="mission-row__side">
-                            {% if req.status == 'PENDING' %}
-                                <span class="mission-badge mission-badge--pending">En attente</span>
-                            {% elseif req.status == 'VALIDATED' %}
-                                <span class="mission-badge mission-badge--upcoming">Validée</span>
-                            {% elseif req.status == 'COMPLETED' %}
-                                <span class="mission-badge mission-badge--done">Terminée</span>
-                            {% elseif req.status == 'CANCELLED' %}
-                                <span class="status-badge status-badge--sm status-badge--danger">Annulée</span>
-                            {% endif %}
-                        </div>
-                    </div>
-                {% endfor %}
+
+<div class="mission-row" style="--mission-color: {{ req.property.color }};">
+
+    
+
+    <div class="mission-row__main">
+
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
+
+            <div class="mission-row__property">
+                <span class="color-dot"
+                      style="background:{{ req.property.color }};"></span>
+                {{ req.property.name }}
             </div>
+
+            {% if req.status == 'PENDING' %}
+                <span class="mission-badge mission-badge--pending">En attente</span>
+            {% elseif req.status == 'VALIDATED' %}
+                <span class="mission-badge mission-badge--upcoming">Validée</span>
+            {% elseif req.status == 'COMPLETED' %}
+                <span class="mission-badge mission-badge--done">Terminée</span>
+            {% elseif req.status == 'CANCELLED' %}
+                <span class="status-badge status-badge--sm status-badge--danger">Annulée</span>
+            {% endif %}
+
+        </div>
+
+        <div class="mission-row__service">
+            {{ req.service.name }}
+        </div>
+
+        <div class="mission-row__comment">
+    <i class="fa-regular fa-calendar"></i>
+    {{ req.scheduledDate|date('d/m') }}
+
+    &nbsp;&nbsp;
+
+    <i class="fa-regular fa-clock"></i>
+    {{ req.scheduledTime|date('H:i') }}
+</div>
+
+        {% if req.assignedCleaner %}
+            <div class="mission-row__comment">
+                👤 {{ req.assignedCleaner.firstname }}
+                {{ req.assignedCleaner.lastname }}
+            </div>
+        {% endif %}
+
+        {% if req.status == 'PENDING' %}
+            <div class="requests-actions" style="margin-top:8px;">
+
+                <a href="{{ path('app_owner_request_edit', {id:req.id}) }}"
+                   class="table-action-link">
+                    <i class="fa-solid fa-pen"></i>
+                    Modifier
+                </a>
+
+                <form method="post"
+                      action="{{ path('app_owner_request_cancel', {id:req.id}) }}"
+                      class="inline-form"
+                      onsubmit="return confirm('Voulez-vous vraiment annuler cette demande ?');">
+
+                    <input type="hidden"
+                           name="_token"
+                           value="{{ csrf_token('owner_cancel' ~ req.id) }}">
+
+                    <button type="submit"
+                            class="table-action-btn table-action-btn--danger">
+                        <i class="fa-solid fa-xmark"></i>
+                        Annuler
+                    </button>
+
+                </form>
+
+            </div>
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endfor %}
+
+            </div>
+
         {% endif %}
 
     </div>

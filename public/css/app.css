@@ -948,7 +948,7 @@ a { color: inherit; }
 
 .mobile-header h1 { font-size: 1.4rem; }
 .mobile-header .user-name { font-size: 0.975rem; color: #a7c4ec; }
-.mobile-content { padding: 1rem; }
+.mobile-content { padding: 1rem; padding-bottom:120px; }
 
 .mission-card {
     background: var(--card-alt);
@@ -1123,40 +1123,47 @@ a { color: inherit; }
 .status-badge--purple    { background: #f3e8ff; color: #7c3aed; }
 .status-badge--success   { background: #d1fae5; color: #059669; }
 
-.table-action-link {
-    display: inline-block;
-    min-width: 88px;
-    text-align: center;
-    background: #3b82f6;
-    color: white;
-    font-weight: 700;
-    font-size: 0.8rem;
-    padding: 0.4rem 0.85rem;
-    border-radius: 999px;
-    margin-right: 0.5rem;
-    text-decoration: none;
-    transition: filter 0.15s, transform 0.15s;
+.table-action-link{
+    background:#4F46E5;
+    color:#fff;
+    border-radius:8px;
+    padding:5px 5px 5px 5px;
+    font-size:.78rem;
+    font-weight:600;
 }
 
 .table-action-link:hover { filter: brightness(1.1); transform: translateY(-1px); }
 
-.table-action-btn {
-    display: inline-block;
-    min-width: 88px;
-    text-align: center;
-    border: none;
-    cursor: pointer;
-    font-weight: 700;
-    font-size: 0.8rem;
-    padding: 0.4rem 0.85rem;
-    border-radius: 999px;
-    margin-right: 0.5rem;
-    transition: filter 0.15s, transform 0.15s;
+.table-action-btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:5px;
+
+    padding:6px 12px;
+
+    border:none;
+    border-radius:999px;
+
+    cursor:pointer;
+
+    font-size:.75rem;
+    font-weight:600;
+
+    min-width:auto;
+    margin:0;
 }
 
 .table-action-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
 .table-action-btn--success { background: #f97316; color: white; }
-.table-action-btn--danger  { background: #ef4444; color: white; margin-right: 0; }
+.table-action-btn--danger{
+    background:#DC2626;
+    color:#fff;
+    border-radius:8px;
+    padding:5px 5px 5px 5px;
+    font-size:.78rem;
+    font-weight:600;
+}
 
 .inline-form { display: inline; }
 .table-empty-cell { padding: 1rem; text-align: center; color: var(--text-dim); }
@@ -2136,7 +2143,7 @@ form .invalid-feedback { color: #dc2626; font-size: 0.8rem; margin-top: 0.25rem;
 .legend-panel__list { font-size: 0.78rem; color: var(--text-muted); line-height: 1.7; }
 
 .legend-panel__close {
-    display: block;
+    display: block;.mobile-content {
     width: 100%;
     margin-top: 1rem;
     padding: 0.5rem;
@@ -2146,6 +2153,7 @@ form .invalid-feedback { color: #dc2626; font-size: 0.8rem; margin-top: 0.25rem;
     border-radius: 4px;
     cursor: pointer;
     font-size: 0.8rem;
+    }
 }
 
 .legend-panel__close:hover { background: var(--gold-soft); color: var(--gold); }
@@ -2315,6 +2323,92 @@ form .invalid-feedback { color: #dc2626; font-size: 0.8rem; margin-top: 0.25rem;
     transform: translateY(-2px);
 }
 
+.requests-actions{
+    display:flex;
+    gap:.5rem;
+    flex-wrap:wrap;
+    align-items:center;
+}
+
+.requests-actions .table-action-link,
+.requests-actions .table-action-btn{
+    margin-right:0;
+}
+
+.form-control,
+input[type="date"],
+input[type="time"],
+select,
+textarea{
+    width:100%;
+    box-sizing:border-box;
+}
+
+
+.mission-row{
+    display:flex;
+    align-items:flex-start;
+    gap:14px;
+    background:var(--card-alt);
+    border-radius:12px;
+    padding:14px 16px;
+    border-left:4px solid var(--mission-color);
+}
+
+.mission-row__time{
+    width:48px;
+    flex-shrink:0;
+    text-align:left;
+    font-weight:700;
+    color:var(--gold-strong);
+    line-height:1.35;
+}
+
+.mission-row__main{
+    flex:1;
+    min-width:0;
+    display:flex;
+    flex-direction:column;
+}
+
+.mission-row__property{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-weight:600;
+    margin-bottom:3px;
+}
+
+.mission-row__service{
+    margin-bottom:6px;
+}
+
+.mission-row__comment{
+    margin-top:2px;
+}
+
+.requests-actions{
+    display:flex;
+    gap:8px;
+    margin-top:10px;
+    flex-wrap:nowrap;
+}
+
+.requests-actions .inline-form{
+    margin:0;
+}
+
+.table-action-link,
+.table-action-btn{
+    margin:0;
+    white-space:nowrap;
+}
+
+.mission-badge{
+    margin-left:12px;
+    flex-shrink:0;
+}
+
 
 /* ==========================================================================
    29. RESPONSIVE MOBILE (<768px)
@@ -2326,7 +2420,9 @@ form .invalid-feedback { color: #dc2626; font-size: 0.8rem; margin-top: 0.25rem;
     .desktop-only { display: none !important; }
     .main { padding-top: 0; padding-bottom: 70px; }
 
-    .requests-actions { flex-direction: column; }
+    .requests-actions{
+    flex-direction:row;
+}
     .requests-actions .btn { width: 100%; justify-content: center; display: flex; align-items: center; gap: 8px; }
 
     .acq-hero { padding: 2rem 1.25rem; }

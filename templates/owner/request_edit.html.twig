@@ -1,0 +1,60 @@
+{# templates/owner/request_edit.html.twig #}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modifier ma demande — DP Services</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+</head>
+<body class="has-bottom-nav">
+
+    <header class="mobile-topbar">
+        <div class="mobile-topbar-logo">
+            <img src="{{ asset('assets/images/logologo.png') }}" alt="DP Services">
+        </div>
+        <div class="mobile-topbar-actions">
+            {% if app.user %}
+                <span class="mobile-topbar-avatar">{{ app.user.firstname|first }}{{ app.user.lastname|first }}</span>
+                <a href="{{ path('app_logout') }}" class="mobile-topbar-btn" title="Déconnexion">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                </a>
+            {% endif %}
+        </div>
+    </header>
+
+    <div class="mobile-content">
+
+        <a href="{{ path('app_owner_requests') }}" class="back-link">
+            <i class="fa-solid fa-arrow-left"></i> Retour à mes demandes
+        </a>
+
+        <div class="form-card">
+            <div class="form-card__head">
+                <div class="form-card__icon"><i class="fa-solid fa-pen"></i></div>
+                <div>
+                    <h2>Modifier ma demande</h2>
+                    <p>{{ cleaningRequest.property.name }} — {{ cleaningRequest.scheduledDate|date('d/m/Y') }}</p>
+                </div>
+            </div>
+
+            {{ form_start(form) }}
+            <div class="form-card__body">
+                {{ form_widget(form) }}
+            </div>
+            <div class="form-card__actions">
+                <button type="submit" class="btn btn--primary">
+                    <i class="fa-solid fa-check"></i> Enregistrer
+                </button>
+                <a href="{{ path('app_owner_requests') }}" class="btn-cancel-link">Annuler</a>
+            </div>
+            {{ form_end(form) }}
+        </div>
+
+    </div>
+
+    {% include 'owner/_bottom_nav.html.twig' %}
+
+</body>
+</html>

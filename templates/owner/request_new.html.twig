@@ -1,0 +1,58 @@
+{# templates/owner/request_new.html.twig #}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nouvelle demande — DP Services</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+</head>
+<body class="has-bottom-nav">
+
+    <header class="mobile-topbar">
+        <div class="mobile-topbar-logo">
+            <img src="{{ asset('assets/images/logologo.png') }}" alt="DP Services">
+        </div>
+        <div class="mobile-topbar-actions">
+            {% if app.user %}
+                <span class="mobile-topbar-avatar">{{ app.user.firstname|first }}{{ app.user.lastname|first }}</span>
+                <a href="{{ path('app_logout') }}" class="mobile-topbar-btn" title="Déconnexion">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                </a>
+            {% endif %}
+        </div>
+    </header>
+
+    <div class="mobile-content">
+
+        
+
+        <div class="form-card">
+            <div class="form-card__head">
+                <div class="form-card__icon"><i class="fa-solid fa-clipboard-list"></i></div>
+                <div>
+                    <h2>Nouvelle demande</h2>
+                    <p>Cette demande sera envoyée à l'administrateur pour validation.</p>
+                </div>
+            </div>
+
+            {{ form_start(form) }}
+            <div class="form-card__body">
+                {{ form_widget(form) }}
+            </div>
+            <div class="form-card__actions">
+                <button type="submit" class="btn btn--primary">
+                    <i class="fa-solid fa-paper-plane"></i> Envoyer la demande
+                </button>
+                <a href="{{ path('app_owner_requests') }}" class="btn-cancel-link">Annuler</a>
+            </div>
+            {{ form_end(form) }}
+        </div>
+
+    </div>
+
+    {% include 'owner/_bottom_nav.html.twig' %}
+
+</body>
+</html>
