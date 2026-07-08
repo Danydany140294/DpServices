@@ -19,14 +19,12 @@ class OwnerController extends AbstractController
         $user = $this->getUser();
         $properties = $propertyRepo->findBy(['owner' => $user]);
 
-        // Vérifier l'accès à chaque logement via le Voter
         foreach ($properties as $property) {
             $this->denyAccessUnlessGranted('view', $property);
         }
 
         $requests = $requestRepo->findBy(['property' => $properties], ['scheduledDate' => 'ASC']);
 
-        // ── Données pour le dashboard enrichi ──
         $pendingCount = count(array_filter($requests, fn($r) => $r->getStatus() === 'PENDING'));
 
         $today = new \DateTime('today');
@@ -38,7 +36,6 @@ class OwnerController extends AbstractController
         });
         $upcomingCount = count($upcoming);
 
-        // La prochaine intervention à venir (déjà triée par scheduledDate ASC via le repo).
         usort($upcoming, fn($a, $b) => $a->getScheduledDate() <=> $b->getScheduledDate()
             ?: $a->getScheduledTime() <=> $b->getScheduledTime());
         $nextRequest = $upcoming[0] ?? null;
@@ -56,5 +53,37 @@ class OwnerController extends AbstractController
     public function ownerCalendar(): Response
     {
         return $this->render('owner/calendar.html.twig');
+    }
+
+    #[Route('/properties', name: 'app_owner_properties')]
+    public function myProperties(PropertyRepository $propertyRepo): Response
+    {
+        $user = $this->getUser();
+        $properties = $propertyRepo->findBy(['owner' => $user]);
+
+        foreach ($properties as $property) {
+            $this->denyAccessUnlessGranted('view', $property);
+        }
+
+        return $this->render('owner/properties.html.twig', [
+            'properties' => $properties,
+        ]);
+    }
+
+    #[Route('/requests', name: 'app_owner_requests')]
+    public function myRequests(PropertyRepository $propertyRepo, CleaningRequestRepository $requestRepo): Response
+    {
+        $user = $this->getUser();
+        $properties = $propertyRepo->findBy(['owner' => $user]);
+
+        foreach ($properties as $property) {
+            $this->denyAccessUnlessGranted('view', $property);
+        }
+
+        $requests = $requestRepo->findBy(['property' => $properties], ['scheduledDate' => 'DESC']);
+
+        return $this->render('owner/requests.html.twig', [
+            'requests' => $requests,
+        ]);
     }
 }
