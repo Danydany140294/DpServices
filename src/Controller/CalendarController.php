@@ -193,5 +193,7 @@ class CalendarController extends AbstractController
         };
     }
 
+    
+
     // (le reste de tes méthodes moveEvent, open, details reste inchangé)
 }

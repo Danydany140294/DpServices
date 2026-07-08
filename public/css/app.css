@@ -2242,6 +2242,80 @@ form .invalid-feedback { color: #dc2626; font-size: 0.8rem; margin-top: 0.25rem;
 }
 
 
+.owner-hero {
+    margin-bottom: 1.25rem;
+}
+
+.owner-hero__title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--gold-strong);
+    margin: 0 0 4px;
+}
+
+.owner-hero__subtitle {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+.owner-kpis {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 1.25rem;
+}
+
+.owner-kpi {
+    background: var(--card-alt);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 14px 10px;
+    text-align: center;
+    box-shadow: var(--shadow-soft);
+}
+
+.owner-kpi__icon {
+    height: 34px;
+    width: 34px;
+    margin: 0 auto 8px;
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    font-size: 14px;
+}
+
+.owner-kpi__icon--gold { background: var(--gold-soft); color: var(--gold); }
+.owner-kpi__icon--teal { background: rgba(45, 212, 191, 0.15); color: var(--teal-accent); }
+.owner-kpi__icon--blue { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+
+.owner-kpi__value {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.owner-kpi__label {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+.owner-dashboard .mission-row__time {
+    width: 54px;
+    font-size: 0.72rem;
+    line-height: 1.35;
+}
+
+.owner-property-card {
+    transition: transform 0.15s;
+}
+
+.owner-property-card:hover {
+    transform: translateY(-2px);
+}
+
+
 /* ==========================================================================
    29. RESPONSIVE MOBILE (<768px)
    ========================================================================== */
@@ -2743,6 +2817,22 @@ form .invalid-feedback { color: #dc2626; font-size: 0.8rem; margin-top: 0.25rem;
         max-width: 480px;
         margin: 0 auto;
     }
+
+    .owner-kpis {
+    gap: 8px;
+}
+
+.owner-kpi {
+    padding: 10px 6px;
+}
+
+.owner-kpi__value {
+    font-size: 1.15rem;
+}
+
+.owner-kpi__label {
+    font-size: 0.6rem;
+}
     
 }
 

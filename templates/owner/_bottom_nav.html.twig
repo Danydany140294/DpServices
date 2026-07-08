@@ -1,0 +1,27 @@
+{# templates/owner/_bottom_nav.html.twig #}
+{% set currentRoute = app.request.get('_route') %}
+{% set currentTab = app.request.query.get('tab') %}
+
+<nav class="mobile-bottom-nav">
+
+    <a href="{{ path('app_owner') }}" class="{{ currentRoute == 'app_owner' and currentTab is null ? 'active' : '' }}">
+        <i class="fa-solid fa-house"></i>
+        <span>Accueil</span>
+    </a>
+
+    <a href="{{ path('app_owner') }}?tab=logements#logements" class="{{ currentRoute == 'app_owner' and currentTab == 'logements' ? 'active' : '' }}">
+        <i class="fa-solid fa-building"></i>
+        <span>Logements</span>
+    </a>
+
+    <a href="{{ path('app_owner') }}?tab=demandes#demandes" class="{{ currentRoute == 'app_owner' and currentTab == 'demandes' ? 'active' : '' }}">
+        <i class="fa-solid fa-clipboard-list"></i>
+        <span>Demandes</span>
+    </a>
+
+    <a href="{{ path('app_owner_calendar') }}" class="{{ currentRoute == 'app_owner_calendar' ? 'active' : '' }}">
+        <i class="fa-solid fa-calendar-days"></i>
+        <span>Calendrier</span>
+    </a>
+
+</nav>

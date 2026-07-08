@@ -1,77 +1,164 @@
-{% extends 'base.html.twig' %}
+{# templates/owner/index.html.twig #}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon espace — DP Services</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/fill/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+</head>
+<body class="has-bottom-nav">
 
-{% block title %}Mon espace — DP Services{% endblock %}
-{% block page_title %}Mon espace propriétaire{% endblock %}
-
-{% block body %}
-
-    {# ── Mes logements ── #}
-    <div class="mb-xl">
-        <h2 class="section-title">🏠 Mes logements ({{ properties|length }})</h2>
-
-        {% if properties is empty %}
-            <div class="empty-state empty-state--card">
-                Aucun logement associé à votre compte.
+    {# ── TOPBAR — copiée à l'identique de base.html.twig (mobile-topbar) ── #}
+    <header class="mobile-topbar">
+        <div class="mobile-topbar-logo">
+            <img src="{{ asset('assets/images/logologo.png') }}" alt="DP Services">
+        </div>
+        <div class="mobile-topbar-actions">
+            <div class="topbar-notif-wrapper">
+                <button class="mobile-topbar-btn" type="button" aria-label="Notifications"
+                        onclick="document.getElementById('notif-dropdown').classList.toggle('is-open')">
+                    <i class="fa-solid fa-bell"></i>
+                    {% set unreadCount = unread_notifications_count(app.user) %}
+                    {% if unreadCount > 0 %}
+                        <span class="topbar-badge">{{ unreadCount }}</span>
+                    {% endif %}
+                </button>
+                <div id="notif-dropdown" class="topbar-notif-dropdown">
+                    {% set recentNotifs = recent_notifications(app.user, 8) %}
+                    {% if recentNotifs is empty %}
+                        <div class="topbar-notif-empty">Aucune notification</div>
+                    {% else %}
+                        {% for notif in recentNotifs %}
+                            <a href="{{ notif.link ?: '#' }}" class="topbar-notif-item {{ notif.isRead ? '' : 'topbar-notif-item--unread' }}">
+                                <span class="topbar-notif-message">{{ notif.message }}</span>
+                                <span class="topbar-notif-date">{{ notif.createdAt|date('d/m H:i') }}</span>
+                            </a>
+                        {% endfor %}
+                    {% endif %}
+                </div>
             </div>
-        {% else %}
-            <div class="card-grid">
-                {% for property in properties %}
-                    <div class="card card--accent" style="border-left-color:{{ property.color }};">
-                        <h3 class="card-title mb-sm">{{ property.name }}</h3>
-                        <p class="text-secondary text-secondary--sm">📍 {{ property.city }}</p>
+            {% if app.user %}
+                <span class="mobile-topbar-avatar">{{ app.user.firstname|first }}{{ app.user.lastname|first }}</span>
+                <a href="{{ path('app_logout') }}" class="mobile-topbar-btn" title="Déconnexion">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                </a>
+            {% endif %}
+        </div>
+    </header>
+
+    <div class="mobile-content">
+
+        <div class="owner-kpis">
+            <div class="owner-kpi">
+                <div class="owner-kpi__icon owner-kpi__icon--gold"><i class="fa-solid fa-house"></i></div>
+                <div class="owner-kpi__value">{{ properties|length }}</div>
+                <div class="owner-kpi__label">Logement{{ properties|length > 1 ? 's' : '' }}</div>
+            </div>
+            <div class="owner-kpi">
+                <div class="owner-kpi__icon owner-kpi__icon--teal"><i class="fa-solid fa-hourglass-half"></i></div>
+                <div class="owner-kpi__value">{{ pendingCount }}</div>
+                <div class="owner-kpi__label">En attente</div>
+            </div>
+            <div class="owner-kpi">
+                <div class="owner-kpi__icon owner-kpi__icon--blue"><i class="fa-solid fa-calendar-check"></i></div>
+                <div class="owner-kpi__value">{{ upcomingCount }}</div>
+                <div class="owner-kpi__label">À venir</div>
+            </div>
+        </div>
+
+        {% if nextRequest %}
+            <div class="next-mission-card">
+                <div class="next-mission-card__label">Prochaine intervention</div>
+                <div class="next-mission-card__body">
+                    <div class="next-mission-card__photo next-mission-card__photo--placeholder"
+                         style="background:{{ nextRequest.property.color }}33; color:{{ nextRequest.property.color }};">
+                        <i class="fa-solid fa-broom"></i>
                     </div>
-                {% endfor %}
+                    <div class="next-mission-card__info">
+                        <div class="next-mission-card__time">
+                            {{ nextRequest.scheduledDate|date('d/m') }} à {{ nextRequest.scheduledTime|date('H:i') }}
+                        </div>
+                        <div class="next-mission-card__address">
+                            <i class="fa-solid fa-location-dot"></i>
+                            {{ nextRequest.property.name }} — {{ nextRequest.service.name }}
+                        </div>
+                    </div>
+                </div>
+                <a href="{{ path('app_owner_calendar') }}" class="next-mission-card__cta">
+                    <i class="fa-solid fa-calendar-check"></i> Voir dans le calendrier
+                </a>
             </div>
         {% endif %}
-    </div>
 
-    {# ── Mes demandes ── #}
-    <div>
-        <h2 class="section-title">📋 Mes demandes ({{ requests|length }})</h2>
+        <div id="logements" class="mb-xl">
+            <h2 class="section-title">🏠 Mes logements ({{ properties|length }})</h2>
 
-        {% if requests is empty %}
-            <div class="empty-state empty-state--card">
-                Aucune demande en cours.
-            </div>
-        {% else %}
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Logement</th>
-                        <th>Prestation</th>
-                        <th>Date</th>
-                        <th>Heure</th>
-                        <th>Femme de ménage</th>
-                        <th>Statut</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for req in requests %}
-                    <tr>
-                        <td>
-                            <span class="color-dot" style="background:{{ req.property.color }};"></span>
-                            {{ req.property.name }}
-                        </td>
-                        <td>{{ req.service.name }}</td>
-                        <td>{{ req.scheduledDate|date('d/m/Y') }}</td>
-                        <td>{{ req.scheduledTime|date('H:i') }}</td>
-                        <td>{{ req.assignedCleaner ? req.assignedCleaner.firstname ~ ' ' ~ req.assignedCleaner.lastname : '—' }}</td>
-                        <td>
-                            {% if req.status == 'PENDING' %}
-                                <span class="status-badge status-badge--sm status-badge--caution">En attente</span>
-                            {% elseif req.status == 'VALIDATED' %}
-                                <span class="status-badge status-badge--sm status-badge--success">Validée</span>
-                            {% elseif req.status == 'COMPLETED' %}
-                                <span class="status-badge status-badge--sm status-badge--info">Terminée</span>
-                            {% elseif req.status == 'CANCELLED' %}
-                                <span class="status-badge status-badge--sm status-badge--danger">Annulée</span>
-                            {% endif %}
-                        </td>
-                    </tr>
+            {% if properties is empty %}
+                <div class="empty-state">
+                    <div class="emoji">🏠</div>
+                    <p>Aucun logement associé à votre compte.</p>
+                </div>
+            {% else %}
+                <div class="card-grid">
+                    {% for property in properties %}
+                        <div class="card card--accent owner-property-card" style="border-left-color:{{ property.color }};">
+                            <h3 class="card-title mb-sm">{{ property.name }}</h3>
+                            <p class="text-secondary text-secondary--sm">📍 {{ property.city }}</p>
+                        </div>
                     {% endfor %}
-                </tbody>
-            </table>
-        {% endif %}
+                </div>
+            {% endif %}
+        </div>
+
+        <div id="demandes">
+            <h2 class="section-title">📋 Mes demandes ({{ requests|length }})</h2>
+
+            {% if requests is empty %}
+                <div class="empty-state">
+                    <div class="emoji">✅</div>
+                    <p>Aucune demande en cours.</p>
+                </div>
+            {% else %}
+                <div class="mission-list">
+                    {% for req in requests %}
+                        <div class="mission-row" style="--mission-color: {{ req.property.color }};">
+                            <div class="mission-row__time">
+                                {{ req.scheduledDate|date('d/m') }}<br>{{ req.scheduledTime|date('H:i') }}
+                            </div>
+                            <div class="mission-row__main">
+                                <div class="mission-row__property">
+                                    <span class="color-dot" style="background:{{ req.property.color }};"></span>
+                                    {{ req.property.name }}
+                                </div>
+                                <div class="mission-row__service">{{ req.service.name }}</div>
+                                {% if req.assignedCleaner %}
+                                    <div class="mission-row__comment">FdM : {{ req.assignedCleaner.firstname }} {{ req.assignedCleaner.lastname }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="mission-row__side">
+                                {% if req.status == 'PENDING' %}
+                                    <span class="mission-badge mission-badge--pending">En attente</span>
+                                {% elseif req.status == 'VALIDATED' %}
+                                    <span class="mission-badge mission-badge--upcoming">Validée</span>
+                                {% elseif req.status == 'COMPLETED' %}
+                                    <span class="mission-badge mission-badge--done">Terminée</span>
+                                {% elseif req.status == 'CANCELLED' %}
+                                    <span class="status-badge status-badge--sm status-badge--danger">Annulée</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
     </div>
 
-{% endblock %}
+    {% include 'owner/_bottom_nav.html.twig' %}
+
+</body>
+</html>

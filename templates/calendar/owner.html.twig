@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendrier — DP Services</title>
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/fill/style.css">
+    {{ encore_entry_link_tags('calendar') }}
+</head>
+<body class="has-bottom-nav">
+
+    <header class="mobile-header">
+        
+        <div class="mobile-header__title">
+        
+            <h1>Bonjour {{ app.user.firstname }} 👋</h1>
+            {# ⚠️ nécessite twig/intl-extra pour le rendu en français,
+               sinon le nom du jour/mois restera en anglais #}
+            <span class="user-name">{{ today|format_date('full', locale='fr') }}</span>
+        </div>
+    </header>
+
+    <div class="mobile-content">
+        <div id="calendar"></div>
+    </div>
+
+    {% include 'owner/_bottom_nav.html.twig' %}
+
+    {{ encore_entry_script_tags('calendar') }}
+
+</body>
+</html>

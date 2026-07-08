@@ -1,0 +1,59 @@
+{# templates/owner/calendar.html.twig #}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendrier — DP Services</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    {{ encore_entry_link_tags('calendar') }}
+</head>
+<body class="has-bottom-nav">
+
+    <header class="mobile-topbar">
+        <div class="mobile-topbar-logo">
+            <img src="{{ asset('assets/images/logologo.png') }}" alt="DP Services">
+        </div>
+        <div class="mobile-topbar-actions">
+            <div class="topbar-notif-wrapper">
+                <button class="mobile-topbar-btn" type="button" aria-label="Notifications"
+                        onclick="document.getElementById('notif-dropdown').classList.toggle('is-open')">
+                    <i class="fa-solid fa-bell"></i>
+                    {% set unreadCount = unread_notifications_count(app.user) %}
+                    {% if unreadCount > 0 %}
+                        <span class="topbar-badge">{{ unreadCount }}</span>
+                    {% endif %}
+                </button>
+                <div id="notif-dropdown" class="topbar-notif-dropdown">
+                    {% set recentNotifs = recent_notifications(app.user, 8) %}
+                    {% if recentNotifs is empty %}
+                        <div class="topbar-notif-empty">Aucune notification</div>
+                    {% else %}
+                        {% for notif in recentNotifs %}
+                            <a href="{{ notif.link ?: '#' }}" class="topbar-notif-item {{ notif.isRead ? '' : 'topbar-notif-item--unread' }}">
+                                <span class="topbar-notif-message">{{ notif.message }}</span>
+                                <span class="topbar-notif-date">{{ notif.createdAt|date('d/m H:i') }}</span>
+                            </a>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+            {% if app.user %}
+                <span class="mobile-topbar-avatar">{{ app.user.firstname|first }}{{ app.user.lastname|first }}</span>
+                <a href="{{ path('app_logout') }}" class="mobile-topbar-btn" title="Déconnexion">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                </a>
+            {% endif %}
+        </div>
+    </header>
+
+    <div class="mobile-content">
+        <div id="calendar"></div>
+    </div>
+
+    {% include 'owner/_bottom_nav.html.twig' %}
+
+    {{ encore_entry_script_tags('calendar') }}
+</body>
+</html>
