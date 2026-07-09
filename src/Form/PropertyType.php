@@ -7,9 +7,11 @@ use App\Entity\User;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\File;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
 class PropertyType extends AbstractType
@@ -65,6 +67,26 @@ class PropertyType extends AbstractType
                 'label' => 'Propriétaire',
                 'choice_label' => fn(User $user) => $user->getFirstname() . ' ' . $user->getLastname(),
                 'choices' => $options['owners'],
+            ])
+            // Champ NON mappé à l'entité : Property::$photo est une chaîne
+            // (nom du fichier stocké), pas un objet fichier. On récupère
+            // l'UploadedFile dans le contrôleur via $form->get('photoFile')->getData(),
+            // puis on fait nous-mêmes $property->setPhoto($nomGenere).
+            ->add('photoFile', FileType::class, [
+                'label' => 'Photo du logement',
+                'mapped' => false,
+                'required' => false,
+                'constraints' => [
+                    new File([
+                        'maxSize' => '4M',
+                        'mimeTypes' => [
+                            'image/jpeg',
+                            'image/png',
+                            'image/webp',
+                        ],
+                        'mimeTypesMessage' => 'Merci de déposer une image valide (JPEG, PNG ou WebP).',
+                    ]),
+                ],
             ])
         ;
     }

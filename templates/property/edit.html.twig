@@ -16,6 +16,13 @@
             </div>
         </div>
 
+        {% if property.photo %}
+            <div class="form-card__current-photo">
+                <img src="{{ asset('uploads/properties/' ~ property.photo) }}" alt="{{ property.name }}" class="property-thumb property-thumb--lg">
+                <span class="text-dim">Photo actuelle — choisissez un nouveau fichier ci-dessous pour la remplacer</span>
+            </div>
+        {% endif %}
+
         {{ form_start(form, {'attr': {'class': 'form-card__body'}}) }}
             <div class="form-grid-2">
                 {{ form_row(form.name) }}
@@ -24,6 +31,7 @@
             {{ form_row(form.color) }}
             {{ form_row(form.sector) }}
             {{ form_row(form.owner) }}
+            {{ form_row(form.photoFile) }}
 
             <div class="form-card__actions">
                 <button type="submit" class="btn btn--primary btn--lg">

@@ -382,21 +382,40 @@ a { color: inherit; }
 
 .topbar-notif-item {
     display: flex;
-    flex-direction: column;
-    gap: 4px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
     padding: 12px 16px;
     border-bottom: 1px solid var(--border-soft);
     text-decoration: none;
     color: var(--text);
+    background: var(--card);
     transition: background 0.15s;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 .topbar-notif-item:last-child { border-bottom: none; }
 .topbar-notif-item:hover { background: var(--card-2); }
 .topbar-notif-item--unread { background: var(--gold-soft); }
 .topbar-notif-item--unread:hover { background: var(--gold-soft); filter: brightness(1.1); }
-.topbar-notif-message { font-size: 13px; line-height: 1.4; }
-.topbar-notif-date { font-size: 11px; color: var(--text-dim); }
+.topbar-notif-message {
+    font-size: 10px;
+    line-height: 1.4;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+    min-width: 0;
+}
+
+.topbar-notif-date {
+    font-size: 10px;
+    color: var(--text-dim);
+    flex-shrink: 0;
+    white-space: nowrap;
+}
 
 @media (max-width: 1024px) {
     .topbar-search { display: none; }
@@ -2441,6 +2460,37 @@ textarea{
 .password-wrapper .toggle-password:hover{
     color:var(--gold);
 }
+
+
+.property-thumb {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    object-fit: cover;
+}
+
+.property-thumb--empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--card-2);
+    color: var(--text-dim);
+}
+
+.property-thumb--lg {
+    width: 120px;
+    height: 120px;
+    border-radius: 12px;
+    object-fit: cover;
+}
+
+.form-card__current-photo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
 
 /* ==========================================================================
    29. RESPONSIVE MOBILE (<768px)

@@ -35,15 +35,6 @@ class NotificationService
         return $notification;
     }
 
-    /**
-     * J37 : notifie un salarié qu'une mission lui a été assignée, à la fois
-     * en notification in-app ET par SMS, peu importe l'origine de la mission
-     * (création manuelle admin OU synchronisation automatique Google).
-     *
-     * Le SMS est volontairement non-bloquant : si l'envoi échoue (pas de
-     * téléphone, API Brevo indisponible...), la notification in-app reste
-     * créée normalement et l'erreur est seulement loguée.
-     */
     public function notifyMissionAssigned(User $cleaner, CleaningRequest $cleaningRequest, string $calendarUrl): void
     {
         $message = sprintf(
@@ -66,10 +57,6 @@ class NotificationService
         }
     }
 
-    /**
-     * J39/J40 : notifie le salarié assigné qu'une mission est annulée,
-     * en notification in-app ET par SMS (même logique que J37).
-     */
     public function notifyMissionCancelled(User $cleaner, CleaningRequest $cleaningRequest): void
     {
         $message = sprintf(
@@ -92,10 +79,6 @@ class NotificationService
         }
     }
 
-    /**
-     * J41 : notifie (in-app + SMS) un salarié qu'une mission lui a été
-     * assignée depuis plus de 6h sans qu'il l'ait consultée.
-     */
     public function notifyMissionReminder(User $cleaner, CleaningRequest $cleaningRequest): void
     {
         $message = sprintf(
@@ -112,6 +95,34 @@ class NotificationService
         } catch (\Throwable $e) {
             $this->logger->warning('NotificationService: échec envoi SMS relance mission (notification in-app envoyée malgré tout)', [
                 'cleaner_id' => $cleaner->getId(),
+                'cleaning_request_id' => $cleaningRequest->getId(),
+                'exception' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * J53 : notifie le propriétaire (in-app + SMS) que sa mission de ménage
+     * a été effectuée. Non-bloquant : si le propriétaire n'a pas de
+     * téléphone ou si l'envoi SMS échoue, la notification in-app est
+     * quand même créée et l'erreur est simplement loguée.
+     */
+    public function notifyMissionCompleted(User $owner, CleaningRequest $cleaningRequest): void
+    {
+        $message = sprintf(
+            'Ménage terminé : %s ',
+            $cleaningRequest->getProperty(),
+            $cleaningRequest->getScheduledDate()->format('d/m/Y'),
+            $cleaningRequest->getScheduledTime()->format('H:i')
+        );
+
+        $this->notify($owner, Notification::TYPE_MISSION_COMPLETED, $message);
+
+        try {
+            $this->cleanerSmsService->sendSms($owner, $message);
+        } catch (\Throwable $e) {
+            $this->logger->warning('NotificationService: échec envoi SMS mission terminée (notification in-app envoyée malgré tout)', [
+                'owner_id' => $owner->getId(),
                 'cleaning_request_id' => $cleaningRequest->getId(),
                 'exception' => $e->getMessage(),
             ]);

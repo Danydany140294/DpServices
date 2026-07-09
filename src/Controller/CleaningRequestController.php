@@ -199,13 +199,19 @@ class CleaningRequestController extends AbstractController
         if ($this->isCsrfTokenValid('complete' . $cleaningRequest->getId(), $request->request->get('_token'))) {
             $cleaningRequest->setStatus('COMPLETED');
             $em->flush();
+
+            $owner = $cleaningRequest->getProperty()->getOwner();
+            if ($owner) {
+                $this->notificationService->notifyMissionCompleted($owner, $cleaningRequest);
+            }
+
             $this->logger->log('Demande terminée', $cleaningRequest->getProperty()->getName() . ' — ' . $cleaningRequest->getScheduledDate()->format('d/m/Y'));
             $this->addFlash('success', 'Demande marquée comme terminée.');
         }
         return $this->redirectToRoute('app_requests');
     }
 
-   #[Route('/{id}/cancel', name: 'app_request_cancel', methods: ['POST'])]
+    #[Route('/{id}/cancel', name: 'app_request_cancel', methods: ['POST'])]
     public function cancel(CleaningRequest $cleaningRequest, EntityManagerInterface $em, Request $request): Response
     {
         if ($this->isCsrfTokenValid('cancel' . $cleaningRequest->getId(), $request->request->get('_token'))) {

@@ -19,6 +19,7 @@
         <table class="data-table users-table">
             <thead>
                 <tr>
+                    <th>Photo</th>
                     <th>Nom</th>
                     <th>Ville</th>
                     <th>Propriétaire</th>
@@ -29,6 +30,13 @@
             <tbody>
                 {% for property in properties %}
                 <tr>
+                    <td data-label="Photo">
+                        {% if property.photo %}
+                            <img src="{{ asset('uploads/properties/' ~ property.photo) }}" alt="{{ property.name }}" class="property-thumb">
+                        {% else %}
+                            <span class="property-thumb property-thumb--empty"><i class="fa-solid fa-house"></i></span>
+                        {% endif %}
+                    </td>
                     <td data-label="Nom">
                         <div class="user-cell">
                             <span class="color-swatch" style="background:{{ property.color }};"></span>
@@ -49,7 +57,7 @@
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="5" class="data-table__empty">Aucun logement</td>
+                    <td colspan="6" class="data-table__empty">Aucun logement</td>
                 </tr>
                 {% endfor %}
             </tbody>

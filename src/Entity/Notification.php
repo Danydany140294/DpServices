@@ -13,6 +13,7 @@ class Notification
     public const TYPE_MODIFICATION_PENDING = 'modification_pending';
     public const TYPE_MISSION_CANCELLED = 'mission_cancelled';
     public const TYPE_MISSION_REMINDER = 'mission_reminder';
+    public const TYPE_MISSION_COMPLETED = 'mission_completed';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
