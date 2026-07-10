@@ -56,7 +56,9 @@ class CalendarController extends AbstractController
         /* ─────────────────────────────
          * GOOGLE CALENDAR (ADMIN ONLY)
          * ───────────────────────────── */
-        if ($this->isGranted('ROLE_ADMIN')) {
+        if ($this->isGranted('ROLE_ADMIN')
+            || $this->isGranted('ROLE_OWNER'))
+             {
             try {
                 // Tout googleEventId déjà rattaché à une mission locale ne doit
                 // JAMAIS être réaffiché comme événement Google "brut" : sinon on
@@ -73,11 +75,37 @@ class CalendarController extends AbstractController
                 $timeMax = new \DateTime('+90 days');
                 $googleEvents = $googleCalendarService->listEvents($timeMin, $timeMax);
 
+
+                // Si un propriétaire est connecté, on mémorise son prénom.
+// Il servira à filtrer les événements Google historiques
+// (ex : "Julien ménage", "Manon ménage"...)
+$ownerFirstname = null;
+
+if ($this->isGranted('ROLE_OWNER') && !$this->isGranted('ROLE_ADMIN')) {
+    $ownerFirstname = mb_strtolower(
+        trim($this->getUser()->getFirstname())
+    );
+}
+
                 foreach ($googleEvents as $gEvent) {
                     if (isset($knownGoogleEventIds[$gEvent->getId()])) {
                         // Déjà représenté par une mission locale (boucle suivante) : on ignore ici.
                         continue;
                     }
+
+                    // Les propriétaires ne doivent voir que leurs événements Google.
+// Pour les anciens événements, on se base sur le prénom contenu
+// dans le titre.
+if ($ownerFirstname !== null) {
+
+    $summary = mb_strtolower(
+        $gEvent->getSummary() ?? ''
+    );
+
+    if (!str_contains($summary, $ownerFirstname)) {
+        continue;
+    }
+}
 
                     $start = $gEvent->getStart();
                     $startDateTime = $start->getDateTime() ?? $start->getDate();
