@@ -33,7 +33,7 @@ class OwnerRequestController extends AbstractController
         $properties = $propertyRepo->findBy(['owner' => $user]);
 
         $cleaningRequest = new CleaningRequest();
-        $cleaningRequest->setStatus('PENDING');
+        $cleaningRequest->setStatus(CleaningRequest::STATUS_PENDING);
 
         $form = $this->createForm(OwnerCleaningRequestType::class, $cleaningRequest, [
             'properties' => $properties,
@@ -78,7 +78,7 @@ class OwnerRequestController extends AbstractController
     {
         $this->denyAccessUnlessOwner($cleaningRequest);
 
-        if ($cleaningRequest->getStatus() !== 'PENDING') {
+        if ($cleaningRequest->getStatus() !== CleaningRequest::STATUS_PENDING) {
             $this->addFlash('error', 'Cette demande a déjà été validée, elle ne peut plus être modifiée.');
             return $this->redirectToRoute('app_owner_requests');
         }
@@ -122,12 +122,12 @@ class OwnerRequestController extends AbstractController
             return $this->redirectToRoute('app_owner_requests');
         }
 
-        if (in_array($cleaningRequest->getStatus(), ['CANCELLED', 'COMPLETED'], true)) {
+        if (in_array($cleaningRequest->getStatus(), [CleaningRequest::STATUS_CANCELLED, CleaningRequest::STATUS_COMPLETED], true)) {
             $this->addFlash('error', 'Cette demande ne peut plus être annulée.');
             return $this->redirectToRoute('app_owner_requests');
         }
 
-        $cleaningRequest->setStatus('CANCELLED');
+        $cleaningRequest->setStatus(CleaningRequest::STATUS_CANCELLED);
         $em->flush();
 
         $user = $this->getUser();

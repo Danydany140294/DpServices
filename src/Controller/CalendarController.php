@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Repository\CleaningRequestRepository;
+use App\Entity\CleaningRequest;
 use App\Repository\UserRepository;
 use App\Repository\LeadRepository;
 use App\Service\GoogleCalendarService;
@@ -49,16 +50,35 @@ class CalendarController extends AbstractController
 
         $events = [];
 
+        // Chargé une seule fois, réutilisé par les deux boucles (Google + missions locales).
+        $requests = $repo->findAll();
+
         /* ─────────────────────────────
          * GOOGLE CALENDAR (ADMIN ONLY)
          * ───────────────────────────── */
         if ($this->isGranted('ROLE_ADMIN')) {
             try {
+                // Tout googleEventId déjà rattaché à une mission locale ne doit
+                // JAMAIS être réaffiché comme événement Google "brut" : sinon on
+                // obtient deux blocs (event Google + mission locale) pour la
+                // même intervention, avec deux titres différents.
+                $knownGoogleEventIds = array_flip(array_filter(
+                    array_map(
+                        fn($r) => $r->getGoogleEventId(),
+                        $requests
+                    )
+                ));
+
                 $timeMin = new \DateTime('-30 days');
                 $timeMax = new \DateTime('+90 days');
                 $googleEvents = $googleCalendarService->listEvents($timeMin, $timeMax);
 
                 foreach ($googleEvents as $gEvent) {
+                    if (isset($knownGoogleEventIds[$gEvent->getId()])) {
+                        // Déjà représenté par une mission locale (boucle suivante) : on ignore ici.
+                        continue;
+                    }
+
                     $start = $gEvent->getStart();
                     $startDateTime = $start->getDateTime() ?? $start->getDate();
 
@@ -94,15 +114,19 @@ class CalendarController extends AbstractController
         /* ─────────────────────────────
          * SYMFONY CLEANING REQUESTS
          * ───────────────────────────── */
-        $requests = $repo->findAll();
-
         foreach ($requests as $req) {
 
-            if ($this->isGranted('ROLE_OWNER') && !$this->isGranted('ROLE_ADMIN')) {
-                if ($req->getProperty()->getOwner()->getId() !== $this->getUser()->getId()) {
-                    continue;
-                }
-            }
+           
+    // Les missions annulées ne doivent plus apparaître dans le calendrier.
+    if ($req->isCancelled()) {
+        continue;
+    }
+
+    if ($this->isGranted('ROLE_OWNER') && !$this->isGranted('ROLE_ADMIN')) {
+        if ($req->getProperty()->getOwner()->getId() !== $this->getUser()->getId()) {
+            continue;
+        }
+    }
 
             if ($this->isGranted('ROLE_CLEANER') && !$this->isGranted('ROLE_ADMIN')) {
                 if (!$req->getAssignedCleaner() ||

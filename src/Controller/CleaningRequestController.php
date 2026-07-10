@@ -76,7 +76,7 @@ class CleaningRequestController extends AbstractController
         $cleaningRequest->setPendingScheduledTime(null);
         $cleaningRequest->setPendingComment(null);
         $cleaningRequest->setNeedsConfirmation(false);
-        $cleaningRequest->setStatus('VALIDATED');
+        $cleaningRequest->setStatus(CleaningRequest::STATUS_VALIDATED);
         $cleaningRequest->setSyncStatus('synced');
         $cleaningRequest->setLastSyncAt(new \DateTime());
 
@@ -103,7 +103,7 @@ class CleaningRequestController extends AbstractController
         $cleaningRequest->setPendingScheduledTime(null);
         $cleaningRequest->setPendingComment(null);
         $cleaningRequest->setNeedsConfirmation(false);
-        $cleaningRequest->setStatus('VALIDATED');
+        $cleaningRequest->setStatus(CleaningRequest::STATUS_VALIDATED);
 
         // Remet l'event Google à l'état actuel de la mission (J26)
         $cleaningRequest->setSyncInProgress(true);
@@ -127,7 +127,7 @@ class CleaningRequestController extends AbstractController
     public function new(Request $request, EntityManagerInterface $em, UserRepository $userRepository): Response
     {
         $cleaningRequest = new CleaningRequest();
-        $cleaningRequest->setStatus('PENDING');
+        $cleaningRequest->setStatus(CleaningRequest::STATUS_PENDING);
         $cleaners = $userRepository->findByRole('ROLE_CLEANER');
         $form = $this->createForm(CleaningRequestType::class, $cleaningRequest, ['cleaners' => $cleaners]);
         $form->handleRequest($request);
@@ -165,7 +165,7 @@ class CleaningRequestController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $cleaningRequest->setStatus('VALIDATED');
+            $cleaningRequest->setStatus(CleaningRequest::STATUS_VALIDATED);
             $em->flush();
 
             if ($cleaningRequest->getAssignedCleaner()) {
@@ -197,7 +197,7 @@ class CleaningRequestController extends AbstractController
     public function complete(CleaningRequest $cleaningRequest, EntityManagerInterface $em, Request $request): Response
     {
         if ($this->isCsrfTokenValid('complete' . $cleaningRequest->getId(), $request->request->get('_token'))) {
-            $cleaningRequest->setStatus('COMPLETED');
+            $cleaningRequest->setStatus(CleaningRequest::STATUS_COMPLETED);
             $em->flush();
 
             $owner = $cleaningRequest->getProperty()->getOwner();
@@ -215,7 +215,7 @@ class CleaningRequestController extends AbstractController
     public function cancel(CleaningRequest $cleaningRequest, EntityManagerInterface $em, Request $request): Response
     {
         if ($this->isCsrfTokenValid('cancel' . $cleaningRequest->getId(), $request->request->get('_token'))) {
-            $cleaningRequest->setStatus('CANCELLED');
+            $cleaningRequest->setStatus(CleaningRequest::STATUS_CANCELLED);
             $em->flush();
 
             if ($cleaningRequest->getAssignedCleaner()) {

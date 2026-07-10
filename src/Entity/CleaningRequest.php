@@ -9,6 +9,22 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: CleaningRequestRepository::class)]
 class CleaningRequest
 {
+
+
+    public const STATUS_PENDING = 'PENDING';
+    public const STATUS_VALIDATED = 'VALIDATED';
+    public const STATUS_COMPLETED = 'COMPLETED';
+    public const STATUS_CANCELLED = 'CANCELLED';
+
+    public const STATUSES = [
+        self::STATUS_PENDING,
+        self::STATUS_VALIDATED,
+        self::STATUS_COMPLETED,
+        self::STATUS_CANCELLED,
+    ];
+
+
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -128,6 +144,11 @@ class CleaningRequest
         $this->status = $status;
 
         return $this;
+    }
+
+    public function isCancelled(): bool
+    {
+        return $this->status === self::STATUS_CANCELLED;
     }
 
     public function getProperty(): ?Property

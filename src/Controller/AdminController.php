@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\CleaningRequest;
 use App\Repository\ActivityLogRepository;
 use App\Repository\CleaningRequestRepository;
 use App\Repository\PropertyRepository;
@@ -29,10 +30,10 @@ class AdminController extends AbstractController
         $properties = $propertyRepo->findAll();
         $requests = $requestRepo->findAll();
 
-        $pending = array_filter($requests, fn($r) => $r->getStatus() === 'PENDING');
-        $validated = array_filter($requests, fn($r) => $r->getStatus() === 'VALIDATED');
-        $completed = array_filter($requests, fn($r) => $r->getStatus() === 'COMPLETED');
-        $cancelled = array_filter($requests, fn($r) => $r->getStatus() === 'CANCELLED');
+        $pending = array_filter($requests, fn($r) => $r->getStatus() === CleaningRequest::STATUS_PENDING);
+        $validated = array_filter($requests, fn($r) => $r->getStatus() === CleaningRequest::STATUS_VALIDATED);
+        $completed = array_filter($requests, fn($r) => $r->getStatus() === CleaningRequest::STATUS_COMPLETED);
+        $cancelled = array_filter($requests, fn($r) => $r->getStatus() === CleaningRequest::STATUS_CANCELLED);
 
         // -- Demandes à valider (dashboard) --
         // Les plus anciennes en premier (les plus urgentes à traiter),
@@ -47,7 +48,7 @@ class AdminController extends AbstractController
         $missionsAujourdhuiList = array_filter($requests, function ($r) use ($today) {
             return $r->getScheduledDate() !== null
                 && $r->getScheduledDate()->format('Y-m-d') === $today->format('Y-m-d')
-                && $r->getStatus() !== 'CANCELLED';
+                && !$r->isCancelled();
         });
         // Tri par heure de passage croissante.
         usort($missionsAujourdhuiList, fn($a, $b) => $a->getScheduledTime() <=> $b->getScheduledTime());
@@ -88,7 +89,7 @@ class AdminController extends AbstractController
 
         // -- Missions de la semaine en cours, tous statuts sauf CANCELLED --
         $missionsWeek = array_filter($requests, function ($r) use ($weekStart, $weekEndExclusive) {
-            if ($r->getScheduledDate() === null || $r->getStatus() === 'CANCELLED') {
+            if ($r->getScheduledDate() === null || $r->isCancelled()) {
                 return false;
             }
 
