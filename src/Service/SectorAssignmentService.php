@@ -102,10 +102,19 @@ class SectorAssignmentService
         // findBy() est sensible à la casse en SQL standard : on filtre nous-mêmes
         // en PHP après récupération de tous les salariés ayant un secteur renseigné,
         // ce qui reste très léger (faible volume d'utilisateurs).
-        $allCleaners = $this->userRepository->createQueryBuilder('u')
-            ->where('u.sector IS NOT NULL')
-            ->getQuery()
-            ->getResult();
+        //
+        // IMPORTANT : le champ "sector" existe aussi bien sur les cleaners que sur
+        // les owners (ex: Julien et Manon peuvent avoir sector="Nimes" pour indiquer
+        // la localisation de leur bien). On ne veut affecter QUE des salariés
+        // (ROLE_CLEANER) aux missions, jamais un propriétaire par erreur — d'où le
+        // filtre explicite sur les rôles ci-dessous.
+        $allCleaners = array_filter(
+            $this->userRepository->createQueryBuilder('u')
+                ->where('u.sector IS NOT NULL')
+                ->getQuery()
+                ->getResult(),
+            fn (User $user) => in_array('ROLE_CLEANER', $user->getRoles(), true)
+        );
 
         $matches = array_values(array_filter(
             $allCleaners,

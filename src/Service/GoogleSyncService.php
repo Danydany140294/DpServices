@@ -29,7 +29,7 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
  */
 class GoogleSyncService
 {
-    private const DEFAULT_SERVICE_NAME = 'Ménage simple';
+    private const DEFAULT_SERVICE_NAME = 'Ménage Standard  T1/T2';
 
     public function __construct(
         private readonly GoogleCalendarService $googleCalendarService,
