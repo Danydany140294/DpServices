@@ -73,6 +73,13 @@ class AdminController extends AbstractController
         // Les événements Google Calendar reprennent la même palette que
         // googleColorToHex() de CalendarController.
         //
+        // ⚠️ Dédoublonnage : un CleaningRequest synchronisé avec Google
+        // Calendar (getGoogleEventId() renseigné) ne doit JAMAIS être
+        // compté une seconde fois via l'événement Google brut associé —
+        // même logique que CalendarController::events() (voir
+        // $knownGoogleEventIds ci-dessous), sinon le nombre de missions
+        // par jour est gonflé et incohérent avec la page /calendar.
+        //
         // Règles d'affichage selon le nombre de missions du même jour :
         //   1 mission        -> positionnée selon l'heure, titre + logement
         //   2 ou 3 missions  -> empilées verticalement, titre seul
@@ -108,10 +115,22 @@ class AdminController extends AbstractController
             ];
         }
 
+        // -- IDs des événements Google déjà représentés par une mission
+        //    locale : identique à CalendarController::events(), pour ne
+        //    jamais réafficher deux fois la même intervention. --
+        $knownGoogleEventIds = array_flip(array_filter(
+            array_map(fn($r) => $r->getGoogleEventId(), $requests)
+        ));
+
         // -- Ajout des événements Google Calendar de la semaine --
         try {
             $googleEvents = $googleCalendarService->listEvents($weekStart, $weekEndExclusive);
             foreach ($googleEvents as $gEvent) {
+                // Déjà représenté par une mission locale : on ignore.
+                if (isset($knownGoogleEventIds[$gEvent->getId()])) {
+                    continue;
+                }
+
                 $start = $gEvent->getStart();
                 $startDateTime = $start->getDateTime() ?? $start->getDate();
 
@@ -206,16 +225,31 @@ class AdminController extends AbstractController
                 continue;
             }
 
-            // -- 2 ou 3 missions : empilées verticalement, titre seul, sans
-            //    tenir compte de l'heure réelle pour la position (on les
-            //    répartit simplement du haut vers le bas de la grille). --
+            // -- 2 ou 3 missions : même heure moyenne (position verticale
+            //    commune), mais réparties côte à côte horizontalement dans
+            //    la colonne du jour pour ne jamais se chevaucher, même
+            //    quand elles ont exactement la même heure. --
+            $count2 = count($missionsThatDay);
+            $avgHourDecimal = array_sum(array_map(
+                fn($item) => (int) $item['time']->format('H') + ((int) $item['time']->format('i') / 60),
+                $missionsThatDay
+            )) / $count2;
+            $sharedTop = ($avgHourDecimal - $calendarStartHour) / ($calendarEndHour - $calendarStartHour) * 100;
+            $sharedTop = max(0, min(90, $sharedTop));
+
+            $gap = 2; // % d'écart entre deux blocs
+            $slotWidth = round((96 - $gap * ($count2 - 1)) / $count2, 1);
+
             foreach ($missionsThatDay as $index => $item) {
                 $evenements[] = [
                     'day' => $day,
                     'mode' => 'stacked',
-                    'top' => 5 + ($index * 30),
+                    'top' => round($sharedTop, 1),
+                    'left' => round(2 + $index * ($slotWidth + $gap), 1),
+                    'width' => $slotWidth,
                     'color' => $item['color'],
                     'title' => $item['title'],
+                    'place' => $item['place'],
                 ];
             }
         }

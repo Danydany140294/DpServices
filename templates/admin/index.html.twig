@@ -110,10 +110,11 @@
                             {% for e in evenementsList %}
                                 {% if e.day == col %}
                                     {% if e.mode == 'stacked' %}
-                                        <div class="dash-event dash-event--stacked" style="top:{{ e.top }}%; background:{{ e.color }}; border-color:{{ e.color }}; color:#fff;">
-                                            <div class="t">{{ e.title }}</div>
-                                        </div>
-                                    {% else %}
+    <div class="dash-event dash-event--stacked" style="top:{{ e.top }}%; left:{{ e.left }}%; width:{{ e.width }}%; right:auto; background:{{ e.color }}; border-color:{{ e.color }}; color:#fff;">
+        <div class="t">{{ e.title }}</div>
+        <div class="p">{{ e.place }}</div>
+    </div>
+{% else %}
                                         <div class="dash-event" style="top:{{ e.top }}%; background:{{ e.color }}; border-color:{{ e.color }}; color:#fff;">
                                             <div class="t">{{ e.title }}</div>
                                             <div class="p">{{ e.place }}</div>
