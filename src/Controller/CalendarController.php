@@ -227,6 +227,31 @@ if ($ownerFirstname !== null) {
         return $this->json($events);
     }
 
+    #[Route('/api/calendar/events/{id}/move', name: 'app_calendar_move', methods: ['POST'])]
+#[IsGranted('ROLE_ADMIN')]
+public function moveEvent(
+    CleaningRequest $request,
+    Request $httpRequest,
+    EntityManagerInterface $em
+): JsonResponse {
+    $data = json_decode($httpRequest->getContent(), true);
+
+    if (empty($data['start'])) {
+        return $this->json(['success' => false, 'error' => 'Date manquante'], 400);
+    }
+
+    try {
+        $newStart = new \DateTime($data['start']);
+        $request->setScheduledDate($newStart);
+        $em->flush();
+
+        return $this->json(['success' => true]);
+
+    } catch (\Exception $e) {
+        return $this->json(['success' => false, 'error' => $e->getMessage()], 500);
+    }
+}
+
     private function googleColorToHex(?string $colorId): string
     {
         return match ($colorId) {

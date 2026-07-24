@@ -2549,24 +2549,47 @@ textarea{
 }
 
 #calendar .fc-daygrid-day-frame { min-height: 46px !important; max-height: 46px !important; }
-#calendar .fc-mission-event .fc-event-main { font-size: 9px; padding: 1px 3px; }
-#calendar .fc-col-header-cell { font-size: 9.5px; }
-#calendar .fc-daygrid-day-number { font-size: 10.5px; }
-
-    #calendar { padding: 0.6rem; max-width: 100%; }
+#calendar { padding: 0.6rem; max-width: 100%; }
     #calendar .fc-toolbar { flex-direction: column; gap: 8px; }
     #calendar .fc-toolbar-title { font-size: 0.9rem; }
     #calendar .fc-button { padding: 3px 7px !important; font-size: 10px !important; }
-    #calendar .fc-daygrid-day-frame { min-height: 50px !important; max-height: 50px !important; }
+
+    /* -- Cases du calendrier : hauteur libre au lieu d'une hauteur figée,
+       pour laisser le texte des events respirer -- */
+    #calendar .fc-daygrid-day-frame {
+        min-height: 60px !important;
+        height: auto !important;
+        max-height: none !important;
+    }
+
     #calendar .fc-daygrid-day-number { font-size: 10px; padding: 1px 3px; }
     #calendar .fc-col-header-cell { font-size: 9px; padding: 3px 0; }
     #calendar .fc-daygrid-day-events { min-height: 0; }
-    #calendar .fc-mission-event .fc-event-main { padding: 1px 4px; font-size: 8px; }
+
+    /* -- Events : texte lisible, centré, plus de coupure brutale -- */
+    #calendar .fc-mission-event {
+        margin-left: 2px !important;
+        margin-right: 2px !important;
+    }
+
+    #calendar .fc-mission-event .fc-event-main {
+        padding: 3px 4px;
+        font-size: 7.5px;
+        line-height: 1.25;
+        text-align: center;
+        white-space: normal;
+        overflow: visible;
+    }
+
+    #calendar .fc-mission-event .fc-event-time {
+        display: none;
+    }
+
     #calendar .fc-list-day-cushion { background: var(--card-2) !important; }
     #calendar .fc-list-event:hover td { background: var(--card-2) !important; }
     #calendar .fc-list-event-title,
     #calendar .fc-list-event-time { color: var(--text) !important; }
-    #calendar .fc-daygrid-day-top { justify-content: center; }
+    #calendar .fc-daygrid-day-top { justify-content: center; }}
 
     .form-card { max-width: 100%; }
     .form-grid-2 { grid-template-columns: 1fr !important; }
@@ -2748,22 +2771,85 @@ textarea{
 
     .dash-cal-grid { height: 200px; }
 
-    .dash-event {
-        font-size: 8px;
-        padding: 3px 4px;
-        line-height: 1.15;
-        left: -3px;
-        right: -3px;
+     /* -- En-têtes des jours (LUN, MAR...) -- */
+    .dash-cal-days {
+        overflow-x: visible;
     }
 
-    .dash-event .t {
+    /* -- La colonne du jour devient un conteneur flex vertical :
+       les events se placent les uns en dessous des autres,
+       dans l'ordre, au lieu d'être positionnés en absolu. -- */
+    .dash-cal-col {
+        position: static;
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        height: auto;
+        padding: 2px;
+    }
+
+.dash-event,
+.dash-event--stacked {
+    position: static !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    width: 100% !important;
+    margin: 0 !important;
+    box-sizing: border-box;
+    padding: 5px 6px;
+    font-size: 8px;
+    line-height: 1.2;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+    .dash-event .t,
+    .dash-event--stacked .t {
+        font-weight: 600;
         white-space: normal;
         overflow: visible;
         text-overflow: clip;
         word-break: normal;
     }
 
-    .dash-event .p { display: none; }
+    .dash-event .p,
+    .dash-event--stacked .p {
+        display: none; /* le "lieu" disparaît sur mobile, trop de bruit visuel */
+    }
+
+    /* -- Lignes d'heures : passent en arrière-plan, ne gênent plus les events -- */
+    .dash-hour-line {
+        z-index: 0;
+    }
+
+    .dash-hour-line .h {
+        font-size: 9px;
+    }
+
+    .dash-cal-cols {
+        position: relative;
+        z-index: 1;
+    }
+
+
+     .dash-row--3-2 .card {
+        overflow: hidden;
+        box-sizing: border-box;
+    }
+
+    .dash-cal-cols {
+        box-sizing: border-box;
+        width: 100%;
+    }
+
+    .dash-cal-col {
+        box-sizing: border-box;
+        min-width: 0; /* évite que le flex force une largeur trop grande */
+    }
 
     .card > h2 + *,
 .card > h3 + *,
@@ -3091,7 +3177,7 @@ textarea{
 
 
     
-}
+
 
 
 @media (max-width: 480px) {

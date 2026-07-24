@@ -108,13 +108,13 @@ class NotificationService
      * quand même créée et l'erreur est simplement loguée.
      */
     public function notifyMissionCompleted(User $owner, CleaningRequest $cleaningRequest): void
-    {
-        $message = sprintf(
-            'Ménage terminé : %s ',
-            $cleaningRequest->getProperty(),
-            $cleaningRequest->getScheduledDate()->format('d/m/Y'),
-            $cleaningRequest->getScheduledTime()->format('H:i')
-        );
+{
+    $message = sprintf(
+        'Ménage terminé : %s le %s à %s',
+        $cleaningRequest->getProperty()->getName(),
+        $cleaningRequest->getScheduledDate()->format('d/m/Y'),
+        $cleaningRequest->getScheduledTime()->format('H:i')
+    );
 
         $this->notify($owner, Notification::TYPE_MISSION_COMPLETED, $message);
 
