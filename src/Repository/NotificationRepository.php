@@ -23,7 +23,9 @@ class NotificationRepository extends ServiceEntityRepository
             ->select('COUNT(n.id)')
             ->where('n.recipient = :user')
             ->andWhere('n.isRead = false')
+            ->andWhere('n.type != :completed')
             ->setParameter('user', $user)
+            ->setParameter('completed', Notification::TYPE_MISSION_COMPLETED)
             ->getQuery()
             ->getSingleScalarResult();
     }
@@ -31,11 +33,14 @@ class NotificationRepository extends ServiceEntityRepository
     /**
      * @return Notification[]
      */
-    public function findRecentFor(User $user, int $limit = 10): array
+    public function findUnreadFor(User $user, int $limit = 20): array
     {
         return $this->createQueryBuilder('n')
             ->where('n.recipient = :user')
+            ->andWhere('n.isRead = false')
+            ->andWhere('n.type != :completed')
             ->setParameter('user', $user)
+            ->setParameter('completed', Notification::TYPE_MISSION_COMPLETED)
             ->orderBy('n.createdAt', 'DESC')
             ->setMaxResults($limit)
             ->getQuery()

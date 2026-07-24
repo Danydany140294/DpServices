@@ -31,12 +31,12 @@ class NotificationExtension extends AbstractExtension
         return $this->notificationRepository->countUnreadFor($user);
     }
 
-    public function getRecent(?User $user, int $limit = 10): array
-    {
-        if ($user === null) {
-            return [];
-        }
-
-        return $this->notificationRepository->findRecentFor($user, $limit);
+    public function getRecent(?User $user, int $limit = 20): array
+{
+    if ($user === null) {
+        return [];
     }
+
+    return $this->notificationRepository->findUnreadFor($user, $limit);
+}
 }

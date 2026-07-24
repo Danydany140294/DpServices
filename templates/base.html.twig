@@ -41,7 +41,7 @@
                         <div class="topbar-notif-empty">Aucune notification</div>
                     {% else %}
                         {% for notif in recentNotifs %}
-                            <a href="{{ notif.link ?: '#' }}" class="topbar-notif-item {{ notif.isRead ? '' : 'topbar-notif-item--unread' }}">
+                            <a href="{{ path('app_notification_read', { id: notif.id }) }}" class="topbar-notif-item topbar-notif-item--unread">
                                 <span class="topbar-notif-message">{{ notif.message }}</span>
                                 <span class="topbar-notif-date">{{ notif.createdAt|date('d/m H:i') }}</span>
                             </a>
@@ -118,7 +118,7 @@
                             <div class="topbar-notif-empty">Aucune notification</div>
                         {% else %}
                             {% for notif in recentNotifsDesktop %}
-                                <a href="{{ notif.link ?: '#' }}" class="topbar-notif-item {{ notif.isRead ? '' : 'topbar-notif-item--unread' }}">
+                               <a href="{{ path('app_notification_read', { id: notif.id }) }}" class="topbar-notif-item topbar-notif-item--unread">
                                     <span class="topbar-notif-message">{{ notif.message }}</span>
                                     <span class="topbar-notif-date">{{ notif.createdAt|date('d/m H:i') }}</span>
                                 </a>

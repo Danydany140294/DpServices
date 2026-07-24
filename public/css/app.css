@@ -2192,7 +2192,7 @@ form .invalid-feedback { color: #dc2626; font-size: 0.8rem; margin-top: 0.25rem;
 .legend-panel__list { font-size: 0.78rem; color: var(--text-muted); line-height: 1.7; }
 
 .legend-panel__close {
-    display: block;.mobile-content {
+    display: block;
     width: 100%;
     margin-top: 1rem;
     padding: 0.5rem;
@@ -2202,7 +2202,6 @@ form .invalid-feedback { color: #dc2626; font-size: 0.8rem; margin-top: 0.25rem;
     border-radius: 4px;
     cursor: pointer;
     font-size: 0.8rem;
-    }
 }
 
 .legend-panel__close:hover { background: var(--gold-soft); color: var(--gold); }
