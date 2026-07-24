@@ -51,22 +51,41 @@
     <div class="mobile-content">
 
         {# ==========================================================
-           CARTE "Missions du jour"
-           todayMissionsCount vient du contrôleur (étape 2)
+           On ne garde que les missions du jour : todayMissions sert
+           à la fois au calcul de progression et à l'affichage de la liste.
+           ========================================================== #}
+        {% set todayMissions = missions|filter(m => m.scheduledDate|date('Y-m-d') == today|date('Y-m-d')) %}
+        {% set doneToday = todayMissions|filter(m => m.status == 'COMPLETED')|length %}
+
+        {# ==========================================================
+           CARTE "Missions du jour" + barre de progression
            ========================================================== #}
         <div class="missions-count-card">
-            <div>
-                <div class="missions-count-card__label">Missions du jour</div>
-                <div class="missions-count-card__value">{{ todayMissionsCount }}</div>
+            <div class="missions-count-card__top">
+                <div>
+                    <div class="missions-count-card__label">Missions du jour</div>
+                    <div class="missions-count-card__value">{{ todayMissionsCount }}</div>
+                </div>
+                <a href="{{ path('app_calendar') }}" class="missions-count-card__icon" aria-label="Voir le calendrier">
+                    <i class="ph-fill ph-calendar-check"></i>
+                </a>
             </div>
-            <a href="{{ path('app_calendar') }}" class="missions-count-card__icon" aria-label="Voir le calendrier">
-                <i class="ph-fill ph-calendar-check"></i>
-            </a>
+
+            {% if todayMissionsCount > 0 %}
+                <div class="missions-count-card__progress">
+                    <div class="missions-count-card__progress-label">
+                        <span>Progression</span>
+                        <span><strong>{{ doneToday }}</strong> / {{ todayMissionsCount }} terminées</span>
+                    </div>
+                    <div class="missions-count-card__progress-track">
+                        <div class="missions-count-card__progress-fill" style="width: {{ (doneToday / todayMissionsCount * 100)|round }}%;"></div>
+                    </div>
+                </div>
+            {% endif %}
         </div>
 
         {# ==========================================================
-           PROCHAINE MISSION — adresse + photo dynamiques
-           nextMission vient du contrôleur (étape 2), peut être null
+           PROCHAINE MISSION — inchangée
            ========================================================== #}
         {% if nextMission is defined and nextMission is not null %}
             <div class="next-mission-card">
@@ -104,17 +123,17 @@
         {% endif %}
 
         {# ==========================================================
-           LISTE DES MISSIONS (design condensé façon maquette)
+           LISTE DES MISSIONS DU JOUR — statut visuel (icône + couleur)
+           et bouton "Terminer" en pilule icône + texte
            ========================================================== #}
-        {% if missions is empty %}
+        {% if todayMissions is empty %}
             <div class="empty-state">
                 <div class="emoji">✅</div>
-                <p>Aucune mission à venir</p>
+                <p>Aucune mission aujourd'hui</p>
             </div>
         {% else %}
             <div class="mission-list">
-                {% for mission in missions %}
-                    {% set isToday = mission.scheduledDate|date('Y-m-d') == today|date('Y-m-d') %}
+                {% for mission in todayMissions %}
                     <div class="mission-row" style="--mission-color: {{ mission.property.color }};">
                         <div class="mission-row__time">{{ mission.scheduledTime|date('H:i') }}</div>
 
@@ -128,17 +147,24 @@
 
                         <div class="mission-row__side">
                             {% if mission.status == 'COMPLETED' %}
-                                <span class="mission-badge mission-badge--done">Terminée</span>
+                                <span class="mission-status mission-status--done">
+                                    <i class="ph-fill ph-check-circle"></i>Terminée
+                                </span>
                             {% elseif mission.status == 'VALIDATED' %}
-                                <span class="mission-badge mission-badge--upcoming">{{ isToday ? 'Aujourd\'hui' : mission.scheduledDate|date('d/m') }}</span>
+                                <span class="mission-status mission-status--upcoming">
+                                    <i class="ph-fill ph-clock"></i>Aujourd'hui
+                                </span>
                             {% else %}
-                                <span class="mission-badge mission-badge--pending">En attente</span>
+                                <span class="mission-status mission-status--pending">
+                                    <i class="ph-fill ph-hourglass-medium"></i>En attente
+                                </span>
                             {% endif %}
 
                             {% if mission.status == 'VALIDATED' %}
-                                <form method="post" action="{{ path('app_cleaner_complete', {id: mission.id}) }}">
+                                <form method="post" action="{{ path('app_cleaner_complete', {id: mission.id}) }}" class="inline-form">
                                     <button type="submit" class="mission-row__complete-btn" aria-label="Marquer comme terminée">
                                         <i class="ph-fill ph-check-circle"></i>
+                                        <span>Terminer</span>
                                     </button>
                                 </form>
                             {% endif %}
