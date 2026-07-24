@@ -2588,7 +2588,7 @@ textarea{
     #calendar .fc-list-event:hover td { background: var(--card-2) !important; }
     #calendar .fc-list-event-title,
     #calendar .fc-list-event-time { color: var(--text) !important; }
-    #calendar .fc-daygrid-day-top { justify-content: center; }}
+    #calendar .fc-daygrid-day-top { justify-content: center; }
 
     .form-card { max-width: 100%; }
     .form-grid-2 { grid-template-columns: 1fr !important; }
@@ -3183,4 +3183,6 @@ textarea{
     .topbar-title { font-size: 1rem; }
     .mission-modal h2 { font-size: 17px; }
     .mobile-bottom-nav a, .mobile-bottom-nav span { font-size: 9px; }
+}
+
 }
